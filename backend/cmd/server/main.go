@@ -28,9 +28,9 @@ func main() {
 	// Auto-migrate all models
 	db.AutoMigrate(
 		&models.User{},
-		&models.Employee{},
 		&models.Department{},
 		&models.Team{},
+		&models.Employee{},
 		&models.AttendanceRecord{},
 		&models.OfficeLocation{},
 		&models.ApprovedWiFi{},
@@ -48,10 +48,39 @@ func main() {
 	// Seed default admin
 	seedAdmin(db)
 
-	// Init layers: Repository → Service → Handler
+	// --- Repositories ---
 	userRepo := repositories.NewUserRepository(db)
+	deptRepo := repositories.NewDepartmentRepository(db)
+	teamRepo := repositories.NewTeamRepository(db)
+	empRepo := repositories.NewEmployeeRepository(db)
+	attendanceRepo := repositories.NewAttendanceRepository(db)
+	leaveRepo := repositories.NewLeaveRepository(db)
+	otRepo := repositories.NewOvertimeRepository(db)
+	salaryRepo := repositories.NewSalaryRepository(db)
+	notifRepo := repositories.NewNotificationRepository(db)
+
+	// --- Services (notification first — others depend on it) ---
+	notifSvc := services.NewNotificationService(notifRepo)
+
 	authService := services.NewAuthService(userRepo, cfg)
+	deptSvc := services.NewDepartmentService(deptRepo)
+	teamSvc := services.NewTeamService(teamRepo, deptRepo)
+	empSvc := services.NewEmployeeService(empRepo, userRepo, notifSvc)
+	attendanceSvc := services.NewAttendanceService(attendanceRepo, empRepo, notifSvc)
+	leaveSvc := services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo)
+	otSvc := services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo)
+	salarySvc := services.NewSalaryService(salaryRepo, empRepo, otRepo, notifSvc)
+
+	// --- Handlers ---
 	authHandler := handlers.NewAuthHandler(authService)
+	deptHandler := handlers.NewDepartmentHandler(deptSvc)
+	teamHandler := handlers.NewTeamHandler(teamSvc)
+	empHandler := handlers.NewEmployeeHandler(empSvc)
+	attendanceHandler := handlers.NewAttendanceHandler(attendanceSvc)
+	leaveHandler := handlers.NewLeaveHandler(leaveSvc)
+	otHandler := handlers.NewOvertimeHandler(otSvc)
+	salaryHandler := handlers.NewSalaryHandler(salarySvc)
+	notifHandler := handlers.NewNotificationHandler(notifSvc)
 
 	// Setup Gin
 	gin.SetMode(cfg.GinMode)
@@ -77,21 +106,128 @@ func main() {
 	// API v1 routes
 	api := r.Group("/api/v1")
 	{
-		// Public routes
+		// ---- Public routes ----
 		api.POST("/auth/login", authHandler.Login)
 
-		// Protected routes (require JWT)
+		// ---- Protected routes (require JWT) ----
 		protected := api.Group("")
 		protected.Use(middleware.AuthRequired(cfg.JWTSecret))
 		{
+			// Auth
 			protected.GET("/auth/me", authHandler.Me)
+			protected.POST("/auth/change-password", empHandler.ChangePassword)
 
-			// TODO Sprint 2: Organization & Employee routes
-			// TODO Sprint 3: Attendance routes
-			// TODO Sprint 4: Leave routes
-			// TODO Sprint 5: OT routes
-			// TODO Sprint 6: Salary routes
-			// TODO Sprint 7: Report routes
+			// --- Employees (self) ---
+			protected.GET("/employees/me", empHandler.GetMe)
+
+			// --- Departments — Admin/HR only ---
+			depts := protected.Group("/departments")
+			depts.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
+			{
+				depts.GET("", deptHandler.List)
+				depts.GET("/:id", deptHandler.GetByID)
+				depts.POST("", middleware.RoleRequired(models.RoleAdmin), deptHandler.Create)
+				depts.PUT("/:id", middleware.RoleRequired(models.RoleAdmin), deptHandler.Update)
+				depts.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin), deptHandler.Delete)
+			}
+
+			// --- Teams — Admin/HR/CEO ---
+			teams := protected.Group("/teams")
+			teams.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader))
+			{
+				teams.GET("", teamHandler.List)
+				teams.GET("/:id", teamHandler.GetByID)
+				teams.POST("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), teamHandler.Create)
+				teams.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), teamHandler.Update)
+				teams.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin), teamHandler.Delete)
+			}
+
+			// --- Employees management — Admin/HR ---
+			employees := protected.Group("/employees")
+			{
+				// Everyone can list with filters (they will see filtered results based on their role in service)
+				employees.GET("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), empHandler.List)
+				employees.GET("/:id", empHandler.GetByID)
+				employees.POST("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.Create)
+				employees.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.Update)
+
+				// Allowances per employee
+				employees.GET("/:id/allowances", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.GetAllowances)
+				employees.POST("/:id/allowances", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.SetAllowance)
+				employees.DELETE("/:id/allowances/:allowance_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.DeleteAllowance)
+			}
+
+			// --- Attendance ---
+			attendance := protected.Group("/attendance")
+			{
+				// All authenticated employees can check in/out
+				attendance.POST("/check-in", attendanceHandler.CheckIn)
+				attendance.POST("/check-out", attendanceHandler.CheckOut)
+				attendance.GET("/today", attendanceHandler.GetMyToday)
+
+				// List — Admin/HR/CEO/Leader can view all; employee sees own
+				attendance.GET("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), attendanceHandler.List)
+
+				// Office location config — Admin only
+				attendance.GET("/office-locations", attendanceHandler.GetOfficeLocations)
+				attendance.POST("/office-locations", middleware.RoleRequired(models.RoleAdmin), attendanceHandler.CreateOfficeLocation)
+				attendance.POST("/approved-wifi", middleware.RoleRequired(models.RoleAdmin), attendanceHandler.AddApprovedWiFi)
+				attendance.DELETE("/approved-wifi/:id", middleware.RoleRequired(models.RoleAdmin), attendanceHandler.DeleteApprovedWiFi)
+			}
+
+			// --- Leave ---
+			leave := protected.Group("/leave")
+			{
+				leave.POST("", leaveHandler.Create)
+				leave.GET("", leaveHandler.List)
+				leave.GET("/balance", leaveHandler.GetBalance)
+				leave.GET("/:id", leaveHandler.GetByID)
+				leave.DELETE("/:id", leaveHandler.Cancel)
+				leave.POST("/:id/leader-approve", middleware.RoleRequired(models.RoleLeader, models.RoleAdmin), leaveHandler.LeaderApprove)
+				leave.POST("/:id/hr-approve", middleware.RoleRequired(models.RoleHR, models.RoleAdmin), leaveHandler.HRApprove)
+			}
+
+			// --- Overtime ---
+			overtime := protected.Group("/overtime")
+			{
+				overtime.POST("", otHandler.Create)
+				overtime.GET("", otHandler.List)
+				overtime.GET("/:id", otHandler.GetByID)
+				overtime.DELETE("/:id", otHandler.Cancel)
+				overtime.POST("/:id/leader-approve", middleware.RoleRequired(models.RoleLeader, models.RoleAdmin), otHandler.LeaderApprove)
+				overtime.POST("/:id/ceo-approve", middleware.RoleRequired(models.RoleCEO, models.RoleAdmin), otHandler.CEOApprove)
+			}
+
+			// --- Salary ---
+			salary := protected.Group("/salary")
+			salary.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
+			{
+				salary.POST("/run-payroll", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.RunPayroll)
+				salary.GET("", salaryHandler.List)
+				salary.GET("/me", salaryHandler.GetMySalary)
+				salary.GET("/employee/:employee_id", salaryHandler.GetByEmployee)
+				salary.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
+
+				// Allowance types
+				salary.GET("/allowance-types", salaryHandler.ListAllowanceTypes)
+				salary.POST("/allowance-types", middleware.RoleRequired(models.RoleAdmin), salaryHandler.CreateAllowanceType)
+				salary.DELETE("/allowance-types/:id", middleware.RoleRequired(models.RoleAdmin), salaryHandler.DeleteAllowanceType)
+
+				// Bonuses
+				salary.POST("/bonuses", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.AddBonus)
+
+				// Salary advances
+				salary.POST("/advances", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.AddSalaryAdvance)
+			}
+
+			// --- Notifications — all authenticated users ---
+			notifs := protected.Group("/notifications")
+			{
+				notifs.GET("", notifHandler.List)
+				notifs.GET("/unread-count", notifHandler.UnreadCount)
+				notifs.PATCH("/:id/read", notifHandler.MarkRead)
+				notifs.PATCH("/read-all", notifHandler.MarkAllRead)
+			}
 		}
 	}
 
@@ -118,6 +254,16 @@ func seedAdmin(db *gorm.DB) {
 		Role:         models.RoleAdmin,
 		IsActive:     true,
 	}
-	db.Create(&admin)
+	if err := db.Create(&admin).Error; err != nil {
+		log.Println("Failed to seed admin:", err)
+		return
+	}
+	// Create employee profile for admin
+	empProfile := models.Employee{
+		UserID:   admin.ID,
+		FullName: "System Admin",
+		Position: "Administrator",
+	}
+	db.Create(&empProfile)
 	log.Println("Default admin created: admin@exn.vn / admin123")
 }

@@ -1,0 +1,13 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "in-process",
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true,
+    "ennam-conventions@ennam-internal-plugins": true,
+    "ennam-quality-gates@ennam-internal-plugins": true,
+    "ennam-dev-agent-team@ennam-internal-plugins": true,
+    "pencil@ennam-internal-plugins": true
+  }
+}

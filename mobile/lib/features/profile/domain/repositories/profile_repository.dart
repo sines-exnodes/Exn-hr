@@ -1,0 +1,12 @@
+import 'package:dartz/dartz.dart';
+import 'package:exn_hr/features/profile/domain/entities/profile.dart';
+import 'package:exn_hr/shared/domain/entities/api_error.dart';
+
+abstract class ProfileRepository {
+  Future<Either<ApiError, Profile>> getProfile();
+
+  Future<Either<ApiError, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+}

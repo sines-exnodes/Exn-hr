@@ -36,3 +36,10 @@ mobile/ios/.symlinks/
 # Misc
 *.log
 .serena/
+
+# Claude
+.claude/settings.local.json
+.claude/worktrees/
+
+# Design
+*.pen.bak
