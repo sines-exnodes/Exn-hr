@@ -1,0 +1,396 @@
+# =============================================================================
+# SEED-001: Exn-Hr — He thong Quan ly Nhan su Noi bo
+# =============================================================================
+# This Seed is IMMUTABLE once approved. Only implementation path adapts.
+# Generated: 2026-03-18
+# Author: business-analyst
+# Source: Interview with project-owner (INT-001)
+# Ambiguity Score: 0.10 (Low — requirements are well-defined)
+# =============================================================================
+
+seed:
+  id: SEED-001
+  name: "Exn-Hr — Internal HR Management System"
+  name_vi: "Exn-Hr — He thong Quan ly Nhan su Noi bo"
+  version: "1.0.0"
+  status: draft
+  created: "2026-03-18"
+  author: business-analyst
+
+# -----------------------------------------------------------------------------
+# Project Overview
+# -----------------------------------------------------------------------------
+project:
+  type: greenfield
+  tenancy: single-tenant
+  scale:
+    max_employees: 50
+    branches: 1
+    target: "startup/SME"
+  timeline: "14-16 weeks"
+  tech_stack:
+    web_admin: "NextJS"
+    backend_api: "GoLang/Gin"
+    mobile_app: "Flutter"
+    database: "PostgreSQL"
+  integrations:
+    mvp: "standalone — no external integrations"
+  future_scope:
+    - "Project Management module"
+
+# -----------------------------------------------------------------------------
+# Authentication
+# -----------------------------------------------------------------------------
+authentication:
+  method: "email_password"
+  details:
+    - "Email + Password login"
+    - "No 2FA — simple authentication sufficient for internal system"
+
+# -----------------------------------------------------------------------------
+# Authorization (RBAC)
+# -----------------------------------------------------------------------------
+authorization:
+  model: "RBAC — Role-Based Access Control"
+  granularity: "role + module"
+  roles:
+    - id: admin
+      name: "Admin"
+      level: 1
+      description: "Highest privilege. Full system access."
+    - id: ceo
+      name: "CEO"
+      level: 2
+      description: "Executive role. Approves OT requests (level 2)."
+    - id: hr
+      name: "HR"
+      level: 3
+      description: "HR management. Approves leave (level 2). Manages payroll."
+    - id: leader
+      name: "Leader"
+      level: 4
+      description: "Team leader. Approves leave (level 1) and OT (level 1)."
+    - id: employee
+      name: "Employee"
+      level: 5
+      description: "Regular employee. Submits requests."
+  module_permissions:
+    - "Salary (luong)"
+    - "Leave (nghi phep)"
+    - "Attendance (cham cong)"
+    - "Overtime (OT)"
+    - "Employee management"
+    - "Reports"
+
+# -----------------------------------------------------------------------------
+# Organization Structure
+# -----------------------------------------------------------------------------
+organization:
+  hierarchy: "Department → Team → Employee"
+  rules:
+    - "Each team has exactly 1 Leader"
+    - "Each employee belongs to exactly 1 team"
+  examples:
+    departments:
+      - name: "Engineering"
+        teams:
+          - "Team BE"
+          - "Team FE"
+          - "Team Design"
+
+# -----------------------------------------------------------------------------
+# Modules
+# -----------------------------------------------------------------------------
+modules:
+
+  # ---------------------------------------------------------------------------
+  # Attendance (Cham cong)
+  # ---------------------------------------------------------------------------
+  attendance:
+    name: "Attendance / Cham cong"
+    platform: "Mobile app (Flutter)"
+    verification:
+      - type: "GPS"
+        description: "Employee location must be within configured office radius"
+      - type: "WiFi"
+        description: "Employee must be connected to approved office WiFi network"
+    admin_config:
+      - "Office location coordinates (lat/lng + radius)"
+      - "Approved WiFi network SSID/BSSID list"
+
+  # ---------------------------------------------------------------------------
+  # Leave Management (Nghi phep)
+  # ---------------------------------------------------------------------------
+  leave:
+    name: "Leave Management / Nghi phep"
+    types:
+      - id: paid
+        name: "Paid leave (Co phep)"
+        quota_per_year: 12
+      - id: unpaid
+        name: "Unpaid leave (Khong phep)"
+        quota_per_year: null  # unlimited — triggered when paid leave exhausted
+    rules:
+      - "When paid leave quota is exhausted, subsequent leave is automatically unpaid"
+      - "HR can convert unpaid leave to paid leave (exception approval)"
+      - "Leave does NOT carry over — unused days expire at year end (nam nao xai nam do)"
+    approval_workflow:
+      levels: 2
+      flow:
+        - step: 1
+          actor: "Leader"
+          description: "Team leader reviews and approves/rejects"
+        - step: 2
+          actor: "HR"
+          description: "HR final approval"
+
+  # ---------------------------------------------------------------------------
+  # Overtime (OT)
+  # ---------------------------------------------------------------------------
+  overtime:
+    name: "Overtime / Lam them gio"
+    multiplier: 1.5
+    multiplier_type: "fixed — same for all day types"
+    day_type_differentiation: false  # NO difference for weekday/weekend/holiday
+    rules:
+      - "Only counted in salary AFTER CEO approval (level 2)"
+    approval_workflow:
+      levels: 2
+      flow:
+        - step: 1
+          actor: "Leader"
+          description: "Team leader reviews and approves/rejects"
+        - step: 2
+          actor: "CEO"
+          description: "CEO final approval — triggers salary inclusion"
+
+  # ---------------------------------------------------------------------------
+  # Salary Structure (Cau truc luong)
+  # ---------------------------------------------------------------------------
+  salary:
+    name: "Salary / Luong"
+    components:
+      base:
+        - id: basic_salary
+          name: "Basic salary / Luong co ban"
+          type: "fixed"
+        - id: net_salary
+          name: "Net salary / Luong thuc nhan"
+          type: "calculated"
+        - id: insurance_salary
+          name: "Insurance salary / Luong dong BHXH"
+          type: "manual_input"
+          description: "Admin enters per employee. Usually lower than total income."
+
+      allowances:
+        - id: custom_allowances
+          name: "Custom allowances / Phu cap"
+          type: "flexible"
+          description: "Admin creates freely: name + amount. Can add/remove anytime."
+          examples:
+            - "Fuel allowance (xang xe)"
+            - "Lunch allowance (an trua)"
+            - "Phone allowance (dien thoai)"
+        - id: position_allowance
+          name: "Position allowance / Phu cap chuc vu"
+          type: "fixed_per_position"
+
+      additions:
+        - id: overtime_pay
+          name: "Overtime pay"
+          type: "calculated"
+          formula: "OT hours x hourly rate x 1.5"
+        - id: kpi_bonus
+          name: "KPI bonus / Thuong KPI"
+          type: "manual_input"
+        - id: project_bonus
+          name: "Project bonus / Thuong du an"
+          type: "manual_input"
+        - id: commission
+          name: "Commission / Hoa hong"
+          type: "manual_input"
+
+      deductions:
+        - id: advance_salary
+          name: "Salary advance / Tam ung"
+          type: "manual_input"
+        - id: social_insurance
+          name: "Social Insurance / BHXH"
+          type: "calculated"
+          basis: "insurance_salary"
+        - id: health_insurance
+          name: "Health Insurance / BHYT"
+          type: "calculated"
+          basis: "insurance_salary"
+        - id: unemployment_insurance
+          name: "Unemployment Insurance / BHTN"
+          type: "calculated"
+          basis: "insurance_salary"
+        # NOTE: Personal Income Tax (TNCN) is NOT calculated in this system per client decision
+
+  # ---------------------------------------------------------------------------
+  # Reports (Bao cao)
+  # ---------------------------------------------------------------------------
+  reports:
+    name: "Reports / Bao cao"
+    items:
+      - id: payroll_summary
+        name: "Payroll summary / Bang luong tong hop"
+      - id: attendance_report
+        name: "Attendance report / Bao cao cham cong"
+      - id: leave_report
+        name: "Leave report / Bao cao nghi phep"
+      - id: employee_list
+        name: "Employee list / Danh sach nhan vien"
+      - id: social_insurance_d02
+        name: "Social Insurance form D02-TS / BHXH mau D02-TS"
+        compliance: "Vietnam social insurance regulation"
+      # NOTE: PIT/TNCN report removed — TNCN is not calculated in system
+      - id: overtime_report
+        name: "Overtime report / Bao cao OT"
+      - id: hr_movement
+        name: "HR movement report / Bien dong nhan su"
+      - id: dashboard
+        name: "Dashboard overview / Dashboard tong quan"
+
+# -----------------------------------------------------------------------------
+# Mobile App Features
+# -----------------------------------------------------------------------------
+mobile_app:
+  platform: "Flutter"
+  target_users:
+    primary: ["Employee", "Leader"]
+    secondary: ["HR"]  # HR can use app as a regular employee (attendance, payslip, leave, etc.)
+  note: "HR uses app for personal employee functions only. HR management functions are on Web."
+  features:
+    - id: check_in_out
+      name: "Attendance check-in/out"
+      verification: ["GPS", "WiFi"]
+    - id: payslip
+      name: "View payslip / Xem phieu luong"
+    - id: notifications
+      name: "Push notifications / Thong bao"
+    - id: leave_request
+      name: "Leave request / Xin nghi phep"
+    - id: ot_request
+      name: "OT request / Xin OT"
+    - id: profile_update
+      name: "Update personal info / Cap nhat thong tin ca nhan"
+    - id: leader_approval
+      name: "Leader: Approve/reject leave & OT requests from team"
+      roles: ["Leader"]
+
+web_admin:
+  platform: "NextJS"
+  target_users: ["Admin", "CEO", "HR"]
+  note: "Web is for management functions: reports, payroll, organization, dashboards"
+  features:
+    - id: dashboard
+      name: "Dashboard overview / Tong quan nhan su"
+    - id: employee_management
+      name: "Employee CRUD / Quan ly nhan vien"
+    - id: organization
+      name: "Department & Team management / Quan ly phong ban"
+    - id: attendance_management
+      name: "Attendance reports & config / Quan ly cham cong"
+    - id: leave_management
+      name: "Leave requests & approval (HR) / Quan ly nghi phep"
+    - id: ot_management
+      name: "OT requests & approval (CEO) / Quan ly OT"
+    - id: salary_management
+      name: "Payroll config & calculation / Tinh luong toan bo NV"
+    - id: reports
+      name: "All reports (payroll, BHXH, attendance, etc.) / Bao cao"
+    - id: notifications
+      name: "Notification center"
+
+# -----------------------------------------------------------------------------
+# Domain Entities (High-level)
+# -----------------------------------------------------------------------------
+entities:
+  - name: User
+    description: "System user with authentication credentials"
+  - name: Employee
+    description: "Employee profile linked to User"
+  - name: Department
+    description: "Top-level organizational unit"
+  - name: Team
+    description: "Sub-unit of Department, has 1 Leader"
+  - name: Role
+    description: "RBAC role (Admin, CEO, HR, Leader, Employee)"
+  - name: AttendanceRecord
+    description: "Check-in/out record with GPS + WiFi verification"
+  - name: OfficeLocation
+    description: "Configured office location for attendance verification"
+  - name: ApprovedWiFi
+    description: "Approved WiFi networks for attendance verification"
+  - name: LeaveRequest
+    description: "Leave request with 2-level approval workflow"
+  - name: LeaveBalance
+    description: "Annual leave balance per employee"
+  - name: OvertimeRequest
+    description: "OT request with 2-level approval workflow"
+  - name: SalaryRecord
+    description: "Monthly salary calculation record"
+  - name: Allowance
+    description: "Custom allowance definition (name + amount)"
+  - name: EmployeeAllowance
+    description: "Allowance assigned to specific employee"
+  - name: Bonus
+    description: "KPI, project, or commission bonus"
+  - name: SalaryAdvance
+    description: "Salary advance / tam ung record"
+  - name: Notification
+    description: "Push notification record"
+
+# -----------------------------------------------------------------------------
+# Constraints & Business Rules
+# -----------------------------------------------------------------------------
+constraints:
+  - id: C-001
+    rule: "Each employee belongs to exactly 1 team"
+  - id: C-002
+    rule: "Each team has exactly 1 leader"
+  - id: C-003
+    rule: "Paid leave quota is 12 days/year"
+  - id: C-004
+    rule: "When paid leave is exhausted, leave becomes unpaid automatically"
+  - id: C-005
+    rule: "HR can convert unpaid leave to paid leave (exception)"
+  - id: C-006
+    rule: "Leave approval: Employee -> Leader (L1) -> HR (L2)"
+  - id: C-007
+    rule: "OT approval: Employee -> Leader (L1) -> CEO (L2)"
+  - id: C-008
+    rule: "OT multiplier is fixed at 1.5x for all day types"
+  - id: C-009
+    rule: "OT is only counted in salary after CEO approval"
+  - id: C-010
+    rule: "Insurance salary is manually set per employee by Admin"
+  - id: C-011
+    rule: "Custom allowances are flexible — Admin can create/remove freely"
+  - id: C-012
+    rule: "Attendance requires both GPS and WiFi verification"
+  - id: C-013
+    rule: "Deductions follow Vietnamese labor law (BHXH, BHYT, BHTN) — TNCN is NOT calculated in system"
+  - id: C-015
+    rule: "Unused paid leave does NOT carry over to next year (nam nao xai nam do)"
+  - id: C-016
+    rule: "Mobile app: Employee + Leader (+ HR as employee). Web: Admin + CEO + HR (management)"
+  - id: C-017
+    rule: "Authentication is Email + Password only, no 2FA required"
+  - id: C-014
+    rule: "RBAC is role + module level"
+
+# -----------------------------------------------------------------------------
+# Out of Scope (MVP)
+# -----------------------------------------------------------------------------
+out_of_scope:
+  - "Project Management module (future scope)"
+  - "Multi-branch support"
+  - "External system integrations (ERP, accounting software)"
+  - "Biometric attendance verification"
+  - "Multi-language support (Vietnamese only for MVP)"
+  - "Recruitment/hiring module"
+  - "Performance review module (beyond KPI bonus)"
+  - "Training/development module"
