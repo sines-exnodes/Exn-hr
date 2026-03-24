@@ -7,11 +7,11 @@ class GetLeaveListUseCase {
   GetLeaveListUseCase(this._repository);
   final LeaveRepository _repository;
 
-  Future<Either<ApiError, List<LeaveRequest>>> call({
-    int page = 1,
-    int size = 20,
-    String? status,
-  }) {
-    return _repository.getList(page: page, size: size, status: status);
+  Future<Either<ApiError, List<LeaveRequest>>> call({int page = 1, int size = 20, String? status, String? type, int? year}) {
+    return _repository.getList(page: page, size: size, status: status, type: type, year: year);
+  }
+
+  Future<Either<ApiError, LeaveBalance>> getBalance({int? year}) {
+    return _repository.getBalance(year: year);
   }
 }

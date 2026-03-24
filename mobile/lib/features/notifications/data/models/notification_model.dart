@@ -1,31 +1,37 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'notification_model.g.dart';
-
-@JsonSerializable()
 class NotificationModel {
   const NotificationModel({
     required this.id,
+    required this.userId,
     required this.title,
     required this.body,
     required this.type,
-    this.isRead,
-    this.createdAt,
+    required this.isRead,
     this.referenceId,
+    this.referenceType,
+    this.createdAt,
   });
 
-  final String id;
+  final int id;
+  final int userId;
   final String title;
   final String body;
   final String type;
-  @JsonKey(name: 'is_read')
-  final bool? isRead;
-  @JsonKey(name: 'created_at')
+  final bool isRead;
+  final int? referenceId;
+  final String? referenceType;
   final String? createdAt;
-  @JsonKey(name: 'reference_id')
-  final String? referenceId;
 
-  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
-      _$NotificationModelFromJson(json);
-  Map<String, dynamic> toJson() => _$NotificationModelToJson(this);
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    return NotificationModel(
+      id: json['id'] as int,
+      userId: json['user_id'] as int,
+      title: json['title'] as String,
+      body: json['body'] as String,
+      type: json['type'] as String,
+      isRead: json['is_read'] as bool? ?? false,
+      referenceId: json['reference_id'] as int?,
+      referenceType: json['reference_type'] as String?,
+      createdAt: json['created_at'] as String?,
+    );
+  }
 }

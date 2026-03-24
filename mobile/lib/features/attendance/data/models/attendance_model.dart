@@ -1,32 +1,34 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'attendance_model.g.dart';
-
-@JsonSerializable()
 class AttendanceModel {
   const AttendanceModel({
     required this.id,
-    required this.date,
+    required this.employeeId,
     this.checkInTime,
     this.checkOutTime,
-    this.totalHours,
-    this.location,
-    this.verificationMethod,
+    this.gpsLat,
+    this.gpsLng,
+    this.wifiSsid,
+    this.status,
   });
 
-  final String id;
-  final String date;
-  @JsonKey(name: 'check_in_time')
+  final int id;
+  final int employeeId;
   final String? checkInTime;
-  @JsonKey(name: 'check_out_time')
   final String? checkOutTime;
-  @JsonKey(name: 'total_hours')
-  final String? totalHours;
-  final String? location;
-  @JsonKey(name: 'verification_method')
-  final String? verificationMethod;
+  final double? gpsLat;
+  final double? gpsLng;
+  final String? wifiSsid;
+  final String? status;
 
-  factory AttendanceModel.fromJson(Map<String, dynamic> json) =>
-      _$AttendanceModelFromJson(json);
-  Map<String, dynamic> toJson() => _$AttendanceModelToJson(this);
+  factory AttendanceModel.fromJson(Map<String, dynamic> json) {
+    return AttendanceModel(
+      id: json['id'] as int,
+      employeeId: json['employee_id'] as int,
+      checkInTime: json['check_in_time'] as String?,
+      checkOutTime: json['check_out_time'] as String?,
+      gpsLat: (json['gps_lat'] as num?)?.toDouble(),
+      gpsLng: (json['gps_lng'] as num?)?.toDouble(),
+      wifiSsid: json['wifi_ssid'] as String?,
+      status: json['status'] as String?,
+    );
+  }
 }

@@ -1,5 +1,5 @@
 /**
- * Design Tokens — extracted from Pencil Design System (pencil-new.pen)
+ * Design Tokens — synced from Pencil Design System (pencil-new.pen)
  * 2 themes: green (default) + dark-blue
  *
  * Typography: Space Grotesk (headings) + Inter (body)
@@ -9,83 +9,87 @@
 export const themes = {
   green: {
     // Core
-    primary: '#22C55E',
+    primary: '#16A34A',
     'primary-light': '#DCFCE7',
-    'primary-dark': '#16A34A',
+    'primary-hover': '#15803D',
 
     // Backgrounds
-    'bg-page': '#F9FAFB',
-    'bg-surface': '#F5F5F5',
+    'bg-page': '#FFFFFF',
+    'bg-surface': '#F8FAF8',
     'bg-card': '#FFFFFF',
     'bg-input': '#FFFFFF',
     'bg-sidebar': '#1E293B',
 
     // Text
-    'text-primary': '#0D0D0D',
-    'text-secondary': '#7A7A7A',
-    'text-muted': '#B0B0B0',
+    'text-primary': '#111827',
+    'text-secondary': '#6B7280',
+    'text-muted': '#9CA3AF',
+    'text-on-primary': '#FFFFFF',
 
     // Sidebar
     'sidebar-text': '#94A3B8',
-    'sidebar-active-bg': '#22C55E',
+    'sidebar-active-bg': '#16A34A',
     'sidebar-active-text': '#FFFFFF',
 
     // Status
     success: '#22C55E',
-    'success-bg': '#ECFDF5',
+    'success-bg': '#DCFCE7',
     warning: '#F59E0B',
     'warning-bg': '#FEF3C7',
     danger: '#EF4444',
     'danger-bg': '#FEE2E2',
     info: '#3B82F6',
-    'info-bg': '#EFF6FF',
+    'info-bg': '#DBEAFE',
 
     // Border
-    border: '#E8E8E8',
+    border: '#E5E7EB',
+    'border-focus': '#16A34A',
 
     // Tab
-    'tab-active-bg': '#22C55E',
+    'tab-active-bg': '#16A34A',
     white: '#FFFFFF',
   },
 
   'dark-blue': {
     // Core
-    primary: '#2563EB',
-    'primary-light': '#DBEAFE',
-    'primary-dark': '#1D4ED8',
+    primary: '#1E3A5F',
+    'primary-light': '#1A2F4A',
+    'primary-hover': '#2A4A6F',
 
     // Backgrounds
-    'bg-page': '#0F172A',
-    'bg-surface': '#1E293B',
-    'bg-card': '#334155',
-    'bg-input': '#1E293B',
-    'bg-sidebar': '#0F172A',
+    'bg-page': '#0A0A0A',
+    'bg-surface': '#111111',
+    'bg-card': '#1A1A1A',
+    'bg-input': '#1A1A1A',
+    'bg-sidebar': '#0D1B2A',
 
     // Text
     'text-primary': '#F1F5F9',
     'text-secondary': '#94A3B8',
     'text-muted': '#64748B',
+    'text-on-primary': '#FFFFFF',
 
     // Sidebar
-    'sidebar-text': '#64748B',
-    'sidebar-active-bg': '#2563EB',
+    'sidebar-text': '#94A3B8',
+    'sidebar-active-bg': '#1E3A5F',
     'sidebar-active-text': '#FFFFFF',
 
     // Status
     success: '#22C55E',
     'success-bg': '#052E16',
     warning: '#F59E0B',
-    'warning-bg': '#451A03',
+    'warning-bg': '#422006',
     danger: '#EF4444',
     'danger-bg': '#450A0A',
-    info: '#3B82F6',
+    info: '#60A5FA',
     'info-bg': '#172554',
 
     // Border
-    border: '#334155',
+    border: '#2A2A2A',
+    'border-focus': '#3B82F6',
 
     // Tab
-    'tab-active-bg': '#2563EB',
+    'tab-active-bg': '#1E3A5F',
     white: '#FFFFFF',
   },
 } as const;

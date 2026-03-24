@@ -32,9 +32,9 @@ class LeaveApprovalCubit extends Cubit<LeaveApprovalState> {
     );
   }
 
-  Future<void> approve(String id) async {
+  Future<void> approve(int id) async {
     emit(state.copyWith(status: LeaveApprovalStatus.approving));
-    final result = await _approveLeaveUseCase(id);
+    final result = await _approveLeaveUseCase(id, status: 'approved');
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(

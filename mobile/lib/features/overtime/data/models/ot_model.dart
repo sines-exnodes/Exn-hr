@@ -1,45 +1,48 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'ot_model.g.dart';
-
-@JsonSerializable()
 class OtModel {
   const OtModel({
     required this.id,
+    required this.employeeId,
     required this.date,
     required this.startTime,
     required this.endTime,
-    required this.totalHours,
+    required this.hours,
     required this.reason,
-    required this.status,
-    this.leaderApproval,
-    this.ceoApproval,
-    this.createdAt,
-    this.employeeId,
-    this.employeeName,
+    required this.leaderStatus,
+    required this.ceoStatus,
+    required this.overallStatus,
+    this.employee,
   });
 
-  final String id;
+  final int id;
+  final int employeeId;
   final String date;
-  @JsonKey(name: 'start_time')
   final String startTime;
-  @JsonKey(name: 'end_time')
   final String endTime;
-  @JsonKey(name: 'total_hours')
-  final double totalHours;
+  final double hours;
   final String reason;
-  final String status;
-  @JsonKey(name: 'leader_approval')
-  final String? leaderApproval;
-  @JsonKey(name: 'ceo_approval')
-  final String? ceoApproval;
-  @JsonKey(name: 'created_at')
-  final String? createdAt;
-  @JsonKey(name: 'employee_id')
-  final String? employeeId;
-  @JsonKey(name: 'employee_name')
-  final String? employeeName;
+  final String leaderStatus;
+  final String ceoStatus;
+  final String overallStatus;
+  final Map<String, dynamic>? employee;
 
-  factory OtModel.fromJson(Map<String, dynamic> json) => _$OtModelFromJson(json);
-  Map<String, dynamic> toJson() => _$OtModelToJson(this);
+  String? get employeeName {
+    if (employee == null) return null;
+    return employee!['full_name'] as String?;
+  }
+
+  factory OtModel.fromJson(Map<String, dynamic> json) {
+    return OtModel(
+      id: json['id'] as int,
+      employeeId: json['employee_id'] as int,
+      date: json['date'] as String,
+      startTime: json['start_time'] as String,
+      endTime: json['end_time'] as String,
+      hours: (json['hours'] as num).toDouble(),
+      reason: json['reason'] as String? ?? '',
+      leaderStatus: json['leader_status'] as String? ?? 'pending',
+      ceoStatus: json['ceo_status'] as String? ?? 'pending',
+      overallStatus: json['overall_status'] as String? ?? 'pending',
+      employee: json['employee'] as Map<String, dynamic>?,
+    );
+  }
 }

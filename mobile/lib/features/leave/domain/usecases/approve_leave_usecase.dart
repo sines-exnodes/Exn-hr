@@ -7,7 +7,11 @@ class ApproveLeaveUseCase {
   ApproveLeaveUseCase(this._repository);
   final LeaveRepository _repository;
 
-  Future<Either<ApiError, LeaveRequest>> call(String id) {
-    return _repository.approve(id);
+  Future<Either<ApiError, LeaveRequest>> call(int id, {required String status, String? comment}) {
+    return _repository.leaderApprove(id, status: status, comment: comment);
+  }
+
+  Future<Either<ApiError, void>> cancel(int id) {
+    return _repository.cancelRequest(id);
   }
 }

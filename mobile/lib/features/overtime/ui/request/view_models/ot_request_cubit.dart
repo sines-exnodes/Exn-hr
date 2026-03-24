@@ -16,11 +16,25 @@ class OtRequestCubit extends Cubit<OtRequestState> {
   Future<void> submit({required String reason}) async {
     if (state.date == null || state.startTime == null || state.endTime == null) return;
 
+    // Calculate hours from startTime and endTime (format: HH:mm)
+    double hours = 0;
+    try {
+      final startParts = state.startTime!.split(':');
+      final endParts = state.endTime!.split(':');
+      final startMinutes = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+      final endMinutes = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
+      hours = (endMinutes - startMinutes) / 60.0;
+      if (hours < 0) hours = 0;
+    } catch (_) {
+      hours = 0;
+    }
+
     emit(state.copyWith(status: OtRequestStatus.loading));
     final result = await _createOtRequestUseCase(
       date: state.date!,
       startTime: state.startTime!,
       endTime: state.endTime!,
+      hours: hours,
       reason: reason,
     );
     if (isClosed) return;

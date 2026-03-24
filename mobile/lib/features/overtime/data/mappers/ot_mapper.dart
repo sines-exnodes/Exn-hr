@@ -4,17 +4,10 @@ import 'package:exn_hr/features/overtime/domain/entities/ot_request.dart';
 extension OtMapper on OtModel {
   OtRequest toEntity() {
     return OtRequest(
-      id: id,
-      date: date,
-      startTime: startTime,
-      endTime: endTime,
-      totalHours: totalHours,
-      reason: reason,
-      status: status,
-      leaderApproval: leaderApproval,
-      ceoApproval: ceoApproval,
-      createdAt: createdAt,
-      employeeId: employeeId,
+      id: id, employeeId: employeeId, date: date,
+      startTime: startTime, endTime: endTime, hours: hours,
+      reason: reason, leaderStatus: leaderStatus,
+      ceoStatus: ceoStatus, overallStatus: overallStatus,
       employeeName: employeeName,
     );
   }

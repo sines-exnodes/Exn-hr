@@ -192,21 +192,19 @@ class _PayslipView extends StatelessWidget {
         children: [
           Text('Salary Breakdown', style: AppTextStyles.h4),
           SizedBox(height: 16.w),
-          _buildLineItem('Base Salary', payslip.baseSalary, isIncome: true),
-          if (payslip.overtimePay != null && payslip.overtimePay! > 0)
-            _buildLineItem('Overtime Pay (x1.5)', payslip.overtimePay!,
+          _buildLineItem('Basic Salary', payslip.basicSalary, isIncome: true),
+          if (payslip.totalOtPay > 0)
+            _buildLineItem('Overtime Pay (x1.5)', payslip.totalOtPay,
                 isIncome: true),
-          if (payslip.allowances != null)
-            ...payslip.allowances!.map(
-              (a) => _buildLineItem(a.name, a.amount, isIncome: true),
-            ),
+          if (payslip.totalAllowances > 0)
+            _buildLineItem('Allowances', payslip.totalAllowances, isIncome: true),
+          if (payslip.totalBonus > 0)
+            _buildLineItem('Bonus', payslip.totalBonus, isIncome: true),
           Divider(height: 24.w, color: AppColors.divider),
-          if (payslip.deductions != null)
-            ...payslip.deductions!.map(
-              (d) => _buildLineItem(d.name, d.amount, isIncome: false),
-            ),
-          if (payslip.insuranceSalary != null && payslip.insuranceSalary! > 0)
-            _buildLineItem('Insurance', payslip.insuranceSalary!,
+          if (payslip.totalDeductions > 0)
+            _buildLineItem('Deductions', payslip.totalDeductions, isIncome: false),
+          if (payslip.salaryAdvance > 0)
+            _buildLineItem('Salary Advance', payslip.salaryAdvance,
                 isIncome: false),
           Divider(height: 24.w, color: AppColors.divider),
           Row(

@@ -8,27 +8,44 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { AttendanceRecord } from "@/types";
+import { useAttendanceRecords } from "@/hooks/useApi";
 
-// TODO: connect to real API — GET /attendance
 const mockAttendance: AttendanceRecord[] = [
-  { id: 1, employee_id: 1, employee_name: "Nguyễn Văn An", date: "2026-03-19", check_in: "08:02", check_out: "17:30", status: "present", location_verified: true },
-  { id: 2, employee_id: 2, employee_name: "Trần Thị Bình", date: "2026-03-19", check_in: "08:45", check_out: "17:15", status: "late", location_verified: true, note: "Kẹt xe" },
-  { id: 3, employee_id: 3, employee_name: "Lê Minh Châu", date: "2026-03-19", check_in: undefined, check_out: undefined, status: "absent", location_verified: false },
-  { id: 4, employee_id: 4, employee_name: "Phạm Quốc Dũng", date: "2026-03-19", check_in: "08:00", check_out: "12:30", status: "half_day", location_verified: true },
-  { id: 5, employee_id: 5, employee_name: "Hoàng Thị Em", date: "2026-03-19", check_in: "08:05", check_out: "17:35", status: "present", location_verified: false, note: "WFH - WiFi xác nhận" },
-  { id: 6, employee_id: 6, employee_name: "Vũ Thành Giang", date: "2026-03-19", check_in: "08:10", check_out: "17:20", status: "wfh", location_verified: true },
-  { id: 7, employee_id: 7, employee_name: "Đỗ Thị Hương", date: "2026-03-19", check_in: "08:03", check_out: "17:00", status: "present", location_verified: true },
-  { id: 8, employee_id: 8, employee_name: "Bùi Văn Khoa", date: "2026-03-19", check_in: "09:15", check_out: "18:00", status: "late", location_verified: true },
+  { id: 1, employee_id: 1, check_in_time: "2026-03-19T08:02:00Z", check_out_time: "2026-03-19T17:30:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
+  { id: 2, employee_id: 2, check_in_time: "2026-03-19T08:45:00Z", check_out_time: "2026-03-19T17:15:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172, wifi_ssid: "Office-WiFi" },
+  { id: 3, employee_id: 3, status: "checked_in", gps_lat: undefined, gps_lng: undefined },
+  { id: 4, employee_id: 4, check_in_time: "2026-03-19T08:00:00Z", check_out_time: "2026-03-19T12:30:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
+  { id: 5, employee_id: 5, check_in_time: "2026-03-19T08:05:00Z", check_out_time: "2026-03-19T17:35:00Z", status: "checked_out", wifi_ssid: "Home-WiFi" },
+  { id: 6, employee_id: 6, check_in_time: "2026-03-19T08:10:00Z", check_out_time: "2026-03-19T17:20:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
+  { id: 7, employee_id: 7, check_in_time: "2026-03-19T08:03:00Z", check_out_time: "2026-03-19T17:00:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
+  { id: 8, employee_id: 8, check_in_time: "2026-03-19T09:15:00Z", check_out_time: "2026-03-19T18:00:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
 ];
 
 const statusOptions = [
   { value: "", label: "Tất cả trạng thái" },
-  { value: "present", label: "Có mặt" },
-  { value: "late", label: "Đi trễ" },
-  { value: "absent", label: "Vắng" },
-  { value: "half_day", label: "Nửa ngày" },
-  { value: "wfh", label: "WFH" },
+  { value: "checked_in", label: "Đã check-in" },
+  { value: "checked_out", label: "Đã check-out" },
 ];
+
+function formatTime(isoString?: string): string {
+  if (!isoString) return "—";
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return isoString;
+  }
+}
+
+function formatDate(isoString?: string): string {
+  if (!isoString) return "—";
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleDateString("vi-VN");
+  } catch {
+    return isoString;
+  }
+}
 
 export default function AttendancePage() {
   const [dateFrom, setDateFrom] = useState("2026-03-19");
@@ -36,19 +53,26 @@ export default function AttendancePage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
 
-  const filtered = mockAttendance.filter((r) => {
-    const matchSearch = !search || r.employee_name.toLowerCase().includes(search.toLowerCase());
+  const { data: response, isLoading } = useAttendanceRecords({
+    start_date: dateFrom,
+    end_date: dateTo,
+  });
+
+  const attendanceData = response?.data ?? mockAttendance;
+
+  const filtered = attendanceData.filter((r) => {
+    const employeeName = r.employee?.full_name ?? "";
+    const matchSearch = !search || employeeName.toLowerCase().includes(search.toLowerCase());
     const matchStatus = !statusFilter || r.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
   const stats = {
-    present: mockAttendance.filter((r) => r.status === "present").length,
-    late: mockAttendance.filter((r) => r.status === "late").length,
-    absent: mockAttendance.filter((r) => r.status === "absent").length,
-    wfh: mockAttendance.filter((r) => r.status === "wfh").length,
-    half: mockAttendance.filter((r) => r.status === "half_day").length,
-    verified: mockAttendance.filter((r) => r.location_verified).length,
+    checkedIn: attendanceData.filter((r) => r.status === "checked_in").length,
+    checkedOut: attendanceData.filter((r) => r.status === "checked_out").length,
+    total: attendanceData.length,
+    gpsVerified: attendanceData.filter((r) => r.gps_lat != null && r.gps_lng != null).length,
+    wifiVerified: attendanceData.filter((r) => !!r.wifi_ssid).length,
   };
 
   return (
@@ -58,6 +82,11 @@ export default function AttendancePage() {
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Chấm công" }]}
       />
       <div className="p-6 space-y-5">
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="text-center text-sm text-slate-400 py-2">Đang tải dữ liệu...</div>
+        )}
+
         {/* Filters */}
         <Card>
           <div className="flex flex-wrap items-end gap-3">
@@ -109,14 +138,13 @@ export default function AttendancePage() {
         </Card>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {[
-            { label: "Có mặt", value: stats.present, variant: "green" as const },
-            { label: "Đi trễ", value: stats.late, variant: "orange" as const },
-            { label: "Vắng", value: stats.absent, variant: "red" as const },
-            { label: "Nửa ngày", value: stats.half, variant: "yellow" as const },
-            { label: "WFH", value: stats.wfh, variant: "blue" as const },
-            { label: "GPS xác nhận", value: stats.verified, variant: "gray" as const },
+            { label: "Đã check-in", value: stats.checkedIn, variant: "green" as const },
+            { label: "Đã check-out", value: stats.checkedOut, variant: "blue" as const },
+            { label: "Tổng cộng", value: stats.total, variant: "gray" as const },
+            { label: "GPS xác nhận", value: stats.gpsVerified, variant: "orange" as const },
+            { label: "WiFi xác nhận", value: stats.wifiVerified, variant: "purple" as const },
           ].map(({ label, value, variant }) => (
             <Card key={label} padding="sm">
               <p className="text-xs text-slate-500">{label}</p>
@@ -138,7 +166,7 @@ export default function AttendancePage() {
             <table className="min-w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  {["Nhân viên", "Ngày", "Check-in", "Check-out", "Trạng thái", "GPS", "Ghi chú"].map((h) => (
+                  {["Nhân viên", "Ngày", "Check-in", "Check-out", "Trạng thái", "GPS", "WiFi"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">{h}</th>
                   ))}
                 </tr>
@@ -151,30 +179,34 @@ export default function AttendancePage() {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((rec) => (
-                    <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
-                            {rec.employee_name.charAt(0)}
+                  filtered.map((rec) => {
+                    const employeeName = rec.employee?.full_name ?? `NV #${rec.employee_id}`;
+                    const hasGps = rec.gps_lat != null && rec.gps_lng != null;
+                    return (
+                      <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
+                              {employeeName.charAt(0)}
+                            </div>
+                            <span className="text-sm font-medium text-slate-700">{employeeName}</span>
                           </div>
-                          <span className="text-sm font-medium text-slate-700">{rec.employee_name}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-600">{rec.date}</td>
-                      <td className="px-4 py-3 text-sm text-slate-600">{rec.check_in ?? "—"}</td>
-                      <td className="px-4 py-3 text-sm text-slate-600">{rec.check_out ?? "—"}</td>
-                      <td className="px-4 py-3">{statusBadge(rec.status)}</td>
-                      <td className="px-4 py-3">
-                        {rec.location_verified ? (
-                          <Badge variant="green" dot>Verified</Badge>
-                        ) : (
-                          <Badge variant="gray" dot>Unverified</Badge>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-400 max-w-xs truncate">{rec.note ?? "—"}</td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{formatDate(rec.check_in_time)}</td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{formatTime(rec.check_in_time)}</td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{formatTime(rec.check_out_time)}</td>
+                        <td className="px-4 py-3">{statusBadge(rec.status)}</td>
+                        <td className="px-4 py-3">
+                          {hasGps ? (
+                            <Badge variant="green" dot>Verified</Badge>
+                          ) : (
+                            <Badge variant="gray" dot>Unverified</Badge>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-400">{rec.wifi_ssid ?? "—"}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

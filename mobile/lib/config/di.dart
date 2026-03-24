@@ -44,128 +44,57 @@ import 'package:get_it/get_it.dart';
 final getIt = GetIt.instance;
 
 Future<void> configureDependencies() async {
-  // Core
   final secureStorage = SecureStorage();
   getIt.registerSingleton<SecureStorage>(secureStorage);
 
   final apiClient = ApiClient(secureStorage: secureStorage);
   getIt.registerSingleton<ApiClient>(apiClient);
 
-  // Authentication
-  getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<SignInUseCase>(
-    () => SignInUseCase(getIt<AuthRepository>()),
-  );
-  getIt.registerFactory<SignInCubit>(
-    () => SignInCubit(signInUseCase: getIt<SignInUseCase>(), secureStorage: getIt<SecureStorage>()),
-  );
+  // Auth
+  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<SignInUseCase>(() => SignInUseCase(getIt<AuthRepository>()));
+  getIt.registerFactory<SignInCubit>(() => SignInCubit(signInUseCase: getIt<SignInUseCase>(), secureStorage: getIt<SecureStorage>()));
 
   // Attendance
-  getIt.registerLazySingleton<AttendanceRepository>(
-    () => AttendanceRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<CheckInUseCase>(
-    () => CheckInUseCase(getIt<AttendanceRepository>()),
-  );
-  getIt.registerLazySingleton<GetAttendanceHistoryUseCase>(
-    () => GetAttendanceHistoryUseCase(getIt<AttendanceRepository>()),
-  );
-  getIt.registerFactory<CheckInCubit>(
-    () => CheckInCubit(checkInUseCase: getIt<CheckInUseCase>()),
-  );
-  getIt.registerFactory<AttendanceHistoryCubit>(
-    () => AttendanceHistoryCubit(getAttendanceHistoryUseCase: getIt<GetAttendanceHistoryUseCase>()),
-  );
+  getIt.registerLazySingleton<AttendanceRepository>(() => AttendanceRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<CheckInUseCase>(() => CheckInUseCase(getIt<AttendanceRepository>()));
+  getIt.registerLazySingleton<GetAttendanceHistoryUseCase>(() => GetAttendanceHistoryUseCase(getIt<AttendanceRepository>()));
+  getIt.registerFactory<CheckInCubit>(() => CheckInCubit(checkInUseCase: getIt<CheckInUseCase>()));
+  getIt.registerFactory<AttendanceHistoryCubit>(() => AttendanceHistoryCubit(getAttendanceHistoryUseCase: getIt<GetAttendanceHistoryUseCase>()));
 
   // Leave
-  getIt.registerLazySingleton<LeaveRepository>(
-    () => LeaveRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<CreateLeaveRequestUseCase>(
-    () => CreateLeaveRequestUseCase(getIt<LeaveRepository>()),
-  );
-  getIt.registerLazySingleton<GetLeaveListUseCase>(
-    () => GetLeaveListUseCase(getIt<LeaveRepository>()),
-  );
-  getIt.registerLazySingleton<ApproveLeaveUseCase>(
-    () => ApproveLeaveUseCase(getIt<LeaveRepository>()),
-  );
-  getIt.registerFactory<LeaveRequestCubit>(
-    () => LeaveRequestCubit(createLeaveRequestUseCase: getIt<CreateLeaveRequestUseCase>()),
-  );
-  getIt.registerFactory<LeaveListCubit>(
-    () => LeaveListCubit(getLeaveListUseCase: getIt<GetLeaveListUseCase>()),
-  );
-  getIt.registerFactory<LeaveApprovalCubit>(
-    () => LeaveApprovalCubit(
-      getLeaveListUseCase: getIt<GetLeaveListUseCase>(),
-      approveLeaveUseCase: getIt<ApproveLeaveUseCase>(),
-    ),
-  );
+  getIt.registerLazySingleton<LeaveRepository>(() => LeaveRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<CreateLeaveRequestUseCase>(() => CreateLeaveRequestUseCase(getIt<LeaveRepository>()));
+  getIt.registerLazySingleton<GetLeaveListUseCase>(() => GetLeaveListUseCase(getIt<LeaveRepository>()));
+  getIt.registerLazySingleton<ApproveLeaveUseCase>(() => ApproveLeaveUseCase(getIt<LeaveRepository>()));
+  getIt.registerFactory<LeaveRequestCubit>(() => LeaveRequestCubit(createLeaveRequestUseCase: getIt<CreateLeaveRequestUseCase>(), getLeaveListUseCase: getIt<GetLeaveListUseCase>()));
+  getIt.registerFactory<LeaveListCubit>(() => LeaveListCubit(getLeaveListUseCase: getIt<GetLeaveListUseCase>()));
+  getIt.registerFactory<LeaveApprovalCubit>(() => LeaveApprovalCubit(getLeaveListUseCase: getIt<GetLeaveListUseCase>(), approveLeaveUseCase: getIt<ApproveLeaveUseCase>()));
 
   // Overtime
-  getIt.registerLazySingleton<OvertimeRepository>(
-    () => OvertimeRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<CreateOtRequestUseCase>(
-    () => CreateOtRequestUseCase(getIt<OvertimeRepository>()),
-  );
-  getIt.registerLazySingleton<GetOtListUseCase>(
-    () => GetOtListUseCase(getIt<OvertimeRepository>()),
-  );
-  getIt.registerFactory<OtRequestCubit>(
-    () => OtRequestCubit(createOtRequestUseCase: getIt<CreateOtRequestUseCase>()),
-  );
-  getIt.registerFactory<OtListCubit>(
-    () => OtListCubit(getOtListUseCase: getIt<GetOtListUseCase>()),
-  );
+  getIt.registerLazySingleton<OvertimeRepository>(() => OvertimeRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<CreateOtRequestUseCase>(() => CreateOtRequestUseCase(getIt<OvertimeRepository>()));
+  getIt.registerLazySingleton<GetOtListUseCase>(() => GetOtListUseCase(getIt<OvertimeRepository>()));
+  getIt.registerFactory<OtRequestCubit>(() => OtRequestCubit(createOtRequestUseCase: getIt<CreateOtRequestUseCase>()));
+  getIt.registerFactory<OtListCubit>(() => OtListCubit(getOtListUseCase: getIt<GetOtListUseCase>()));
 
   // Salary
-  getIt.registerLazySingleton<SalaryRepository>(
-    () => SalaryRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<GetPayslipUseCase>(
-    () => GetPayslipUseCase(getIt<SalaryRepository>()),
-  );
-  getIt.registerFactory<PayslipCubit>(
-    () => PayslipCubit(getPayslipUseCase: getIt<GetPayslipUseCase>()),
-  );
+  getIt.registerLazySingleton<SalaryRepository>(() => SalaryRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<GetPayslipUseCase>(() => GetPayslipUseCase(getIt<SalaryRepository>()));
+  getIt.registerFactory<PayslipCubit>(() => PayslipCubit(getPayslipUseCase: getIt<GetPayslipUseCase>()));
 
   // Profile
-  getIt.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<GetProfileUseCase>(
-    () => GetProfileUseCase(getIt<ProfileRepository>()),
-  );
-  getIt.registerLazySingleton<ChangePasswordUseCase>(
-    () => ChangePasswordUseCase(getIt<ProfileRepository>()),
-  );
-  getIt.registerFactory<ProfileCubit>(
-    () => ProfileCubit(getProfileUseCase: getIt<GetProfileUseCase>()),
-  );
-  getIt.registerFactory<ChangePasswordCubit>(
-    () => ChangePasswordCubit(changePasswordUseCase: getIt<ChangePasswordUseCase>()),
-  );
+  getIt.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<GetProfileUseCase>(() => GetProfileUseCase(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<ChangePasswordUseCase>(() => ChangePasswordUseCase(getIt<ProfileRepository>()));
+  getIt.registerFactory<ProfileCubit>(() => ProfileCubit(getProfileUseCase: getIt<GetProfileUseCase>()));
+  getIt.registerFactory<ChangePasswordCubit>(() => ChangePasswordCubit(changePasswordUseCase: getIt<ChangePasswordUseCase>()));
 
   // Notifications
-  getIt.registerLazySingleton<NotificationsRepository>(
-    () => NotificationsRepositoryImpl(apiClient: getIt<ApiClient>()),
-  );
-  getIt.registerLazySingleton<GetNotificationsUseCase>(
-    () => GetNotificationsUseCase(getIt<NotificationsRepository>()),
-  );
-  getIt.registerFactory<NotificationsCubit>(
-    () => NotificationsCubit(getNotificationsUseCase: getIt<GetNotificationsUseCase>()),
-  );
+  getIt.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<GetNotificationsUseCase>(() => GetNotificationsUseCase(getIt<NotificationsRepository>()));
+  getIt.registerFactory<NotificationsCubit>(() => NotificationsCubit(getNotificationsUseCase: getIt<GetNotificationsUseCase>()));
 
   // Home
-  getIt.registerFactory<HomeCubit>(
-    () => HomeCubit(
-      getAttendanceHistoryUseCase: getIt<GetAttendanceHistoryUseCase>(),
-      checkInUseCase: getIt<CheckInUseCase>(),
-    ),
-  );
+  getIt.registerFactory<HomeCubit>(() => HomeCubit(checkInUseCase: getIt<CheckInUseCase>(), getAttendanceHistoryUseCase: getIt<GetAttendanceHistoryUseCase>()));
 }

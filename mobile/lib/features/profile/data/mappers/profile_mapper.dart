@@ -4,18 +4,12 @@ import 'package:exn_hr/features/profile/domain/entities/profile.dart';
 extension ProfileMapper on ProfileModel {
   Profile toEntity() {
     return Profile(
-      id: id,
-      email: email,
-      fullName: fullName ?? '',
-      role: role ?? 'employee',
-      phone: phone,
-      department: department,
-      teamId: teamId,
-      teamName: teamName,
-      avatarUrl: avatarUrl,
-      dateOfBirth: dateOfBirth,
-      joinDate: joinDate,
-      address: address,
+      id: id, userId: userId, fullName: fullName,
+      email: user?.email ?? '', role: user?.role ?? 'employee',
+      phone: phone, address: address, dob: dob, gender: gender,
+      joinDate: joinDate, position: position,
+      teamId: teamId, teamName: team?.name,
+      basicSalary: basicSalary, insuranceSalary: insuranceSalary,
     );
   }
 }

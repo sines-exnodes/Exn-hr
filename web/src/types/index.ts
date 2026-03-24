@@ -1,7 +1,28 @@
 // ============================================================
 // Shared types for Exn-Hr Web Admin
-// API Base: http://localhost:8080/api/v1
+// Synced with API.md — Base URL: http://localhost:8080/api/v1
 // ============================================================
+
+// ---- Generic API Response ----
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export interface ErrorResponse {
+  success: false;
+  error: string;
+}
 
 // ---- Auth ----
 
@@ -19,54 +40,70 @@ export interface LoginResponse {
   message: string;
 }
 
-// ---- User / Employee ----
+export interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
+}
+
+// ---- User ----
 
 export type Role = "admin" | "ceo" | "hr" | "leader" | "employee";
-
-export type EmploymentStatus = "active" | "inactive" | "on_leave" | "terminated";
 
 export interface User {
   id: number;
   email: string;
-  name: string;
   role: Role;
-  department_id?: number;
-  avatar_url?: string;
+  is_active: boolean;
 }
+
+// ---- Employee ----
 
 export interface Employee {
   id: number;
-  employee_code: string;
-  name: string;
-  email: string;
+  user_id: number;
+  full_name: string;
   phone?: string;
-  role: Role;
-  department_id: number;
-  department_name: string;
-  position: string;
-  status: EmploymentStatus;
-  hire_date: string; // ISO date
-  birth_date?: string;
   address?: string;
+  dob?: string;
+  gender?: "male" | "female";
+  join_date: string;
+  position: string;
+  team_id?: number;
+  basic_salary: number;
   insurance_salary: number;
-  base_salary: number;
-  avatar_url?: string;
   created_at: string;
   updated_at: string;
+  user?: User;
+  team?: Team;
 }
 
 export interface CreateEmployeeRequest {
-  name: string;
   email: string;
-  phone?: string;
+  password: string;
   role: Role;
-  department_id: number;
-  position: string;
-  hire_date: string;
-  birth_date?: string;
+  full_name: string;
+  phone?: string;
   address?: string;
+  dob?: string;
+  gender?: "male" | "female";
+  join_date: string;
+  position: string;
+  team_id?: number;
+  basic_salary: number;
   insurance_salary: number;
-  base_salary: number;
+}
+
+export interface UpdateEmployeeRequest {
+  full_name?: string;
+  phone?: string;
+  address?: string;
+  dob?: string;
+  gender?: "male" | "female";
+  position?: string;
+  team_id?: number;
+  basic_salary?: number;
+  insurance_salary?: number;
+  is_active?: boolean;
 }
 
 // ---- Department ----
@@ -75,121 +112,7 @@ export interface Department {
   id: number;
   name: string;
   description?: string;
-  leader_id?: number;
-  leader_name?: string;
-  member_count: number;
-  created_at: string;
-}
-
-// ---- Attendance ----
-
-export type AttendanceStatus = "present" | "absent" | "late" | "half_day" | "wfh";
-
-export interface AttendanceRecord {
-  id: number;
-  employee_id: number;
-  employee_name: string;
-  date: string;
-  check_in?: string;
-  check_out?: string;
-  status: AttendanceStatus;
-  location_verified: boolean;
-  note?: string;
-}
-
-// ---- Leave ----
-
-export type LeaveStatus = "pending" | "leader_approved" | "approved" | "rejected";
-export type LeaveType = "annual" | "sick" | "unpaid" | "other";
-
-export interface LeaveRequest {
-  id: number;
-  employee_id: number;
-  employee_name: string;
-  department_name: string;
-  leave_type: LeaveType;
-  start_date: string;
-  end_date: string;
-  days: number;
-  reason: string;
-  status: LeaveStatus;
-  leader_approved_at?: string;
-  hr_approved_at?: string;
-  rejected_reason?: string;
-  created_at: string;
-}
-
-// ---- Overtime ----
-
-export type OvertimeStatus = "pending" | "leader_approved" | "ceo_approved" | "rejected";
-
-export interface OvertimeRequest {
-  id: number;
-  employee_id: number;
-  employee_name: string;
-  department_name: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  hours: number;
-  reason: string;
-  status: OvertimeStatus;
-  rate: number; // 1.5
-  amount: number;
-  leader_approved_at?: string;
-  ceo_approved_at?: string;
-  rejected_reason?: string;
-  created_at: string;
-}
-
-// ---- Payroll ----
-
-export interface PayrollRecord {
-  id: number;
-  employee_id: number;
-  employee_name: string;
-  department_name: string;
-  month: number;
-  year: number;
-  base_salary: number;
-  total_allowances: number;
-  total_overtime: number;
-  insurance_deduction: number;
-  net_salary: number;
-  status: "draft" | "approved" | "paid";
-  paid_at?: string;
-}
-
-export interface PayrollSummary {
-  month: number;
-  year: number;
-  total_employees: number;
-  total_gross: number;
-  total_net: number;
-  total_overtime: number;
-  total_allowances: number;
-  total_insurance: number;
-  status: "draft" | "approved" | "paid";
-}
-
-// ---- Allowance ----
-
-export interface AllowanceType {
-  id: number;
-  name: string;
-  description?: string;
-  is_taxable: boolean;
-  created_at: string;
-}
-
-export interface EmployeeAllowance {
-  id: number;
-  employee_id: number;
-  allowance_type_id: number;
-  allowance_type_name: string;
-  amount: number;
-  effective_from: string;
-  effective_to?: string;
+  teams?: Team[];
 }
 
 // ---- Team ----
@@ -198,11 +121,169 @@ export interface Team {
   id: number;
   name: string;
   department_id: number;
-  department_name: string;
   leader_id?: number;
-  leader_name?: string;
-  member_count: number;
-  created_at: string;
+  department?: { id: number; name: string };
+  leader?: { id: number; full_name: string };
+  members?: Employee[];
+}
+
+// ---- Attendance ----
+
+export interface AttendanceRecord {
+  id: number;
+  employee_id: number;
+  check_in_time?: string;
+  check_out_time?: string;
+  gps_lat?: number;
+  gps_lng?: number;
+  wifi_ssid?: string;
+  status: "checked_in" | "checked_out";
+  employee?: Employee;
+}
+
+export interface CheckInRequest {
+  latitude: number;
+  longitude: number;
+  wifi_ssid?: string;
+}
+
+export interface OfficeLocation {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radius_meters: number;
+  approved_wifis?: ApprovedWifi[];
+}
+
+export interface ApprovedWifi {
+  id: number;
+  ssid: string;
+  bssid?: string;
+  office_location_id: number;
+}
+
+// ---- Leave ----
+
+export type LeaveType = "paid" | "unpaid";
+export type ApprovalStatus = "pending" | "approved" | "rejected";
+
+export interface LeaveRequest {
+  id: number;
+  employee_id: number;
+  type: LeaveType;
+  start_date: string;
+  end_date: string;
+  days: number;
+  reason: string;
+  leader_status: ApprovalStatus;
+  hr_status: ApprovalStatus;
+  overall_status: ApprovalStatus;
+  leader_comment?: string;
+  hr_comment?: string;
+  created_at?: string;
+  employee?: Employee;
+}
+
+export interface LeaveBalance {
+  id: number;
+  employee_id: number;
+  year: number;
+  total_days: number;
+  used_days: number;
+  remaining_days: number;
+}
+
+export interface ApproveRequest {
+  status: "approved" | "rejected";
+  comment?: string;
+}
+
+// ---- Overtime ----
+
+export interface OvertimeRequest {
+  id: number;
+  employee_id: number;
+  date: string;
+  start_time: string;
+  end_time: string;
+  hours: number;
+  reason: string;
+  leader_status: ApprovalStatus;
+  ceo_status: ApprovalStatus;
+  overall_status: ApprovalStatus;
+  leader_comment?: string;
+  ceo_comment?: string;
+  created_at?: string;
+  employee?: Employee;
+}
+
+// ---- Salary / Payroll ----
+
+export interface SalaryRecord {
+  id: number;
+  employee_id: number;
+  month: number;
+  year: number;
+  basic_salary: number;
+  insurance_salary?: number;
+  total_allowances: number;
+  ot_hours?: number;
+  ot_rate?: number;
+  total_ot_pay: number;
+  total_bonus: number;
+  bhxh?: number;
+  bhyt?: number;
+  bhtn?: number;
+  total_deductions: number;
+  salary_advance: number;
+  net_salary: number;
+  status: "draft" | "confirmed";
+  employee?: Employee;
+}
+
+export interface RunPayrollRequest {
+  month: number;
+  year: number;
+}
+
+// ---- Allowance ----
+
+export interface AllowanceType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface EmployeeAllowance {
+  id: number;
+  employee_id: number;
+  allowance_id: number;
+  amount: number;
+  allowance?: AllowanceType;
+}
+
+// ---- Bonus ----
+
+export interface Bonus {
+  id: number;
+  employee_id: number;
+  month: number;
+  year: number;
+  type: string;
+  amount: number;
+  description?: string;
+}
+
+// ---- Salary Advance ----
+
+export interface SalaryAdvance {
+  id: number;
+  employee_id: number;
+  month: number;
+  year: number;
+  amount: number;
+  reason?: string;
 }
 
 // ---- Notification ----
@@ -211,64 +292,15 @@ export interface Notification {
   id: number;
   user_id: number;
   title: string;
-  message: string;
-  type: "leave" | "overtime" | "payroll" | "attendance" | "system";
+  body: string;
+  type: "leave" | "ot" | "salary" | "attendance";
   is_read: boolean;
-  link?: string;
+  reference_id?: number;
+  reference_type?: string;
   created_at: string;
 }
 
-// ---- Payslip ----
-
-export interface Payslip {
-  id: number;
-  employee_id: number;
-  employee_name: string;
-  month: number;
-  year: number;
-  base_salary: number;
-  total_allowances: number;
-  total_overtime: number;
-  total_bonus: number;
-  total_deductions: number;
-  insurance_deduction: number;
-  net_salary: number;
-  status: "draft" | "approved" | "paid";
-  generated_at: string;
-  paid_at?: string;
-}
-
-// ---- Reports ----
-
-export interface ReportCard {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  endpoint: string;
-}
-
-// ---- Pagination ----
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  data: {
-    items: T[];
-    total: number;
-    page: number;
-    size: number;
-    total_pages: number;
-  };
-  message: string;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message: string;
-}
-
-// ---- Dashboard Stats ----
+// ---- Dashboard Stats (derived) ----
 
 export interface DashboardStats {
   total_employees: number;

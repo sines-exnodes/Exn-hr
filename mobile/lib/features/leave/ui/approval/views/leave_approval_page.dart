@@ -70,7 +70,7 @@ class _LeaveApprovalView extends StatelessWidget {
                     Text(req.employeeName ?? 'Employee', style: AppTextStyles.labelLarge),
                     SizedBox(height: 4.w),
                     Text(
-                      '${req.type} leave • ${req.totalDays} day(s)',
+                      '${req.type} leave • ${req.days} day(s)',
                       style: AppTextStyles.bodySmall,
                     ),
                     Text(

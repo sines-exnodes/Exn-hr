@@ -3,13 +3,6 @@ import 'package:exn_hr/features/authentication/domain/entities/user.dart';
 
 extension UserMapper on UserModel {
   User toEntity() {
-    return User(
-      id: id,
-      email: email,
-      fullName: fullName ?? '',
-      role: role ?? 'employee',
-      department: department,
-      avatarUrl: avatarUrl,
-    );
+    return User(id: id, email: email, role: role, isActive: isActive);
   }
 }

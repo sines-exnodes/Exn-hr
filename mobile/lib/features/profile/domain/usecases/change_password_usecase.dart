@@ -6,13 +6,7 @@ class ChangePasswordUseCase {
   ChangePasswordUseCase(this._repository);
   final ProfileRepository _repository;
 
-  Future<Either<ApiError, void>> call({
-    required String currentPassword,
-    required String newPassword,
-  }) {
-    return _repository.changePassword(
-      currentPassword: currentPassword,
-      newPassword: newPassword,
-    );
+  Future<Either<ApiError, void>> call({required String oldPassword, required String newPassword}) {
+    return _repository.changePassword(oldPassword: oldPassword, newPassword: newPassword);
   }
 }

@@ -15,7 +15,7 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
   }) async {
     emit(state.copyWith(status: ChangePasswordStatus.loading));
     final result = await _changePasswordUseCase(
-      currentPassword: currentPassword,
+      oldPassword: currentPassword,
       newPassword: newPassword,
     );
     if (isClosed) return;

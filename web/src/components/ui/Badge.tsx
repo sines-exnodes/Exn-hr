@@ -80,6 +80,9 @@ export function statusBadge(status: string) {
     ceo_approved: { variant: "green", label: "CEO Approved" },
     draft: { variant: "gray", label: "Draft" },
     paid: { variant: "green", label: "Paid" },
+    checked_in: { variant: "green", label: "Checked In" },
+    checked_out: { variant: "blue", label: "Checked Out" },
+    confirmed: { variant: "green", label: "Confirmed" },
   };
   const entry = map[status] ?? { variant: "gray" as BadgeVariant, label: status };
   return <Badge variant={entry.variant} dot>{entry.label}</Badge>;

@@ -1,10 +1,13 @@
+"use client";
+
 import React from "react";
 import { Header } from "@/components/layout/Header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge, statusBadge } from "@/components/ui/Badge";
+import { useEmployees, useAttendanceRecords, useLeaveRequests } from "@/hooks/useApi";
 import type { DashboardStats, AttendanceRecord, LeaveRequest } from "@/types";
 
-// TODO: connect to real API — matches Apidog spec GET /dashboard/stats
+// Fallback mock data used while API is loading or unavailable
 const mockStats: DashboardStats = {
   total_employees: 42,
   present_today: 38,
@@ -14,21 +17,27 @@ const mockStats: DashboardStats = {
   total_departments: 6,
 };
 
-// TODO: connect to real API — GET /attendance?date=today&size=5
-const recentAttendance: AttendanceRecord[] = [
-  { id: 1, employee_id: 1, employee_name: "Nguyễn Văn An", date: "2026-03-19", check_in: "08:02", check_out: "17:30", status: "present", location_verified: true },
-  { id: 2, employee_id: 2, employee_name: "Trần Thị Bình", date: "2026-03-19", check_in: "08:45", check_out: "17:15", status: "late", location_verified: true },
-  { id: 3, employee_id: 3, employee_name: "Lê Minh Châu", date: "2026-03-19", check_in: undefined, check_out: undefined, status: "absent", location_verified: false },
-  { id: 4, employee_id: 4, employee_name: "Phạm Quốc Dũng", date: "2026-03-19", check_in: "08:00", check_out: "12:30", status: "half_day", location_verified: true },
-  { id: 5, employee_id: 5, employee_name: "Hoàng Thị Em", date: "2026-03-19", check_in: "08:05", check_out: "17:35", status: "present", location_verified: false },
+const mockAttendance: AttendanceRecord[] = [
+  { id: 1, employee_id: 1, check_in_time: "2026-03-19T08:02:00Z", check_out_time: "2026-03-19T17:30:00Z", status: "checked_out", employee: { id: 1, user_id: 1, full_name: "Nguyen Van An", position: "Dev", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
+  { id: 2, employee_id: 2, check_in_time: "2026-03-19T08:45:00Z", check_out_time: "2026-03-19T17:15:00Z", status: "checked_out", employee: { id: 2, user_id: 2, full_name: "Tran Thi Binh", position: "HR", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
+  { id: 3, employee_id: 3, status: "checked_in", employee: { id: 3, user_id: 3, full_name: "Le Minh Chau", position: "Sales", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
 ];
 
-// TODO: connect to real API — GET /leave?status=pending&size=5
-const pendingLeave: LeaveRequest[] = [
-  { id: 1, employee_id: 1, employee_name: "Nguyễn Văn An", department_name: "Engineering", leave_type: "annual", start_date: "2026-03-22", end_date: "2026-03-23", days: 2, reason: "Việc gia đình", status: "pending", created_at: "2026-03-19T09:00:00Z" },
-  { id: 2, employee_id: 2, employee_name: "Trần Thị Bình", department_name: "HR", leave_type: "sick", start_date: "2026-03-20", end_date: "2026-03-20", days: 1, reason: "Sức khoẻ", status: "leader_approved", created_at: "2026-03-18T14:00:00Z" },
-  { id: 3, employee_id: 3, employee_name: "Lê Minh Châu", department_name: "Sales", leave_type: "annual", start_date: "2026-03-25", end_date: "2026-03-26", days: 2, reason: "Du lịch", status: "pending", created_at: "2026-03-17T10:00:00Z" },
+const mockPendingLeave: LeaveRequest[] = [
+  { id: 1, employee_id: 1, type: "paid", start_date: "2026-03-22", end_date: "2026-03-23", days: 2, reason: "Việc gia đình", leader_status: "pending", hr_status: "pending", overall_status: "pending", employee: { id: 1, user_id: 1, full_name: "Nguyen Van An", position: "Dev", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
+  { id: 2, employee_id: 2, type: "unpaid", start_date: "2026-03-20", end_date: "2026-03-20", days: 1, reason: "Sức khoẻ", leader_status: "approved", hr_status: "pending", overall_status: "pending", employee: { id: 2, user_id: 2, full_name: "Tran Thi Binh", position: "HR", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
 ];
+
+// Format ISO time to HH:mm
+function formatTime(iso?: string): string {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false });
+  } catch {
+    return "—";
+  }
+}
 
 interface StatCardProps {
   label: string;
@@ -61,7 +70,21 @@ function StatCard({ label, value, change, positive, color, icon }: StatCardProps
 }
 
 export default function DashboardPage() {
-  const attendanceRate = Math.round((mockStats.present_today / mockStats.total_employees) * 100);
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Real API calls
+  const { data: employeesRes } = useEmployees({ page: 1, size: 1 });
+  const { data: attendanceRes, isLoading: attendanceLoading } = useAttendanceRecords({ start_date: today, end_date: today, page: 1, size: 5 });
+  const { data: pendingLeaveRes, isLoading: leaveLoading } = useLeaveRequests({ status: "pending", page: 1, size: 5 });
+
+  // Derive stats from API data or fall back to mock
+  const totalEmployees = employeesRes?.total ?? mockStats.total_employees;
+  const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? mockAttendance;
+  const presentToday = attendanceRes ? attendanceRes.total : mockStats.present_today;
+  const pendingLeaveList: LeaveRequest[] = pendingLeaveRes?.data ?? mockPendingLeave;
+  const pendingLeaveCount = pendingLeaveRes?.total ?? mockStats.pending_leave_requests;
+
+  const attendanceRate = totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0;
 
   return (
     <>
@@ -73,7 +96,7 @@ export default function DashboardPage() {
         {/* Date context */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Thứ Năm, 19 tháng 3 năm 2026
+            {new Date().toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
           <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
             Đang làm việc
@@ -84,7 +107,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Tổng NV"
-            value={mockStats.total_employees}
+            value={totalEmployees}
             change="+2 tháng này"
             positive
             color="bg-blue-50"
@@ -97,7 +120,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Đang làm"
-            value={mockStats.present_today}
+            value={presentToday}
             change={`${attendanceRate}% tỷ lệ`}
             positive={attendanceRate >= 80}
             color="bg-green-50"
@@ -159,36 +182,48 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {recentAttendance.map((rec) => (
-                      <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
-                              {rec.employee_name.charAt(0)}
-                            </div>
-                            <span className="text-sm font-medium text-slate-700">{rec.employee_name}</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3 text-sm text-slate-600">{rec.check_in ?? "—"}</td>
-                        <td className="px-5 py-3 text-sm text-slate-600">{rec.check_out ?? "—"}</td>
-                        <td className="px-5 py-3">{statusBadge(rec.status)}</td>
-                        <td className="px-5 py-3">
-                          {rec.location_verified ? (
-                            <span className="text-green-500">
-                              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                            </span>
-                          ) : (
-                            <span className="text-slate-300">
-                              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                              </svg>
-                            </span>
-                          )}
+                    {attendanceLoading ? (
+                      <tr>
+                        <td colSpan={5} className="px-5 py-8 text-center text-sm text-slate-400">
+                          Đang tải...
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      attendanceRecords.map((rec) => {
+                        const empName = rec.employee?.full_name ?? `NV #${rec.employee_id}`;
+                        const hasGps = !!(rec.gps_lat && rec.gps_lng);
+                        return (
+                          <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="px-5 py-3">
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+                                  {empName.charAt(0)}
+                                </div>
+                                <span className="text-sm font-medium text-slate-700">{empName}</span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 text-sm text-slate-600">{formatTime(rec.check_in_time)}</td>
+                            <td className="px-5 py-3 text-sm text-slate-600">{formatTime(rec.check_out_time)}</td>
+                            <td className="px-5 py-3">{statusBadge(rec.status)}</td>
+                            <td className="px-5 py-3">
+                              {hasGps ? (
+                                <span className="text-green-500">
+                                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                </span>
+                              ) : (
+                                <span className="text-slate-300">
+                                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                  </svg>
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -231,21 +266,28 @@ export default function DashboardPage() {
             <Card>
               <CardHeader className="mb-3">
                 <CardTitle>Nghỉ phép chờ duyệt</CardTitle>
-                <Badge variant="yellow" dot>{mockStats.pending_leave_requests}</Badge>
+                <Badge variant="yellow" dot>{pendingLeaveCount}</Badge>
               </CardHeader>
               <div className="space-y-2">
-                {pendingLeave.map((req) => (
-                  <div key={req.id} className="flex items-start gap-3 rounded-lg p-2 hover:bg-slate-50 transition-colors">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-700">
-                      {req.employee_name.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-slate-700">{req.employee_name}</p>
-                      <p className="text-xs text-slate-400">{req.start_date} · {req.days} ngày</p>
-                    </div>
-                    {statusBadge(req.status)}
-                  </div>
-                ))}
+                {leaveLoading ? (
+                  <p className="text-sm text-slate-400 text-center py-4">Đang tải...</p>
+                ) : (
+                  pendingLeaveList.map((req) => {
+                    const empName = req.employee?.full_name ?? `NV #${req.employee_id}`;
+                    return (
+                      <div key={req.id} className="flex items-start gap-3 rounded-lg p-2 hover:bg-slate-50 transition-colors">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-700">
+                          {empName.charAt(0)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-slate-700">{empName}</p>
+                          <p className="text-xs text-slate-400">{req.start_date} · {req.days} ngày</p>
+                        </div>
+                        {statusBadge(req.overall_status)}
+                      </div>
+                    );
+                  })
+                )}
                 <a href="/leave" className="block pt-1 text-center text-xs font-medium text-[#22C55E] hover:text-green-700">
                   Xem tất cả →
                 </a>

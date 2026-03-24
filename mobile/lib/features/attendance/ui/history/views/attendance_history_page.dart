@@ -76,6 +76,26 @@ class _AttendanceHistoryView extends StatelessWidget {
               itemCount: state.records.length,
               itemBuilder: (context, index) {
                 final record = state.records[index];
+                // Derive date from checkInTime ISO string
+                final dateLabel = record.checkInTime != null
+                    ? record.checkInTime!.length >= 10
+                        ? record.checkInTime!.substring(0, 10)
+                        : record.checkInTime!
+                    : '--';
+                // Calculate hours from checkInTime/checkOutTime difference
+                String hoursLabel = '0h';
+                if (record.checkInTime != null && record.checkOutTime != null) {
+                  try {
+                    final inDt = DateTime.parse(record.checkInTime!);
+                    final outDt = DateTime.parse(record.checkOutTime!);
+                    final diff = outDt.difference(inDt);
+                    final h = diff.inHours;
+                    final m = diff.inMinutes.remainder(60);
+                    hoursLabel = '${h}h ${m}m';
+                  } catch (_) {
+                    hoursLabel = '0h';
+                  }
+                }
                 return Container(
                   margin: EdgeInsets.only(bottom: 10.w),
                   padding: EdgeInsets.all(16.w),
@@ -90,7 +110,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                         width: 44.w,
                         height: 44.w,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.12),
+                          color: AppColors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(
@@ -104,7 +124,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(record.date, style: AppTextStyles.labelMedium),
+                            Text(dateLabel, style: AppTextStyles.labelMedium),
                             SizedBox(height: 4.w),
                             Text(
                               'In: ${record.checkInTime ?? "--:--"}  Out: ${record.checkOutTime ?? "--:--"}',
@@ -116,7 +136,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(record.totalHours ?? '0h', style: AppTextStyles.labelMedium),
+                          Text(hoursLabel, style: AppTextStyles.labelMedium),
                           Text('Total', style: AppTextStyles.caption),
                         ],
                       ),

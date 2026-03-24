@@ -67,8 +67,7 @@ class _ProfileView extends StatelessWidget {
             padding: EdgeInsets.all(20.w),
             child: Column(
               children: [
-                _buildAvatarSection(profile.fullName, profile.email, profile.role,
-                    profile.avatarUrl),
+                _buildAvatarSection(profile.fullName, profile.email, profile.role),
                 SizedBox(height: 24.w),
                 _buildInfoSection(profile),
                 SizedBox(height: 24.w),
@@ -81,17 +80,13 @@ class _ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarSection(
-      String name, String email, String role, String? avatarUrl) {
+  Widget _buildAvatarSection(String name, String email, String role) {
     return Column(
       children: [
         CircleAvatar(
           radius: 48.w,
-          backgroundColor: AppColors.primary.withOpacity(0.12),
-          backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-          child: avatarUrl == null
-              ? Icon(Icons.person_rounded, size: 48.sp, color: AppColors.primary)
-              : null,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: Icon(Icons.person_rounded, size: 48.sp, color: AppColors.primary),
         ),
         SizedBox(height: 16.w),
         Text(name, style: AppTextStyles.h3),
@@ -132,7 +127,7 @@ class _ProfileView extends StatelessWidget {
           _buildInfoRow(
               Icons.business_outlined, 'Department', profile.department ?? 'N/A'),
           _buildInfoRow(
-              Icons.cake_outlined, 'Birthday', profile.dateOfBirth ?? 'N/A'),
+              Icons.cake_outlined, 'Birthday', profile.dob ?? 'N/A'),
           _buildInfoRow(Icons.calendar_month_outlined, 'Join Date',
               profile.joinDate ?? 'N/A'),
           _buildInfoRow(

@@ -3,10 +3,8 @@ import 'package:exn_hr/features/notifications/domain/entities/app_notification.d
 import 'package:exn_hr/shared/domain/entities/api_error.dart';
 
 abstract class NotificationsRepository {
-  Future<Either<ApiError, List<AppNotification>>> getNotifications({
-    int page = 1,
-    int size = 20,
-  });
-
-  Future<Either<ApiError, void>> markAsRead(String id);
+  Future<Either<ApiError, List<AppNotification>>> getNotifications({int page = 1, int size = 20, String? type, bool? isRead});
+  Future<Either<ApiError, int>> getUnreadCount();
+  Future<Either<ApiError, void>> markAsRead(int id);
+  Future<Either<ApiError, void>> markAllAsRead();
 }

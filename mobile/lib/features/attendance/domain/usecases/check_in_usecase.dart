@@ -5,18 +5,17 @@ import 'package:exn_hr/shared/domain/entities/api_error.dart';
 
 class CheckInUseCase {
   CheckInUseCase(this._repository);
-
   final AttendanceRepository _repository;
 
-  Future<Either<ApiError, AttendanceRecord>> call({
-    double? latitude,
-    double? longitude,
-    String? wifiSsid,
-  }) {
-    return _repository.checkIn(
-      latitude: latitude,
-      longitude: longitude,
-      wifiSsid: wifiSsid,
-    );
+  Future<Either<ApiError, AttendanceRecord>> checkIn({required double latitude, required double longitude, String? wifiSsid}) {
+    return _repository.checkIn(latitude: latitude, longitude: longitude, wifiSsid: wifiSsid);
+  }
+
+  Future<Either<ApiError, AttendanceRecord>> checkOut({required double latitude, required double longitude, String? wifiSsid}) {
+    return _repository.checkOut(latitude: latitude, longitude: longitude, wifiSsid: wifiSsid);
+  }
+
+  Future<Either<ApiError, AttendanceRecord?>> getToday() {
+    return _repository.getToday();
   }
 }

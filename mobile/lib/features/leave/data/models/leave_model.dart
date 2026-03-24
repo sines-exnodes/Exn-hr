@@ -1,45 +1,83 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'leave_model.g.dart';
-
-@JsonSerializable()
 class LeaveModel {
   const LeaveModel({
     required this.id,
+    required this.employeeId,
     required this.type,
     required this.startDate,
     required this.endDate,
-    required this.totalDays,
+    required this.days,
     required this.reason,
-    required this.status,
-    this.leaderApproval,
-    this.hrApproval,
-    this.createdAt,
-    this.employeeId,
-    this.employeeName,
+    required this.leaderStatus,
+    required this.hrStatus,
+    required this.overallStatus,
+    this.leaderComment,
+    this.hrComment,
+    this.employee,
   });
 
-  final String id;
+  final int id;
+  final int employeeId;
   final String type;
-  @JsonKey(name: 'start_date')
   final String startDate;
-  @JsonKey(name: 'end_date')
   final String endDate;
-  @JsonKey(name: 'total_days')
-  final int totalDays;
+  final double days;
   final String reason;
-  final String status;
-  @JsonKey(name: 'leader_approval')
-  final String? leaderApproval;
-  @JsonKey(name: 'hr_approval')
-  final String? hrApproval;
-  @JsonKey(name: 'created_at')
-  final String? createdAt;
-  @JsonKey(name: 'employee_id')
-  final String? employeeId;
-  @JsonKey(name: 'employee_name')
-  final String? employeeName;
+  final String leaderStatus;
+  final String hrStatus;
+  final String overallStatus;
+  final String? leaderComment;
+  final String? hrComment;
+  final Map<String, dynamic>? employee;
 
-  factory LeaveModel.fromJson(Map<String, dynamic> json) => _$LeaveModelFromJson(json);
-  Map<String, dynamic> toJson() => _$LeaveModelToJson(this);
+  String? get employeeName {
+    if (employee == null) return null;
+    return employee!['full_name'] as String?;
+  }
+
+  factory LeaveModel.fromJson(Map<String, dynamic> json) {
+    return LeaveModel(
+      id: json['id'] as int,
+      employeeId: json['employee_id'] as int,
+      type: json['type'] as String,
+      startDate: json['start_date'] as String,
+      endDate: json['end_date'] as String,
+      days: (json['days'] as num).toDouble(),
+      reason: json['reason'] as String? ?? '',
+      leaderStatus: json['leader_status'] as String? ?? 'pending',
+      hrStatus: json['hr_status'] as String? ?? 'pending',
+      overallStatus: json['overall_status'] as String? ?? 'pending',
+      leaderComment: json['leader_comment'] as String?,
+      hrComment: json['hr_comment'] as String?,
+      employee: json['employee'] as Map<String, dynamic>?,
+    );
+  }
+}
+
+class LeaveBalanceModel {
+  const LeaveBalanceModel({
+    required this.id,
+    required this.employeeId,
+    required this.year,
+    required this.totalDays,
+    required this.usedDays,
+    required this.remainingDays,
+  });
+
+  final int id;
+  final int employeeId;
+  final int year;
+  final int totalDays;
+  final double usedDays;
+  final double remainingDays;
+
+  factory LeaveBalanceModel.fromJson(Map<String, dynamic> json) {
+    return LeaveBalanceModel(
+      id: json['id'] as int,
+      employeeId: json['employee_id'] as int,
+      year: json['year'] as int,
+      totalDays: json['total_days'] as int,
+      usedDays: (json['used_days'] as num).toDouble(),
+      remainingDays: (json['remaining_days'] as num).toDouble(),
+    );
+  }
 }

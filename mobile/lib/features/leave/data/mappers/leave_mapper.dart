@@ -4,18 +4,17 @@ import 'package:exn_hr/features/leave/domain/entities/leave_request.dart';
 extension LeaveMapper on LeaveModel {
   LeaveRequest toEntity() {
     return LeaveRequest(
-      id: id,
-      type: type,
-      startDate: startDate,
-      endDate: endDate,
-      totalDays: totalDays,
-      reason: reason,
-      status: status,
-      leaderApproval: leaderApproval,
-      hrApproval: hrApproval,
-      createdAt: createdAt,
-      employeeId: employeeId,
+      id: id, employeeId: employeeId, type: type,
+      startDate: startDate, endDate: endDate, days: days,
+      reason: reason, leaderStatus: leaderStatus,
+      hrStatus: hrStatus, overallStatus: overallStatus,
       employeeName: employeeName,
     );
+  }
+}
+
+extension LeaveBalanceMapper on LeaveBalanceModel {
+  LeaveBalance toEntity() {
+    return LeaveBalance(totalDays: totalDays, usedDays: usedDays, remainingDays: remainingDays);
   }
 }

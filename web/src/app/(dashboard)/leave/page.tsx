@@ -8,25 +8,23 @@ import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
 import type { LeaveRequest } from "@/types";
+import { useLeaveRequests, leaderApproveLeave, hrApproveLeave, cancelLeave } from "@/hooks/useApi";
 
-// TODO: connect to real API — GET /leave
 const mockLeave: LeaveRequest[] = [
-  { id: 1, employee_id: 1, employee_name: "Nguyễn Văn An", department_name: "Engineering", leave_type: "annual", start_date: "2026-03-22", end_date: "2026-03-23", days: 2, reason: "Việc gia đình", status: "pending", created_at: "2026-03-19T09:00:00Z" },
-  { id: 2, employee_id: 2, employee_name: "Trần Thị Bình", department_name: "HR", leave_type: "sick", start_date: "2026-03-20", end_date: "2026-03-20", days: 1, reason: "Bị ốm", status: "leader_approved", leader_approved_at: "2026-03-19T11:00:00Z", created_at: "2026-03-18T14:00:00Z" },
-  { id: 3, employee_id: 3, employee_name: "Lê Minh Châu", department_name: "Sales", leave_type: "annual", start_date: "2026-03-25", end_date: "2026-03-26", days: 2, reason: "Du lịch gia đình", status: "pending", created_at: "2026-03-17T10:00:00Z" },
-  { id: 4, employee_id: 4, employee_name: "Phạm Quốc Dũng", department_name: "Engineering", leave_type: "annual", start_date: "2026-03-01", end_date: "2026-03-02", days: 2, reason: "Nghỉ lễ", status: "approved", leader_approved_at: "2026-02-28T10:00:00Z", hr_approved_at: "2026-02-28T14:00:00Z", created_at: "2026-02-26T00:00:00Z" },
-  { id: 5, employee_id: 5, employee_name: "Hoàng Thị Em", department_name: "Finance", leave_type: "sick", start_date: "2026-02-15", end_date: "2026-02-15", days: 1, reason: "Sức khoẻ", status: "rejected", rejected_reason: "Không đủ giấy tờ bác sĩ", created_at: "2026-02-14T00:00:00Z" },
-  { id: 6, employee_id: 6, employee_name: "Vũ Thành Giang", department_name: "Marketing", leave_type: "unpaid", start_date: "2026-04-01", end_date: "2026-04-03", days: 3, reason: "Chuyện cá nhân", status: "pending", created_at: "2026-03-18T08:00:00Z" },
+  { id: 1, employee_id: 1, type: "paid", start_date: "2026-03-22", end_date: "2026-03-23", days: 2, reason: "Việc gia đình", leader_status: "pending", hr_status: "pending", overall_status: "pending", created_at: "2026-03-19T09:00:00Z" },
+  { id: 2, employee_id: 2, type: "unpaid", start_date: "2026-03-20", end_date: "2026-03-20", days: 1, reason: "Bị ốm", leader_status: "approved", hr_status: "pending", overall_status: "pending", created_at: "2026-03-18T14:00:00Z" },
+  { id: 3, employee_id: 3, type: "paid", start_date: "2026-03-25", end_date: "2026-03-26", days: 2, reason: "Du lịch gia đình", leader_status: "pending", hr_status: "pending", overall_status: "pending", created_at: "2026-03-17T10:00:00Z" },
+  { id: 4, employee_id: 4, type: "paid", start_date: "2026-03-01", end_date: "2026-03-02", days: 2, reason: "Nghỉ lễ", leader_status: "approved", hr_status: "approved", overall_status: "approved", created_at: "2026-02-26T00:00:00Z" },
+  { id: 5, employee_id: 5, type: "unpaid", start_date: "2026-02-15", end_date: "2026-02-15", days: 1, reason: "Sức khoẻ", leader_status: "approved", hr_status: "rejected", overall_status: "rejected", created_at: "2026-02-14T00:00:00Z" },
+  { id: 6, employee_id: 6, type: "unpaid", start_date: "2026-04-01", end_date: "2026-04-03", days: 3, reason: "Chuyện cá nhân", leader_status: "pending", hr_status: "pending", overall_status: "pending", created_at: "2026-03-18T08:00:00Z" },
 ];
 
 const leaveTypeLabel: Record<string, string> = {
-  annual: "Phép năm",
-  sick: "Phép bệnh",
+  paid: "Phép năm",
   unpaid: "Không lương",
-  other: "Khác",
 };
 
-function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction?: (id: number, action: "approve" | "reject") => void }) {
+function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction?: (id: number, action: "approve" | "reject", req: LeaveRequest) => void }) {
   if (requests.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-slate-400">
@@ -40,53 +38,57 @@ function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction
       <table className="min-w-full">
         <thead className="bg-slate-50">
           <tr>
-            {["Nhân viên", "Phòng ban", "Loại", "Từ ngày", "Đến ngày", "Số ngày", "Lý do", "Trạng thái", ""].map((h) => (
+            {["Nhân viên", "Loại", "Từ ngày", "Đến ngày", "Số ngày", "Lý do", "Leader", "HR", "Trạng thái", ""].map((h) => (
               <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
-          {requests.map((req) => (
-            <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
-                    {req.employee_name.charAt(0)}
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">{req.employee_name}</span>
-                </div>
-              </td>
-              <td className="px-4 py-3 text-sm text-slate-500">{req.department_name}</td>
-              <td className="px-4 py-3">
-                <Badge variant="blue">{leaveTypeLabel[req.leave_type]}</Badge>
-              </td>
-              <td className="px-4 py-3 text-sm text-slate-600">{req.start_date}</td>
-              <td className="px-4 py-3 text-sm text-slate-600">{req.end_date}</td>
-              <td className="px-4 py-3 text-sm font-semibold text-slate-700">{req.days}</td>
-              <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{req.reason}</td>
-              <td className="px-4 py-3">{statusBadge(req.status)}</td>
-              <td className="px-4 py-3">
-                {(req.status === "pending" || req.status === "leader_approved") && onAction && (
+          {requests.map((req) => {
+            const employeeName = req.employee?.full_name ?? `NV #${req.employee_id}`;
+            return (
+              <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="xs"
-                      variant="primary"
-                      onClick={() => onAction(req.id, "approve")}
-                    >
-                      Duyệt
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="danger"
-                      onClick={() => onAction(req.id, "reject")}
-                    >
-                      Từ chối
-                    </Button>
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
+                      {employeeName.charAt(0)}
+                    </div>
+                    <span className="text-sm font-medium text-slate-700">{employeeName}</span>
                   </div>
-                )}
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td className="px-4 py-3">
+                  <Badge variant="blue">{leaveTypeLabel[req.type] ?? req.type}</Badge>
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">{req.start_date}</td>
+                <td className="px-4 py-3 text-sm text-slate-600">{req.end_date}</td>
+                <td className="px-4 py-3 text-sm font-semibold text-slate-700">{req.days}</td>
+                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{req.reason}</td>
+                <td className="px-4 py-3">{statusBadge(req.leader_status)}</td>
+                <td className="px-4 py-3">{statusBadge(req.hr_status)}</td>
+                <td className="px-4 py-3">{statusBadge(req.overall_status)}</td>
+                <td className="px-4 py-3">
+                  {req.overall_status === "pending" && onAction && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="xs"
+                        variant="primary"
+                        onClick={() => onAction(req.id, "approve", req)}
+                      >
+                        Duyệt
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="danger"
+                        onClick={() => onAction(req.id, "reject", req)}
+                      >
+                        Từ chối
+                      </Button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -94,20 +96,56 @@ function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction
 }
 
 export default function LeavePage() {
-  const [rejectModal, setRejectModal] = useState<number | null>(null);
+  const { data: response, mutate, isLoading } = useLeaveRequests();
+  const [rejectModal, setRejectModal] = useState<{ id: number; req: LeaveRequest } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const pending = mockLeave.filter((l) => l.status === "pending" || l.status === "leader_approved");
-  const approved = mockLeave.filter((l) => l.status === "approved");
-  const rejected = mockLeave.filter((l) => l.status === "rejected");
-  const all = mockLeave;
+  const leaveData = response?.data ?? mockLeave;
 
-  const handleAction = (id: number, action: "approve" | "reject") => {
+  const pending = leaveData.filter((l) => l.overall_status === "pending");
+  const approved = leaveData.filter((l) => l.overall_status === "approved");
+  const rejected = leaveData.filter((l) => l.overall_status === "rejected");
+  const all = leaveData;
+
+  const handleAction = async (id: number, action: "approve" | "reject", req: LeaveRequest) => {
     if (action === "reject") {
-      setRejectModal(id);
-    } else {
-      // TODO: connect to real API — PATCH /leave/:id/approve
-      console.log("Approve", id);
+      setRejectModal({ id, req });
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      if (req.leader_status === "pending") {
+        await leaderApproveLeave(id, { status: "approved" });
+      } else {
+        await hrApproveLeave(id, { status: "approved" });
+      }
+      await mutate();
+    } catch (err) {
+      console.error("Approve failed", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectModal) return;
+    setActionLoading(true);
+    try {
+      const { id, req } = rejectModal;
+      if (req.leader_status === "pending") {
+        await leaderApproveLeave(id, { status: "rejected", comment: rejectReason });
+      } else {
+        await hrApproveLeave(id, { status: "rejected", comment: rejectReason });
+      }
+      await mutate();
+    } catch (err) {
+      console.error("Reject failed", err);
+    } finally {
+      setActionLoading(false);
+      setRejectModal(null);
+      setRejectReason("");
     }
   };
 
@@ -118,6 +156,11 @@ export default function LeavePage() {
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Nghỉ phép" }]}
       />
       <div className="p-6 space-y-5">
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="text-center text-sm text-slate-400 py-2">Đang tải dữ liệu...</div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
@@ -159,12 +202,8 @@ export default function LeavePage() {
               <Button variant="outline" onClick={() => setRejectModal(null)}>Huỷ</Button>
               <Button
                 variant="danger"
-                onClick={() => {
-                  // TODO: connect to real API — PATCH /leave/:id/reject
-                  console.log("Reject", rejectModal, rejectReason);
-                  setRejectModal(null);
-                  setRejectReason("");
-                }}
+                disabled={actionLoading}
+                onClick={handleReject}
               >
                 Xác nhận từ chối
               </Button>

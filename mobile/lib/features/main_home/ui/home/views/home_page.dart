@@ -1,6 +1,5 @@
 import 'package:exn_hr/config/di.dart';
 import 'package:exn_hr/core/routing/app_router.dart';
-import 'package:exn_hr/core/storage/secure_storage.dart';
 import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/main_home/ui/home/view_models/home_cubit.dart';

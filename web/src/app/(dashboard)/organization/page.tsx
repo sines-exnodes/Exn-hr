@@ -8,15 +8,15 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import type { Department } from "@/types";
+import { useDepartments, createDepartment, deleteDepartment } from "@/hooks/useApi";
 
-// TODO: connect to real API — GET /departments
 const mockDepartments: Department[] = [
-  { id: 1, name: "Engineering", description: "Phát triển sản phẩm và hạ tầng kỹ thuật", leader_id: 4, leader_name: "Phạm Quốc Dũng", member_count: 12, created_at: "2019-01-01T00:00:00Z" },
-  { id: 2, name: "Sales", description: "Kinh doanh và phát triển khách hàng", leader_id: 3, leader_name: "Lê Minh Châu", member_count: 8, created_at: "2019-01-01T00:00:00Z" },
-  { id: 3, name: "HR", description: "Quản lý nhân sự và văn hoá doanh nghiệp", leader_id: 2, leader_name: "Trần Thị Bình", member_count: 5, created_at: "2019-01-01T00:00:00Z" },
-  { id: 4, name: "Finance", description: "Tài chính, kế toán và kiểm soát chi phí", leader_id: 5, leader_name: "Hoàng Thị Em", member_count: 6, created_at: "2019-01-01T00:00:00Z" },
-  { id: 5, name: "Marketing", description: "Marketing, thương hiệu và nội dung", leader_id: 6, leader_name: "Vũ Thành Giang", member_count: 7, created_at: "2020-03-01T00:00:00Z" },
-  { id: 6, name: "Operations", description: "Vận hành và cải tiến quy trình", leader_id: undefined, leader_name: undefined, member_count: 4, created_at: "2021-06-01T00:00:00Z" },
+  { id: 1, name: "Engineering", description: "Phát triển sản phẩm và hạ tầng kỹ thuật" },
+  { id: 2, name: "Sales", description: "Kinh doanh và phát triển khách hàng" },
+  { id: 3, name: "HR", description: "Quản lý nhân sự và văn hoá doanh nghiệp" },
+  { id: 4, name: "Finance", description: "Tài chính, kế toán và kiểm soát chi phí" },
+  { id: 5, name: "Marketing", description: "Marketing, thương hiệu và nội dung" },
+  { id: 6, name: "Operations", description: "Vận hành và cải tiến quy trình" },
 ];
 
 const deptColors: Record<number, string> = {
@@ -37,13 +37,58 @@ const deptIcons: Record<number, React.ReactNode> = {
   6: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
 };
 
+function getMemberCount(dept: Department): number {
+  return dept.teams?.reduce((s, t) => s + (t.members?.length ?? 0), 0) ?? 0;
+}
+
+function getLeaderName(dept: Department): string | undefined {
+  if (!dept.teams) return undefined;
+  for (const team of dept.teams) {
+    if (team.leader?.full_name) return team.leader.full_name;
+  }
+  return undefined;
+}
+
 export default function OrganizationPage() {
+  const { data: response, mutate, isLoading } = useDepartments();
   const [selected, setSelected] = useState<Department | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [deptName, setDeptName] = useState("");
   const [deptDesc, setDeptDesc] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const totalEmployees = mockDepartments.reduce((s, d) => s + d.member_count, 0);
+  const departments = response?.data ?? mockDepartments;
+
+  const totalEmployees = departments.reduce((s, d) => s + getMemberCount(d), 0);
+
+  const handleCreate = async () => {
+    if (!deptName.trim()) return;
+    setActionLoading(true);
+    try {
+      await createDepartment({ name: deptName, description: deptDesc || undefined });
+      await mutate();
+      setCreateOpen(false);
+      setDeptName("");
+      setDeptDesc("");
+    } catch (err) {
+      console.error("Create department failed", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    setActionLoading(true);
+    try {
+      await deleteDepartment(id);
+      await mutate();
+      setSelected(null);
+    } catch (err) {
+      console.error("Delete department failed", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <>
@@ -52,30 +97,38 @@ export default function OrganizationPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Tổ chức" }]}
       />
       <div className="p-6 space-y-6">
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="text-center text-sm text-slate-400 py-2">Đang tải dữ liệu...</div>
+        )}
+
         {/* Summary row */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {mockDepartments.map((dept) => (
-            <Card
-              key={dept.id}
-              padding="sm"
-              className="cursor-pointer border-2 transition-colors hover:border-[#22C55E]"
-            >
-              <button
-                className="w-full text-left"
-                onClick={() => setSelected(dept)}
+          {departments.map((dept) => {
+            const memberCount = getMemberCount(dept);
+            return (
+              <Card
+                key={dept.id}
+                padding="sm"
+                className="cursor-pointer border-2 transition-colors hover:border-[#22C55E]"
               >
-                <p className="text-xs text-slate-500">{dept.name}</p>
-                <p className="mt-1 text-2xl font-bold text-slate-800">{dept.member_count}</p>
-                <p className="text-xs text-slate-400">nhân viên</p>
-              </button>
-            </Card>
-          ))}
+                <button
+                  className="w-full text-left"
+                  onClick={() => setSelected(dept)}
+                >
+                  <p className="text-xs text-slate-500">{dept.name}</p>
+                  <p className="mt-1 text-2xl font-bold text-slate-800">{memberCount}</p>
+                  <p className="text-xs text-slate-400">nhân viên</p>
+                </button>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Org overview */}
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-slate-700">
-            Tổng cộng: <span className="text-[#22C55E]">{totalEmployees}</span> nhân viên, <span className="text-[#22C55E]">{mockDepartments.length}</span> phòng ban
+            Tổng cộng: <span className="text-[#22C55E]">{totalEmployees}</span> nhân viên, <span className="text-[#22C55E]">{departments.length}</span> phòng ban
           </h2>
           <Button
             onClick={() => setCreateOpen(true)}
@@ -91,41 +144,45 @@ export default function OrganizationPage() {
 
         {/* Department cards grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {mockDepartments.map((dept) => (
-            <Card
-              key={dept.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
-            >
-              <button
-                className="w-full text-left"
-                onClick={() => setSelected(dept)}
+          {departments.map((dept) => {
+            const memberCount = getMemberCount(dept);
+            const leaderName = getLeaderName(dept);
+            return (
+              <Card
+                key={dept.id}
+                className="cursor-pointer transition-shadow hover:shadow-md"
               >
-                <div className="flex items-start gap-4">
-                  <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${deptColors[dept.id] ?? "bg-slate-100 text-slate-600"}`}>
-                    {deptIcons[dept.id]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-slate-800">{dept.name}</h3>
-                      <Badge variant="gray">{dept.member_count} người</Badge>
+                <button
+                  className="w-full text-left"
+                  onClick={() => setSelected(dept)}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${deptColors[dept.id] ?? "bg-slate-100 text-slate-600"}`}>
+                      {deptIcons[dept.id]}
                     </div>
-                    <p className="mt-1 text-xs text-slate-400 line-clamp-2">{dept.description}</p>
-                    {dept.leader_name ? (
-                      <div className="mt-3 flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
-                          {dept.leader_name.charAt(0)}
-                        </div>
-                        <span className="text-xs text-slate-500">{dept.leader_name}</span>
-                        <Badge variant="blue">Trưởng phòng</Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-slate-800">{dept.name}</h3>
+                        <Badge variant="gray">{memberCount} người</Badge>
                       </div>
-                    ) : (
-                      <p className="mt-3 text-xs text-slate-400 italic">Chưa có trưởng phòng</p>
-                    )}
+                      <p className="mt-1 text-xs text-slate-400 line-clamp-2">{dept.description}</p>
+                      {leaderName ? (
+                        <div className="mt-3 flex items-center gap-2">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
+                            {leaderName.charAt(0)}
+                          </div>
+                          <span className="text-xs text-slate-500">{leaderName}</span>
+                          <Badge variant="blue">Trưởng phòng</Badge>
+                        </div>
+                      ) : (
+                        <p className="mt-3 text-xs text-slate-400 italic">Chưa có trưởng phòng</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            </Card>
-          ))}
+                </button>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Department detail modal */}
@@ -144,14 +201,15 @@ export default function OrganizationPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg bg-slate-50 p-4">
                   <p className="text-xs text-slate-400 mb-1">Số nhân viên</p>
-                  <p className="text-2xl font-bold text-slate-800">{selected.member_count}</p>
+                  <p className="text-2xl font-bold text-slate-800">{getMemberCount(selected)}</p>
                 </div>
                 <div className="rounded-lg bg-slate-50 p-4">
                   <p className="text-xs text-slate-400 mb-1">Trưởng phòng</p>
-                  <p className="text-sm font-semibold text-slate-700">{selected.leader_name ?? "Chưa phân công"}</p>
+                  <p className="text-sm font-semibold text-slate-700">{getLeaderName(selected) ?? "Chưa phân công"}</p>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
+                <Button variant="danger" disabled={actionLoading} onClick={() => handleDelete(selected.id)}>Xoá phòng ban</Button>
                 <Button variant="outline" onClick={() => setSelected(null)}>Đóng</Button>
                 <Button>Xem nhân viên</Button>
               </div>
@@ -167,7 +225,7 @@ export default function OrganizationPage() {
           footer={
             <>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Huỷ</Button>
-              <Button onClick={() => setCreateOpen(false)}>Tạo phòng ban</Button>
+              <Button disabled={actionLoading} onClick={handleCreate}>Tạo phòng ban</Button>
             </>
           }
         >

@@ -7,7 +7,7 @@ class GetPayslipUseCase {
   GetPayslipUseCase(this._repository);
   final SalaryRepository _repository;
 
-  Future<Either<ApiError, List<Payslip>>> call({int page = 1, int size = 12}) {
-    return _repository.getPayslips(page: page, size: size);
+  Future<Either<ApiError, Payslip>> call({required int month, required int year}) {
+    return _repository.getMySalary(month: month, year: year);
   }
 }

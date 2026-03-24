@@ -1,44 +1,102 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'profile_model.g.dart';
-
-@JsonSerializable()
 class ProfileModel {
   const ProfileModel({
     required this.id,
-    required this.email,
-    this.fullName,
-    this.role,
+    required this.userId,
+    required this.fullName,
     this.phone,
-    this.department,
-    this.teamId,
-    this.teamName,
-    this.avatarUrl,
-    this.dateOfBirth,
-    this.joinDate,
     this.address,
+    this.dob,
+    this.gender,
+    this.joinDate,
+    this.position,
+    this.teamId,
+    this.basicSalary,
+    this.insuranceSalary,
+    this.user,
+    this.team,
   });
 
-  final String id;
-  final String email;
-  @JsonKey(name: 'full_name')
-  final String? fullName;
-  final String? role;
+  final int id;
+  final int userId;
+  final String fullName;
   final String? phone;
-  final String? department;
-  @JsonKey(name: 'team_id')
-  final String? teamId;
-  @JsonKey(name: 'team_name')
-  final String? teamName;
-  @JsonKey(name: 'avatar_url')
-  final String? avatarUrl;
-  @JsonKey(name: 'date_of_birth')
-  final String? dateOfBirth;
-  @JsonKey(name: 'join_date')
-  final String? joinDate;
   final String? address;
+  final String? dob;
+  final String? gender;
+  final String? joinDate;
+  final String? position;
+  final int? teamId;
+  final double? basicSalary;
+  final double? insuranceSalary;
+  final ProfileUserModel? user;
+  final ProfileTeamModel? team;
 
-  factory ProfileModel.fromJson(Map<String, dynamic> json) =>
-      _$ProfileModelFromJson(json);
-  Map<String, dynamic> toJson() => _$ProfileModelToJson(this);
+  String get email => user?.email ?? '';
+  String get role => user?.role ?? 'employee';
+
+  factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    return ProfileModel(
+      id: json['id'] as int,
+      userId: json['user_id'] as int,
+      fullName: json['full_name'] as String? ?? '',
+      phone: json['phone'] as String?,
+      address: json['address'] as String?,
+      dob: json['dob'] as String?,
+      gender: json['gender'] as String?,
+      joinDate: json['join_date'] as String?,
+      position: json['position'] as String?,
+      teamId: json['team_id'] as int?,
+      basicSalary: (json['basic_salary'] as num?)?.toDouble(),
+      insuranceSalary: (json['insurance_salary'] as num?)?.toDouble(),
+      user: json['user'] != null
+          ? ProfileUserModel.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+      team: json['team'] != null
+          ? ProfileTeamModel.fromJson(json['team'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class ProfileUserModel {
+  const ProfileUserModel({
+    required this.id,
+    required this.email,
+    required this.role,
+    required this.isActive,
+  });
+
+  final int id;
+  final String email;
+  final String role;
+  final bool isActive;
+
+  factory ProfileUserModel.fromJson(Map<String, dynamic> json) {
+    return ProfileUserModel(
+      id: json['id'] as int,
+      email: json['email'] as String,
+      role: json['role'] as String? ?? 'employee',
+      isActive: json['is_active'] as bool? ?? true,
+    );
+  }
+}
+
+class ProfileTeamModel {
+  const ProfileTeamModel({
+    required this.id,
+    required this.name,
+    this.departmentId,
+  });
+
+  final int id;
+  final String name;
+  final int? departmentId;
+
+  factory ProfileTeamModel.fromJson(Map<String, dynamic> json) {
+    return ProfileTeamModel(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      departmentId: json['department_id'] as int?,
+    );
+  }
 }

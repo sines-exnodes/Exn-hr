@@ -3,48 +3,34 @@ import 'package:equatable/equatable.dart';
 class Payslip extends Equatable {
   const Payslip({
     required this.id,
+    required this.employeeId,
     required this.month,
     required this.year,
-    required this.baseSalary,
+    required this.basicSalary,
+    required this.totalAllowances,
+    required this.totalOtPay,
+    required this.totalBonus,
+    required this.totalDeductions,
+    required this.salaryAdvance,
     required this.netSalary,
-    this.overtimePay,
-    this.allowances,
-    this.deductions,
-    this.insuranceSalary,
-    this.paidAt,
+    required this.status,
   });
 
-  final String id;
+  final int id;
+  final int employeeId;
   final int month;
   final int year;
-  final double baseSalary;
+  final double basicSalary;
+  final double totalAllowances;
+  final double totalOtPay;
+  final double totalBonus;
+  final double totalDeductions;
+  final double salaryAdvance;
   final double netSalary;
-  final double? overtimePay;
-  final List<AllowanceItem>? allowances;
-  final List<DeductionItem>? deductions;
-  final double? insuranceSalary;
-  final String? paidAt;
+  final String status;
+
+  double get grossIncome => basicSalary + totalAllowances + totalOtPay + totalBonus;
 
   @override
   List<Object?> get props => [id, month, year, netSalary];
-}
-
-class AllowanceItem extends Equatable {
-  const AllowanceItem({required this.name, required this.amount});
-
-  final String name;
-  final double amount;
-
-  @override
-  List<Object> get props => [name, amount];
-}
-
-class DeductionItem extends Equatable {
-  const DeductionItem({required this.name, required this.amount});
-
-  final String name;
-  final double amount;
-
-  @override
-  List<Object> get props => [name, amount];
 }

@@ -9,46 +9,38 @@ class PayslipCubit extends Cubit<PayslipState> {
           selectedMonth: DateTime.now().month,
           selectedYear: DateTime.now().year,
         )) {
-    loadPayslips();
+    loadPayslip();
   }
 
   final GetPayslipUseCase _getPayslipUseCase;
 
-  Future<void> loadPayslips() async {
+  Future<void> loadPayslip() async {
     emit(state.copyWith(status: PayslipStatus.loading));
-    final result = await _getPayslipUseCase();
+    final month = state.selectedMonth ?? DateTime.now().month;
+    final year = state.selectedYear ?? DateTime.now().year;
+    final result = await _getPayslipUseCase(month: month, year: year);
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(
         status: PayslipStatus.failure,
         errorMessage: error.message,
       )),
-      (payslips) {
-        final selected = payslips.isNotEmpty
-            ? payslips.firstWhere(
-                (p) =>
-                    p.month == state.selectedMonth &&
-                    p.year == state.selectedYear,
-                orElse: () => payslips.first,
-              )
-            : null;
-        emit(state.copyWith(
-          status: PayslipStatus.success,
-          payslips: payslips,
-          selectedPayslip: selected,
-        ));
-      },
+      (payslip) => emit(state.copyWith(
+        status: PayslipStatus.success,
+        selectedPayslip: payslip,
+      )),
     );
   }
 
+  // Keep for backward compat with page that calls loadPayslips()
+  Future<void> loadPayslips() => loadPayslip();
+
   void selectMonth(int month, int year) {
-    final selected = state.payslips.where(
-      (p) => p.month == month && p.year == year,
-    );
     emit(state.copyWith(
       selectedMonth: month,
       selectedYear: year,
-      selectedPayslip: selected.isNotEmpty ? selected.first : null,
+      selectedPayslip: null,
     ));
+    loadPayslip();
   }
 }

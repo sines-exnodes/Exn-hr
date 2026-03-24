@@ -85,8 +85,8 @@ class _LeaveListView extends StatelessWidget {
                             style: AppTextStyles.labelLarge,
                           ),
                           AppBadge(
-                            label: request.status,
-                            status: _badgeStatus(request.status),
+                            label: request.overallStatus,
+                            status: _badgeStatus(request.overallStatus),
                           ),
                         ],
                       ),
@@ -97,7 +97,7 @@ class _LeaveListView extends StatelessWidget {
                       ),
                       SizedBox(height: 4.w),
                       Text(
-                        '${request.totalDays} day(s) • ${request.reason}',
+                        '${request.days} day(s) • ${request.reason}',
                         style: AppTextStyles.caption,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

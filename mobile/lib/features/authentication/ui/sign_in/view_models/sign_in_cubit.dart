@@ -26,10 +26,11 @@ class SignInCubit extends Cubit<SignInState> {
         status: SignInStatus.failure,
         errorMessage: error.message,
       )),
-      (user) async {
-        // Token is already stored by the repository interceptor
-        // We need to get it from the response — for now store user id and role
-        await _secureStorage.saveUserId(user.id);
+      (tuple) async {
+        final token = tuple.$1;
+        final user = tuple.$2;
+        await _secureStorage.saveAccessToken(token);
+        await _secureStorage.saveUserId(user.id.toString());
         await _secureStorage.saveUserRole(user.role);
         if (!isClosed) {
           emit(state.copyWith(status: SignInStatus.success, user: user));

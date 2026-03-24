@@ -82,14 +82,14 @@ class _OtListView extends StatelessWidget {
                         children: [
                           Text(req.date, style: AppTextStyles.labelLarge),
                           AppBadge(
-                            label: req.status,
-                            status: _badgeStatus(req.status),
+                            label: req.overallStatus,
+                            status: _badgeStatus(req.overallStatus),
                           ),
                         ],
                       ),
                       SizedBox(height: 6.w),
                       Text(
-                        '${req.startTime} — ${req.endTime}  (${req.totalHours}h)',
+                        '${req.startTime} — ${req.endTime}  (${req.hours}h)',
                         style: AppTextStyles.bodySmall,
                       ),
                       SizedBox(height: 4.w),

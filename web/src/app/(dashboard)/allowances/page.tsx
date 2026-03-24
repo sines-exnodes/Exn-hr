@@ -8,38 +8,69 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import type { AllowanceType } from "@/types";
+import { useAllowanceTypes, createAllowanceType, deleteAllowanceType } from "@/hooks/useApi";
 
-// TODO: connect to real API — GET /allowance-types
 const mockAllowanceTypes: AllowanceType[] = [
-  { id: 1, name: "Phụ cấp ăn trưa", description: "Hỗ trợ bữa ăn hằng ngày", is_taxable: false, created_at: "2022-01-01T00:00:00Z" },
-  { id: 2, name: "Phụ cấp xăng xe", description: "Chi phí di chuyển hằng tháng", is_taxable: false, created_at: "2022-01-01T00:00:00Z" },
-  { id: 3, name: "Phụ cấp điện thoại", description: "Hỗ trợ cước điện thoại công việc", is_taxable: false, created_at: "2022-03-01T00:00:00Z" },
-  { id: 4, name: "Phụ cấp thâm niên", description: "Thưởng theo số năm công tác", is_taxable: true, created_at: "2022-01-01T00:00:00Z" },
-  { id: 5, name: "Phụ cấp kỹ thuật", description: "Thưởng năng lực chuyên môn kỹ thuật", is_taxable: true, created_at: "2023-01-01T00:00:00Z" },
-  { id: 6, name: "Phụ cấp kiêm nhiệm", description: "Hỗ trợ khi đảm nhận thêm vị trí", is_taxable: true, created_at: "2023-06-01T00:00:00Z" },
+  { id: 1, name: "Phụ cấp ăn trưa", description: "Hỗ trợ bữa ăn hằng ngày" },
+  { id: 2, name: "Phụ cấp xăng xe", description: "Chi phí di chuyển hằng tháng" },
+  { id: 3, name: "Phụ cấp điện thoại", description: "Hỗ trợ cước điện thoại công việc" },
+  { id: 4, name: "Phụ cấp thâm niên", description: "Thưởng theo số năm công tác" },
+  { id: 5, name: "Phụ cấp kỹ thuật", description: "Thưởng năng lực chuyên môn kỹ thuật" },
+  { id: 6, name: "Phụ cấp kiêm nhiệm", description: "Hỗ trợ khi đảm nhận thêm vị trí" },
 ];
 
 export default function AllowancesPage() {
+  const { data: response, mutate, isLoading } = useAllowanceTypes();
   const [createOpen, setCreateOpen] = useState(false);
   const [editItem, setEditItem] = useState<AllowanceType | null>(null);
   const [deleteItem, setDeleteItem] = useState<AllowanceType | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const [formName, setFormName] = useState("");
   const [formDesc, setFormDesc] = useState("");
-  const [formTaxable, setFormTaxable] = useState(false);
+
+  const allowanceTypes = response?.data ?? mockAllowanceTypes;
 
   const openCreate = () => {
     setFormName("");
     setFormDesc("");
-    setFormTaxable(false);
     setCreateOpen(true);
   };
 
   const openEdit = (item: AllowanceType) => {
     setFormName(item.name);
     setFormDesc(item.description ?? "");
-    setFormTaxable(item.is_taxable);
     setEditItem(item);
+  };
+
+  const handleCreate = async () => {
+    if (!formName.trim()) return;
+    setActionLoading(true);
+    try {
+      await createAllowanceType({ name: formName, description: formDesc || undefined });
+      await mutate();
+      setCreateOpen(false);
+      setFormName("");
+      setFormDesc("");
+    } catch (err) {
+      console.error("Create allowance type failed", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteItem) return;
+    setActionLoading(true);
+    try {
+      await deleteAllowanceType(deleteItem.id);
+      await mutate();
+      setDeleteItem(null);
+    } catch (err) {
+      console.error("Delete allowance type failed", err);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -49,6 +80,11 @@ export default function AllowancesPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Phụ cấp" }]}
       />
       <div className="p-6 space-y-5">
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="text-center text-sm text-slate-400 py-2">Đang tải dữ liệu...</div>
+        )}
+
         {/* Info banner */}
         <div className="rounded-xl border border-green-100 bg-green-50 p-4 flex items-start gap-3">
           <svg className="h-5 w-5 flex-shrink-0 text-green-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,7 +101,7 @@ export default function AllowancesPage() {
         {/* Toolbar */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            <span className="font-semibold text-slate-700">{mockAllowanceTypes.length}</span> loại phụ cấp
+            <span className="font-semibold text-slate-700">{allowanceTypes.length}</span> loại phụ cấp
           </p>
           <Button
             onClick={openCreate}
@@ -81,7 +117,7 @@ export default function AllowancesPage() {
 
         {/* Allowance type cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {mockAllowanceTypes.map((type) => (
+          {allowanceTypes.map((type) => (
             <Card key={type.id} className="group">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
@@ -93,11 +129,6 @@ export default function AllowancesPage() {
                   <div>
                     <h3 className="font-semibold text-slate-800">{type.name}</h3>
                     <p className="text-xs text-slate-400 mt-0.5">{type.description}</p>
-                    <div className="mt-2">
-                      <Badge variant={type.is_taxable ? "orange" : "green"} dot>
-                        {type.is_taxable ? "Chịu thuế" : "Miễn thuế"}
-                      </Badge>
-                    </div>
                   </div>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -121,7 +152,6 @@ export default function AllowancesPage() {
                   </button>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-slate-400">Tạo: {type.created_at.split("T")[0]}</p>
             </Card>
           ))}
         </div>
@@ -134,10 +164,7 @@ export default function AllowancesPage() {
           footer={
             <>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Huỷ</Button>
-              <Button onClick={() => {
-                // TODO: connect to real API — POST /allowance-types
-                setCreateOpen(false);
-              }}>Tạo loại phụ cấp</Button>
+              <Button disabled={actionLoading} onClick={handleCreate}>Tạo loại phụ cấp</Button>
             </>
           }
         >
@@ -149,12 +176,6 @@ export default function AllowancesPage() {
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
               />
             </div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={formTaxable} onChange={(e) => setFormTaxable(e.target.checked)}
-                className="rounded border-slate-300 text-[#22C55E] focus:ring-[#22C55E]"
-              />
-              <span className="text-sm text-slate-700">Chịu thuế thu nhập cá nhân</span>
-            </label>
           </div>
         </Modal>
 
@@ -167,7 +188,7 @@ export default function AllowancesPage() {
             <>
               <Button variant="outline" onClick={() => setEditItem(null)}>Huỷ</Button>
               <Button onClick={() => {
-                // TODO: connect to real API — PUT /allowance-types/:id
+                // TODO: connect to real API — PUT /allowance-types/:id (no update endpoint available yet)
                 setEditItem(null);
               }}>Lưu thay đổi</Button>
             </>
@@ -181,12 +202,6 @@ export default function AllowancesPage() {
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
               />
             </div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={formTaxable} onChange={(e) => setFormTaxable(e.target.checked)}
-                className="rounded border-slate-300 text-[#22C55E] focus:ring-[#22C55E]"
-              />
-              <span className="text-sm text-slate-700">Chịu thuế thu nhập cá nhân</span>
-            </label>
           </div>
         </Modal>
 
@@ -198,10 +213,7 @@ export default function AllowancesPage() {
           footer={
             <>
               <Button variant="outline" onClick={() => setDeleteItem(null)}>Huỷ</Button>
-              <Button variant="danger" onClick={() => {
-                // TODO: connect to real API — DELETE /allowance-types/:id
-                setDeleteItem(null);
-              }}>Xoá</Button>
+              <Button variant="danger" disabled={actionLoading} onClick={handleDelete}>Xoá</Button>
             </>
           }
         >

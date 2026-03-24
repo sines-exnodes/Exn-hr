@@ -7,16 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
+import { createEmployee, useDepartments, useTeams } from "@/hooks/useApi";
 import type { CreateEmployeeRequest } from "@/types";
-
-const departmentOptions = [
-  { value: "1", label: "Engineering" },
-  { value: "2", label: "Sales" },
-  { value: "3", label: "HR" },
-  { value: "4", label: "Finance" },
-  { value: "5", label: "Marketing" },
-  { value: "6", label: "Operations" },
-];
 
 const roleOptions = [
   { value: "employee", label: "Nhân viên" },
@@ -27,24 +19,35 @@ const roleOptions = [
 ];
 
 const initialForm: Partial<CreateEmployeeRequest> = {
-  name: "",
+  full_name: "",
   email: "",
+  password: "",
   phone: "",
   role: "employee",
   position: "",
-  hire_date: "",
-  birth_date: "",
+  join_date: "",
+  dob: "",
   address: "",
   insurance_salary: 0,
-  base_salary: 0,
+  basic_salary: 0,
 };
 
 export default function NewEmployeePage() {
   const router = useRouter();
   const [form, setForm] = useState(initialForm);
-  const [departmentId, setDepartmentId] = useState("");
+  const [teamId, setTeamId] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Real API calls for dropdowns
+  const { data: deptRes } = useDepartments();
+  const { data: teamsRes } = useTeams();
+
+  const departments = deptRes?.data ?? [];
+  const teams = teamsRes?.data ?? [];
+
+  const departmentOptions = departments.map((d) => ({ value: String(d.id), label: d.name }));
+  const teamOptions = teams.map((t) => ({ value: String(t.id), label: `${t.name}${t.department?.name ? ` (${t.department.name})` : ""}` }));
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -52,11 +55,11 @@ export default function NewEmployeePage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.name) errs.name = "Tên không được để trống";
+    if (!form.full_name) errs.full_name = "Tên không được để trống";
     if (!form.email) errs.email = "Email không được để trống";
+    if (!form.password) errs.password = "Mật khẩu không được để trống";
     if (!form.position) errs.position = "Vị trí không được để trống";
-    if (!form.hire_date) errs.hire_date = "Ngày vào làm không được để trống";
-    if (!departmentId) errs.department_id = "Chọn phòng ban";
+    if (!form.join_date) errs.join_date = "Ngày vào làm không được để trống";
     return errs;
   };
 
@@ -68,10 +71,27 @@ export default function NewEmployeePage() {
       return;
     }
     setLoading(true);
-    // TODO: connect to real API — POST /employees
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    router.push("/employees");
+    try {
+      await createEmployee({
+        email: form.email!,
+        password: form.password!,
+        role: (form.role as CreateEmployeeRequest["role"]) ?? "employee",
+        full_name: form.full_name!,
+        phone: form.phone || undefined,
+        address: form.address || undefined,
+        dob: form.dob || undefined,
+        join_date: form.join_date!,
+        position: form.position!,
+        team_id: teamId ? Number(teamId) : undefined,
+        basic_salary: Number(form.basic_salary) || 0,
+        insurance_salary: Number(form.insurance_salary) || 0,
+      });
+      router.push("/employees");
+    } catch (err) {
+      setErrors({ _form: err instanceof Error ? err.message : "Tạo nhân viên thất bại" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,6 +106,12 @@ export default function NewEmployeePage() {
       />
       <div className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+          {errors._form && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errors._form}
+            </div>
+          )}
+
           {/* Section 1: Thông tin cơ bản */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
@@ -96,10 +122,10 @@ export default function NewEmployeePage() {
               <div className="sm:col-span-2">
                 <Input
                   label="Họ và tên"
-                  placeholder="Nguyễn Văn A"
-                  value={form.name}
-                  onChange={set("name")}
-                  error={errors.name}
+                  placeholder="Nguyen Van A"
+                  value={form.full_name}
+                  onChange={set("full_name")}
+                  error={errors.full_name}
                   required
                 />
               </div>
@@ -113,6 +139,15 @@ export default function NewEmployeePage() {
                 required
               />
               <Input
+                label="Mật khẩu"
+                type="password"
+                placeholder="********"
+                value={form.password}
+                onChange={set("password")}
+                error={errors.password}
+                required
+              />
+              <Input
                 label="Số điện thoại"
                 type="tel"
                 placeholder="0901234567"
@@ -122,8 +157,8 @@ export default function NewEmployeePage() {
               <Input
                 label="Ngày sinh"
                 type="date"
-                value={form.birth_date}
-                onChange={set("birth_date")}
+                value={form.dob}
+                onChange={set("dob")}
               />
               <div className="sm:col-span-2 lg:col-span-3">
                 <div className="flex flex-col gap-1">
@@ -147,15 +182,22 @@ export default function NewEmployeePage() {
               <h2 className="text-base font-semibold text-slate-800">Thông tin công việc</h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Select
-                label="Phòng ban"
-                options={departmentOptions}
-                placeholder="Chọn phòng ban"
-                value={departmentId}
-                onChange={(e) => setDepartmentId(e.target.value)}
-                error={errors.department_id}
-                required
-              />
+              {departmentOptions.length > 0 ? (
+                <Select
+                  label="Team"
+                  options={[{ value: "", label: "Chọn team" }, ...teamOptions]}
+                  value={teamId}
+                  onChange={(e) => setTeamId(e.target.value)}
+                />
+              ) : (
+                <Select
+                  label="Team"
+                  options={[{ value: "", label: "Đang tải..." }]}
+                  value=""
+                  onChange={() => {}}
+                  disabled
+                />
+              )}
               <Input
                 label="Vị trí / Chức danh"
                 placeholder="Senior Developer"
@@ -174,9 +216,9 @@ export default function NewEmployeePage() {
               <Input
                 label="Ngày vào làm"
                 type="date"
-                value={form.hire_date}
-                onChange={set("hire_date")}
-                error={errors.hire_date}
+                value={form.join_date}
+                onChange={set("join_date")}
+                error={errors.join_date}
                 required
               />
             </div>
@@ -193,9 +235,9 @@ export default function NewEmployeePage() {
                 label="Lương cơ bản (VND)"
                 type="number"
                 placeholder="15000000"
-                value={form.base_salary || ""}
-                onChange={set("base_salary")}
-                hint="Lương thực tế nhận hằng tháng"
+                value={form.basic_salary || ""}
+                onChange={set("basic_salary")}
+                hint="Lương thực tế nhận hàng tháng"
               />
               <Input
                 label="Lương bảo hiểm (VND)"

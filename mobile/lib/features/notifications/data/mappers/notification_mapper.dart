@@ -4,13 +4,9 @@ import 'package:exn_hr/features/notifications/domain/entities/app_notification.d
 extension NotificationMapper on NotificationModel {
   AppNotification toEntity() {
     return AppNotification(
-      id: id,
-      title: title,
-      body: body,
-      type: type,
-      isRead: isRead ?? false,
-      createdAt: createdAt,
-      referenceId: referenceId,
+      id: id, userId: userId, title: title, body: body,
+      type: type, isRead: isRead,
+      referenceId: referenceId, referenceType: referenceType, createdAt: createdAt,
     );
   }
 }

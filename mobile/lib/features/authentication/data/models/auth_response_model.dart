@@ -1,9 +1,5 @@
 import 'package:exn_hr/features/authentication/data/models/user_model.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-part 'auth_response_model.g.dart';
-
-@JsonSerializable()
 class AuthResponseModel {
   const AuthResponseModel({
     required this.success,
@@ -15,23 +11,30 @@ class AuthResponseModel {
   final String? message;
   final AuthResponseData? data;
 
-  factory AuthResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$AuthResponseModelFromJson(json);
-  Map<String, dynamic> toJson() => _$AuthResponseModelToJson(this);
+  factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
+    return AuthResponseModel(
+      success: json['success'] as bool? ?? false,
+      message: json['message'] as String?,
+      data: json['data'] != null
+          ? AuthResponseData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
 }
 
-@JsonSerializable()
 class AuthResponseData {
   const AuthResponseData({
-    required this.accessToken,
+    required this.token,
     required this.user,
   });
 
-  @JsonKey(name: 'access_token')
-  final String accessToken;
+  final String token;
   final UserModel user;
 
-  factory AuthResponseData.fromJson(Map<String, dynamic> json) =>
-      _$AuthResponseDataFromJson(json);
-  Map<String, dynamic> toJson() => _$AuthResponseDataToJson(this);
+  factory AuthResponseData.fromJson(Map<String, dynamic> json) {
+    return AuthResponseData(
+      token: json['token'] as String,
+      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
+    );
+  }
 }

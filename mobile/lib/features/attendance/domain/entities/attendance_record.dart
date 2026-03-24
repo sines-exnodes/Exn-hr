@@ -3,22 +3,24 @@ import 'package:equatable/equatable.dart';
 class AttendanceRecord extends Equatable {
   const AttendanceRecord({
     required this.id,
-    required this.date,
+    required this.employeeId,
     this.checkInTime,
     this.checkOutTime,
-    this.totalHours,
-    this.location,
-    this.verificationMethod,
+    this.gpsLat,
+    this.gpsLng,
+    this.wifiSsid,
+    this.status,
   });
 
-  final String id;
-  final String date;
+  final int id;
+  final int employeeId;
   final String? checkInTime;
   final String? checkOutTime;
-  final String? totalHours;
-  final String? location;
-  final String? verificationMethod;
+  final double? gpsLat;
+  final double? gpsLng;
+  final String? wifiSsid;
+  final String? status;
 
   @override
-  List<Object?> get props => [id, date, checkInTime, checkOutTime, totalHours];
+  List<Object?> get props => [id, employeeId, checkInTime, checkOutTime, status];
 }

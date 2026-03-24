@@ -2,14 +2,49 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useNotifications, useUnreadCount, markNotificationRead } from "@/hooks/useApi";
 
 interface HeaderProps {
   title: string;
   breadcrumbs?: { label: string; href?: string }[];
 }
 
+// Fallback mock notifications
+const mockNotifications = [
+  { id: 1, title: "Leave", body: "Nguyen Van A submitted leave request", created_at: "2026-03-19T09:55:00Z", is_read: false },
+  { id: 2, title: "OT", body: "OT request pending CEO approval", created_at: "2026-03-19T09:00:00Z", is_read: false },
+  { id: 3, title: "Payroll", body: "Payroll for March ready to review", created_at: "2026-03-19T07:00:00Z", is_read: false },
+];
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export function Header({ title, breadcrumbs }: HeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false);
+
+  const { data: notifRes, mutate: mutateNotifs } = useNotifications({ page: 1, size: 10 });
+  const { data: unreadRes, mutate: mutateUnread } = useUnreadCount();
+
+  const notifications = notifRes?.data ?? mockNotifications;
+  const unreadCount = unreadRes?.data?.count ?? 3;
+
+  const handleMarkRead = async (id: number) => {
+    try {
+      await markNotificationRead(id);
+      mutateNotifs();
+      mutateUnread();
+    } catch {
+      // silently ignore
+    }
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
@@ -64,7 +99,11 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
-            <span className="absolute right-1.5 top-1.5 flex h-2 w-2 items-center justify-center rounded-full bg-green-500" aria-hidden="true" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-[10px] font-bold text-white" aria-hidden="true">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           {notifOpen && (
@@ -73,16 +112,16 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
                 <h3 className="text-sm font-semibold text-slate-700">Notifications</h3>
               </div>
               <ul className="divide-y divide-slate-50 max-h-64 overflow-y-auto">
-                {[
-                  { text: "Nguyen Van A submitted leave request", time: "5m ago" },
-                  { text: "OT request pending CEO approval", time: "1h ago" },
-                  { text: "Payroll for March ready to review", time: "3h ago" },
-                ].map((n, i) => (
-                  <li key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
-                    <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-green-400" />
+                {notifications.map((n) => (
+                  <li
+                    key={n.id}
+                    className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer"
+                    onClick={() => !n.is_read && handleMarkRead(n.id)}
+                  >
+                    <div className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${n.is_read ? "bg-slate-200" : "bg-green-400"}`} />
                     <div>
-                      <p className="text-sm text-slate-700">{n.text}</p>
-                      <p className="text-xs text-slate-400">{n.time}</p>
+                      <p className="text-sm text-slate-700">{n.body}</p>
+                      <p className="text-xs text-slate-400">{timeAgo(n.created_at)}</p>
                     </div>
                   </li>
                 ))}
