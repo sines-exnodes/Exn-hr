@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { UserMenu } from "@/components/layout/UserMenu";
 import { useNotifications, useUnreadCount, markNotificationRead } from "@/hooks/useApi";
 
 interface HeaderProps {
@@ -85,6 +86,7 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
         <div className="relative">
           <button
             onClick={() => setNotifOpen((o) => !o)}
+            type="button"
             className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all duration-200 hover:-translate-y-0.5"
             aria-label="Notifications"
           >
@@ -128,10 +130,7 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
           )}
         </div>
 
-        {/* Avatar */}
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white">
-          AD
-        </div>
+        <UserMenu notifOpen={notifOpen} onMenuOpen={() => setNotifOpen(false)} />
       </div>
     </header>
   );

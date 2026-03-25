@@ -12,6 +12,11 @@ type BrandLogoProps = {
   titleClassName?: string;
   href?: string | null;
   priority?: boolean;
+  /**
+   * inline: logo và chữ cùng hàng (sidebar hẹp).
+   * stacked: chữ EXN HRM nằm dưới logo — tránh dính với tagline trong file PNG.
+   */
+  layout?: "inline" | "stacked";
 };
 
 export function BrandLogo({
@@ -22,70 +27,108 @@ export function BrandLogo({
   titleClassName = "",
   href = "/",
   priority = false,
+  layout = "stacked",
 }: BrandLogoProps) {
-  const content = (
-    <>
+  const img = (
+    <span className="inline-flex shrink-0 leading-none [&>img]:block">
       <Image
         src={LOGO_SRC}
-        alt="EXN HRM"
+        alt=""
         width={Math.round(imageHeight * 3)}
         height={imageHeight}
         className={`w-auto object-contain object-left ${imageClassName}`}
         style={{ height: imageHeight }}
         priority={priority}
+        aria-hidden
       />
-      {showTitle && (
-        <span
-          className={`text-lg font-semibold text-white tracking-tight ${titleClassName}`}
-          style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}
-        >
-          EXN HRM
-        </span>
-      )}
-    </>
+    </span>
   );
 
-  const wrapClass = `flex items-center gap-2.5 min-w-0 ${className}`;
+  const title = showTitle ? (
+    <span
+      className={`font-semibold text-white tracking-tight ${layout === "stacked" ? "text-base leading-tight mt-0.5" : "text-lg"} ${titleClassName}`}
+      style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}
+    >
+      EXN HRM
+    </span>
+  ) : null;
+
+  const inner =
+    layout === "stacked" ? (
+      <div className="flex min-w-0 flex-col items-start gap-3">
+        {img}
+        {title}
+      </div>
+    ) : (
+      <div className="flex min-w-0 items-start gap-3.5">
+        {img}
+        {title}
+      </div>
+    );
+
+  const wrapClass = `min-w-0 ${className}`;
 
   if (href) {
     return (
-      <Link href={href} className={`${wrapClass} hover:opacity-90 transition-opacity`}>
-        {content}
+      <Link
+        href={href}
+        aria-label="EXN HRM"
+        className={`${wrapClass} inline-flex hover:opacity-90 transition-opacity`}
+      >
+        {inner}
       </Link>
     );
   }
 
-  return <div className={wrapClass}>{content}</div>;
+  return <div className={wrapClass}>{inner}</div>;
 }
 
-/** Logo + title (form đăng nhập: nền sáng hoặc panel xanh với titleOnDark) */
+/** Logo + title (form đăng nhập, hero dashboard) */
 export function BrandLogoLight({
   imageHeight = 40,
   className = "",
   showTitle = true,
   titleOnDark = false,
-}: Pick<BrandLogoProps, "imageHeight" | "className" | "showTitle"> & {
+  layout = "stacked",
+}: Pick<BrandLogoProps, "imageHeight" | "className" | "showTitle" | "layout"> & {
   titleOnDark?: boolean;
 }) {
-  return (
-    <div className={`flex items-center gap-3 ${className}`}>
+  const img = (
+    <span className="inline-flex shrink-0 leading-none [&>img]:block">
       <Image
         src={LOGO_SRC}
-        alt="EXN HRM"
+        alt=""
         width={Math.round(imageHeight * 3)}
         height={imageHeight}
         className="w-auto object-contain object-left"
         style={{ height: imageHeight }}
         priority
+        aria-hidden
       />
-      {showTitle && (
-        <span
-          className={`text-xl font-bold tracking-tight ${titleOnDark ? "text-white" : "text-slate-800"}`}
-          style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}
-        >
-          EXN HRM
-        </span>
-      )}
-    </div>
+    </span>
   );
+
+  const title = showTitle ? (
+    <span
+      className={`font-bold tracking-tight ${titleOnDark ? "text-white" : "text-slate-800"} ${layout === "stacked" ? "text-xl leading-tight mt-0.5" : "text-xl"}`}
+      style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}
+    >
+      EXN HRM
+    </span>
+  ) : null;
+
+  const body =
+    layout === "stacked" ? (
+      <div className="flex flex-col items-start gap-3">
+        {img}
+        {title}
+      </div>
+    ) : (
+      <div className="flex items-start gap-4">
+        {img}
+        {title}
+      </div>
+    );
+
+  return <div className={`${className}`}>{body}</div>;
 }

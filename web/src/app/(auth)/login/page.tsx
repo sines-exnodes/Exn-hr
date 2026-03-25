@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center bg-[#22C55E] p-12">
         <div className="max-w-md text-white">
           <h1 className="sr-only">EXN HRM — đăng nhập hệ thống quản lý nhân sự</h1>
-          <div className="mb-8 rounded-2xl bg-black/20 p-4 backdrop-blur-sm ring-1 ring-white/20" aria-hidden>
+          <div className="mb-8 rounded-2xl bg-black/20 p-5 backdrop-blur-sm ring-1 ring-white/20" aria-hidden>
             <BrandLogoLight imageHeight={52} titleOnDark />
           </div>
           <p className="mb-8 text-lg text-green-100">

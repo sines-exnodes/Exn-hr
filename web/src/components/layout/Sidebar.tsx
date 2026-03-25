@@ -43,8 +43,11 @@ export function Sidebar() {
       style={{ backgroundColor: "var(--bg-sidebar)" }}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center px-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-        <BrandLogo imageHeight={32} priority className="px-0" />
+      <div
+        className="flex min-h-[4.25rem] items-center px-4 py-3"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
+      >
+        <BrandLogo imageHeight={30} priority className="px-0" />
       </div>
 
       {/* Nav */}
