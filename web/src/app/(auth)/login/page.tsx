@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { BrandLogoLight } from "@/components/layout/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
@@ -39,7 +38,19 @@ export default function LoginPage() {
         <div className="max-w-md text-white">
           <h1 className="sr-only">EXN HRM — đăng nhập hệ thống quản lý nhân sự</h1>
           <div className="mb-8 rounded-2xl bg-black/20 p-5 backdrop-blur-sm ring-1 ring-white/20" aria-hidden>
-            <BrandLogoLight imageHeight={52} titleOnDark />
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src="/logo_without_text.webp"
+                alt="EXN HRM"
+                width={54}
+                height={54}
+                className="h-14 w-14 object-contain"
+                draggable={false}
+              />
+              <div className="text-4xl font-extrabold tracking-tight text-white leading-none">
+                EXN HRM
+              </div>
+            </div>
           </div>
           <p className="mb-8 text-lg text-green-100">
             Hệ thống quản lý nhân sự nội bộ. Quản lý nhân viên, chấm công, nghỉ phép và bảng lương tập trung.
@@ -67,7 +78,21 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="mb-8 lg:hidden">
-            <BrandLogoLight imageHeight={40} />
+            <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center gap-3">
+                <img
+                  src="/logo_without_text.webp"
+                  alt="EXN HRM"
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 object-contain"
+                  draggable={false}
+                />
+                <div className="text-3xl font-extrabold tracking-tight text-slate-900 leading-none">
+                  EXN HRM
+                </div>
+              </div>
+            </div>
           </div>
 
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Đăng nhập</h2>

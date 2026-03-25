@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrandLogo } from "@/components/layout/BrandLogo";
 import {
   LayoutDashboard,
   Building2,
@@ -47,7 +46,22 @@ export function Sidebar() {
         className="flex min-h-[4.25rem] items-center px-4 py-3"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
       >
-        <BrandLogo imageHeight={30} priority className="px-0" />
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo_without_text.webp"
+            alt="EXN HRM"
+            width={42}
+            height={42}
+            className="h-10 w-10 object-contain"
+            draggable={false}
+          />
+          <span
+            className="text-lg font-semibold text-white tracking-tight"
+            style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}
+          >
+            EXN HRM
+          </span>
+        </div>
       </div>
 
       {/* Nav */}

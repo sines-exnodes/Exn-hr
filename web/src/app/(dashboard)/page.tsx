@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Header } from "@/components/layout/Header";
-import { BrandLogoLight } from "@/components/layout/BrandLogo";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { useEmployees, useAttendanceRecords, useLeaveRequests } from "@/hooks/useApi";
@@ -73,7 +72,9 @@ export default function DashboardPage() {
       />
       <div className="p-6 space-y-6">
         <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white/70 px-6 py-5 shadow-sm backdrop-blur-md sm:flex-row sm:items-center">
-          <BrandLogoLight imageHeight={56} />
+          <div className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+            EXN HRM
+          </div>
           <p className="text-sm text-slate-600 sm:border-l sm:border-slate-200/90 sm:pl-6">
             Hệ thống quản lý nhân sự nội bộ — tổng quan hoạt động.
           </p>

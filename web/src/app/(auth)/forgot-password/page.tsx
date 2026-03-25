@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { BrandLogoLight } from "@/components/layout/BrandLogo";
 import { forgotPassword } from "@/hooks/useApi";
 
 export default function ForgotPasswordPage() {
@@ -32,7 +31,19 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200">
           <div className="mb-6">
-            <BrandLogoLight imageHeight={40} />
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src="/logo_without_text.webp"
+                alt="EXN HRM"
+                width={44}
+                height={44}
+                className="h-11 w-11 object-contain"
+                draggable={false}
+              />
+              <div className="text-3xl font-extrabold tracking-tight text-slate-900 leading-none">
+                EXN HRM
+              </div>
+            </div>
           </div>
 
           {!submitted ? (

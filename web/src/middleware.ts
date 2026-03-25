@@ -11,6 +11,11 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Bỏ qua static assets trong public (logo, svg, favicon...) để tránh bị redirect làm ảnh không load.
+  if (/\.(?:png|jpe?g|webp|gif|svg|ico|txt|map)$/i.test(pathname)) {
+    return NextResponse.next();
+  }
+
   const isPublic = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );

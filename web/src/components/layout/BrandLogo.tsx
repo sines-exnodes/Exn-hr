@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
-const LOGO_SRC = "/exn.png";
+const LOGO_SRC = "/exn.webp";
 
 type BrandLogoProps = {
   /** Chiều cao ảnh (px), width auto giữ tỉ lệ */
@@ -12,6 +11,7 @@ type BrandLogoProps = {
   titleClassName?: string;
   href?: string | null;
   priority?: boolean;
+  imageFit?: "contain" | "cover";
   /**
    * inline: logo và chữ cùng hàng (sidebar hẹp).
    * stacked: chữ EXN HRM nằm dưới logo — tránh dính với tagline trong file PNG.
@@ -27,19 +27,23 @@ export function BrandLogo({
   titleClassName = "",
   href = "/",
   priority = false,
+  imageFit = "contain",
   layout = "stacked",
 }: BrandLogoProps) {
+  const fitClass =
+    imageFit === "cover"
+      ? "object-cover object-left-top"
+      : "object-contain object-left";
   const img = (
     <span className="inline-flex shrink-0 leading-none [&>img]:block">
-      <Image
+      <img
         src={LOGO_SRC}
         alt=""
         width={Math.round(imageHeight * 3)}
         height={imageHeight}
-        className={`w-auto object-contain object-left ${imageClassName}`}
-        style={{ height: imageHeight }}
-        priority={priority}
+        className={`${fitClass} ${imageClassName}`}
         aria-hidden
+        draggable={false}
       />
     </span>
   );
@@ -90,20 +94,25 @@ export function BrandLogoLight({
   showTitle = true,
   titleOnDark = false,
   layout = "stacked",
+  imageFit = "contain",
 }: Pick<BrandLogoProps, "imageHeight" | "className" | "showTitle" | "layout"> & {
   titleOnDark?: boolean;
+  imageFit?: "contain" | "cover";
 }) {
+  const fitClass =
+    imageFit === "cover"
+      ? "object-cover object-left-top"
+      : "object-contain object-left";
   const img = (
     <span className="inline-flex shrink-0 leading-none [&>img]:block">
-      <Image
+      <img
         src={LOGO_SRC}
         alt=""
         width={Math.round(imageHeight * 3)}
         height={imageHeight}
-        className="w-auto object-contain object-left"
-        style={{ height: imageHeight }}
-        priority
+        className={`${fitClass}`}
         aria-hidden
+        draggable={false}
       />
     </span>
   );
