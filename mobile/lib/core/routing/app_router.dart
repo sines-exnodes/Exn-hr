@@ -39,7 +39,7 @@ class AppRouter {
   AppRouter._();
 
   // TODO: Set to false for production
-  static const _skipAuth = true;
+  static const _skipAuth = false;
 
   static final _secureStorage = getIt<SecureStorage>();
 

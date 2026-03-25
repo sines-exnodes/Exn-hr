@@ -7,6 +7,9 @@ import 'package:exn_hr/features/main_home/ui/home/view_models/home_state.dart';
 import 'package:exn_hr/features/main_home/ui/home/widgets/check_in_card.dart';
 import 'package:exn_hr/features/main_home/ui/home/widgets/quick_actions.dart';
 import 'package:exn_hr/features/main_home/ui/home/widgets/recent_activity.dart';
+import 'package:exn_hr/features/leave/ui/list/views/leave_list_page.dart';
+import 'package:exn_hr/features/overtime/ui/list/views/ot_list_page.dart';
+import 'package:exn_hr/features/profile/ui/view/views/profile_page.dart';
 import 'package:exn_hr/shared/ui/widgets/app_bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -76,17 +79,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   void _onNavTap(int index) {
     setState(() => _currentNavIndex = index);
-    switch (index) {
-      case 1:
-        context.push(AppRoutes.leaveList);
-        break;
-      case 2:
-        context.push(AppRoutes.otList);
-        break;
-      case 3:
-        context.push(AppRoutes.profile);
-        break;
-    }
   }
 
   @override
@@ -95,14 +87,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       create: (_) => getIt<HomeCubit>()..loadHomeData(),
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: FadeTransition(
-            opacity: _entranceFade,
-            child: SlideTransition(
-              position: _entranceSlide,
-              child: _buildHomeContent(),
+        body: IndexedStack(
+          index: _currentNavIndex,
+          children: [
+            SafeArea(
+              child: FadeTransition(
+                opacity: _entranceFade,
+                child: SlideTransition(
+                  position: _entranceSlide,
+                  child: _buildHomeContent(),
+                ),
+              ),
             ),
-          ),
+            const LeaveListPage(),
+            const OtListPage(),
+            const ProfilePage(),
+          ],
         ),
         bottomNavigationBar: AppBottomNav(
           currentIndex: _currentNavIndex,

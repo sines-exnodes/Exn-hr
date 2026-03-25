@@ -32,10 +32,7 @@ class _ProfileView extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
@@ -109,7 +106,7 @@ class _ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection(profile) {
+  Widget _buildInfoSection(Profile profile) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(

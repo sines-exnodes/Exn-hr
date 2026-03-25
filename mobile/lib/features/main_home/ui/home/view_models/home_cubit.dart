@@ -72,7 +72,7 @@ class HomeCubit extends Cubit<HomeState> {
     if (todayRecord?.checkInTime != null && todayRecord?.checkOutTime != null) {
       try {
         final inDt = DateTime.parse(todayRecord!.checkInTime!);
-        final outDt = DateTime.parse(todayRecord.checkOutTime!);
+        final outDt = DateTime.parse(todayRecord!.checkOutTime!);
         final diff = outDt.difference(inDt);
         todayHours = '${diff.inHours}h ${diff.inMinutes.remainder(60)}m';
       } catch (_) {}
