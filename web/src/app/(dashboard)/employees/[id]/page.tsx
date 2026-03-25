@@ -10,42 +10,6 @@ import { Tabs } from "@/components/ui/Tabs";
 import { useEmployee, useAttendanceRecords, useLeaveRequests, useSalaryRecords } from "@/hooks/useApi";
 import type { Employee, AttendanceRecord, LeaveRequest, SalaryRecord } from "@/types";
 
-// Fallback mock data
-const mockEmployee: Employee = {
-  id: 1,
-  user_id: 1,
-  full_name: "Nguyen Van An",
-  phone: "0901234567",
-  dob: "1992-05-20",
-  address: "123 Đường Lê Lợi, Quận 1, TP.HCM",
-  position: "Senior Developer",
-  team_id: 1,
-  basic_salary: 20000000,
-  insurance_salary: 8000000,
-  join_date: "2022-01-15",
-  created_at: "2022-01-15T00:00:00Z",
-  updated_at: "2026-01-01T00:00:00Z",
-  user: { id: 1, email: "an.nv@company.com", role: "employee", is_active: true },
-  team: { id: 1, name: "Engineering", department_id: 1 },
-};
-
-const mockAttendance: AttendanceRecord[] = [
-  { id: 1, employee_id: 1, check_in_time: "2026-03-19T08:02:00Z", check_out_time: "2026-03-19T17:30:00Z", status: "checked_out" },
-  { id: 2, employee_id: 1, check_in_time: "2026-03-18T08:45:00Z", check_out_time: "2026-03-18T17:15:00Z", status: "checked_out" },
-  { id: 3, employee_id: 1, check_in_time: "2026-03-17T08:00:00Z", check_out_time: "2026-03-17T17:30:00Z", status: "checked_out" },
-];
-
-const mockLeave: LeaveRequest[] = [
-  { id: 1, employee_id: 1, type: "paid", start_date: "2026-02-10", end_date: "2026-02-11", days: 2, reason: "Nghỉ lễ", leader_status: "approved", hr_status: "approved", overall_status: "approved", created_at: "2026-02-07T00:00:00Z" },
-  { id: 2, employee_id: 1, type: "paid", start_date: "2025-11-15", end_date: "2025-11-15", days: 1, reason: "Sức khoẻ", leader_status: "approved", hr_status: "approved", overall_status: "approved", created_at: "2025-11-14T00:00:00Z" },
-];
-
-const mockSalary: SalaryRecord[] = [
-  { id: 1, employee_id: 1, month: 2, year: 2026, basic_salary: 20000000, total_allowances: 2000000, total_ot_pay: 1500000, total_bonus: 0, total_deductions: 1600000, salary_advance: 0, net_salary: 21900000, status: "confirmed", insurance_salary: 8000000 },
-  { id: 2, employee_id: 1, month: 1, year: 2026, basic_salary: 20000000, total_allowances: 2000000, total_ot_pay: 0, total_bonus: 0, total_deductions: 1600000, salary_advance: 0, net_salary: 20400000, status: "confirmed", insurance_salary: 8000000 },
-  { id: 3, employee_id: 1, month: 3, year: 2026, basic_salary: 20000000, total_allowances: 2000000, total_ot_pay: 0, total_bonus: 0, total_deductions: 1600000, salary_advance: 0, net_salary: 20400000, status: "draft" },
-];
-
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
@@ -250,14 +214,12 @@ export default function EmployeeDetailPage() {
   const { data: leaveRes } = useLeaveRequests({ employee_id: Number(id), page: 1, size: 20 });
   const { data: salaryRes } = useSalaryRecords();
 
-  const emp: Employee = empRes?.data ?? mockEmployee;
-  const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? mockAttendance;
-  const leaveRecords: LeaveRequest[] = leaveRes?.data ?? mockLeave;
+  const emp = empRes?.data as Employee | undefined;
+  const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? [];
+  const leaveRecords: LeaveRequest[] = leaveRes?.data ?? [];
   // Filter salary records for this employee from paginated results
   const allSalaryRecords = salaryRes?.data ?? [];
-  const salaryRecords: SalaryRecord[] = allSalaryRecords.length > 0
-    ? allSalaryRecords.filter((s) => s.employee_id === Number(id))
-    : mockSalary;
+  const salaryRecords: SalaryRecord[] = allSalaryRecords.filter((s) => s.employee_id === Number(id));
 
   if (empLoading) {
     return (
@@ -272,6 +234,24 @@ export default function EmployeeDetailPage() {
         />
         <div className="p-6">
           <p className="text-sm text-slate-400">Đang tải thông tin nhân viên...</p>
+        </div>
+      </>
+    );
+  }
+
+  if (!emp) {
+    return (
+      <>
+        <Header
+          title="Không tìm thấy nhân viên"
+          breadcrumbs={[
+            { label: "Dashboard", href: "/" },
+            { label: "Nhân viên", href: "/employees" },
+            { label: "Không tìm thấy" },
+          ]}
+        />
+        <div className="p-6">
+          <p className="text-sm text-slate-400">Không có dữ liệu nhân viên.</p>
         </div>
       </>
     );

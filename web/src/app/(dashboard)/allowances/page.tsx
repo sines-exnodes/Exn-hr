@@ -8,16 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import type { AllowanceType } from "@/types";
-import { useAllowanceTypes, createAllowanceType, deleteAllowanceType } from "@/hooks/useApi";
-
-const mockAllowanceTypes: AllowanceType[] = [
-  { id: 1, name: "Phụ cấp ăn trưa", description: "Hỗ trợ bữa ăn hằng ngày" },
-  { id: 2, name: "Phụ cấp xăng xe", description: "Chi phí di chuyển hằng tháng" },
-  { id: 3, name: "Phụ cấp điện thoại", description: "Hỗ trợ cước điện thoại công việc" },
-  { id: 4, name: "Phụ cấp thâm niên", description: "Thưởng theo số năm công tác" },
-  { id: 5, name: "Phụ cấp kỹ thuật", description: "Thưởng năng lực chuyên môn kỹ thuật" },
-  { id: 6, name: "Phụ cấp kiêm nhiệm", description: "Hỗ trợ khi đảm nhận thêm vị trí" },
-];
+import { useAllowanceTypes, createAllowanceType, deleteAllowanceType, updateAllowanceType } from "@/hooks/useApi";
 
 export default function AllowancesPage() {
   const { data: response, mutate, isLoading } = useAllowanceTypes();
@@ -29,7 +20,7 @@ export default function AllowancesPage() {
   const [formName, setFormName] = useState("");
   const [formDesc, setFormDesc] = useState("");
 
-  const allowanceTypes = response?.data ?? mockAllowanceTypes;
+  const allowanceTypes = response?.data ?? [];
 
   const openCreate = () => {
     setFormName("");
@@ -68,6 +59,23 @@ export default function AllowancesPage() {
       setDeleteItem(null);
     } catch (err) {
       console.error("Delete allowance type failed", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editItem || !formName.trim()) return;
+    setActionLoading(true);
+    try {
+      await updateAllowanceType(editItem.id, {
+        name: formName.trim(),
+        description: formDesc || undefined,
+      });
+      await mutate();
+      setEditItem(null);
+    } catch (err) {
+      console.error("Update allowance type failed", err);
     } finally {
       setActionLoading(false);
     }
@@ -117,6 +125,11 @@ export default function AllowancesPage() {
 
         {/* Allowance type cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {!isLoading && allowanceTypes.length === 0 && (
+            <Card className="sm:col-span-2 lg:col-span-3">
+              <p className="text-sm text-slate-400 text-center py-6">Chưa có loại phụ cấp nào.</p>
+            </Card>
+          )}
           {allowanceTypes.map((type) => (
             <Card key={type.id} className="group">
               <div className="flex items-start justify-between">
@@ -187,10 +200,7 @@ export default function AllowancesPage() {
           footer={
             <>
               <Button variant="outline" onClick={() => setEditItem(null)}>Huỷ</Button>
-              <Button onClick={() => {
-                // TODO: connect to real API — PUT /allowance-types/:id (no update endpoint available yet)
-                setEditItem(null);
-              }}>Lưu thay đổi</Button>
+              <Button disabled={actionLoading} onClick={handleEdit}>Lưu thay đổi</Button>
             </>
           }
         >

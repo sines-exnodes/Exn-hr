@@ -47,3 +47,10 @@ func (s *AuthService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 		},
 	}, nil
 }
+
+// ForgotPassword currently acknowledges requests without exposing account existence.
+// Email delivery/reset token storage can be plugged in later.
+func (s *AuthService) ForgotPassword(req dto.ForgotPasswordRequest) error {
+	_, _ = s.userRepo.FindByEmail(req.Email)
+	return nil
+}

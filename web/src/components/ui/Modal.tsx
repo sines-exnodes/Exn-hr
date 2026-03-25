@@ -51,14 +51,14 @@ export function Modal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-soft-pop"
         onClick={onClose}
         aria-hidden="true"
       />
       {/* Panel */}
       <div
         className={[
-          "relative z-10 w-full rounded-2xl bg-white shadow-xl",
+          "relative z-10 w-full rounded-2xl bg-white shadow-xl animate-fade-slide-up",
           sizeClasses[size],
         ].join(" ")}
       >

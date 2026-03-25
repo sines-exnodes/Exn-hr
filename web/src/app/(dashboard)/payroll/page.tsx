@@ -7,19 +7,11 @@ import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import type { SalaryRecord } from "@/types";
-import { useSalaryRecords, runPayroll, confirmSalary } from "@/hooks/useApi";
+import { useSalaryRecords, runPayroll, confirmSalary, exportPayrollCsv } from "@/hooks/useApi";
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
-const mockPayroll: SalaryRecord[] = [
-  { id: 1, employee_id: 1, month: 3, year: 2026, basic_salary: 20000000, total_allowances: 2000000, total_ot_pay: 1500000, total_bonus: 0, total_deductions: 1600000, salary_advance: 0, net_salary: 21900000, status: "draft" },
-  { id: 2, employee_id: 2, month: 3, year: 2026, basic_salary: 15000000, total_allowances: 1000000, total_ot_pay: 0, total_bonus: 0, total_deductions: 1200000, salary_advance: 0, net_salary: 14800000, status: "draft" },
-  { id: 3, employee_id: 3, month: 3, year: 2026, basic_salary: 18000000, total_allowances: 1500000, total_ot_pay: 750000, total_bonus: 0, total_deductions: 1440000, salary_advance: 0, net_salary: 18810000, status: "draft" },
-  { id: 4, employee_id: 4, month: 3, year: 2026, basic_salary: 30000000, total_allowances: 3000000, total_ot_pay: 2250000, total_bonus: 0, total_deductions: 2400000, salary_advance: 0, net_salary: 32850000, status: "draft" },
-  { id: 5, employee_id: 5, month: 3, year: 2026, basic_salary: 12000000, total_allowances: 800000, total_ot_pay: 0, total_bonus: 0, total_deductions: 960000, salary_advance: 0, net_salary: 11840000, status: "draft" },
-  { id: 6, employee_id: 6, month: 3, year: 2026, basic_salary: 11000000, total_allowances: 700000, total_ot_pay: 0, total_bonus: 0, total_deductions: 880000, salary_advance: 0, net_salary: 10820000, status: "draft" },
-];
 
 const monthOptions = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -32,13 +24,14 @@ export default function PayrollPage() {
   const [month, setMonth] = useState("3");
   const [year, setYear] = useState("2026");
   const [actionLoading, setActionLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const { data: response, mutate, isLoading } = useSalaryRecords({
     month: Number(month),
     year: Number(year),
   });
 
-  const payrollData = response?.data ?? mockPayroll;
+  const payrollData = response?.data ?? [];
 
   const summary = {
     total_employees: payrollData.length,
@@ -60,6 +53,25 @@ export default function PayrollPage() {
       console.error("Run payroll failed", err);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const blob = await exportPayrollCsv({ month: Number(month), year: Number(year) });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `payroll_${month}_${year}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export payroll failed", err);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -126,8 +138,8 @@ export default function PayrollPage() {
             {statusBadge(summary.status)}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
-              Xuất Excel
+            <Button variant="outline" onClick={handleExport} disabled={exporting}>
+              {exporting ? "Đang xuất..." : "Xuất CSV"}
             </Button>
             <Button disabled={actionLoading} onClick={handleRunPayroll}>
               Chạy bảng lương

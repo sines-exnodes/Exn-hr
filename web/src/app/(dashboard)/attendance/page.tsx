@@ -8,18 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { AttendanceRecord } from "@/types";
-import { useAttendanceRecords } from "@/hooks/useApi";
-
-const mockAttendance: AttendanceRecord[] = [
-  { id: 1, employee_id: 1, check_in_time: "2026-03-19T08:02:00Z", check_out_time: "2026-03-19T17:30:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
-  { id: 2, employee_id: 2, check_in_time: "2026-03-19T08:45:00Z", check_out_time: "2026-03-19T17:15:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172, wifi_ssid: "Office-WiFi" },
-  { id: 3, employee_id: 3, status: "checked_in", gps_lat: undefined, gps_lng: undefined },
-  { id: 4, employee_id: 4, check_in_time: "2026-03-19T08:00:00Z", check_out_time: "2026-03-19T12:30:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
-  { id: 5, employee_id: 5, check_in_time: "2026-03-19T08:05:00Z", check_out_time: "2026-03-19T17:35:00Z", status: "checked_out", wifi_ssid: "Home-WiFi" },
-  { id: 6, employee_id: 6, check_in_time: "2026-03-19T08:10:00Z", check_out_time: "2026-03-19T17:20:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
-  { id: 7, employee_id: 7, check_in_time: "2026-03-19T08:03:00Z", check_out_time: "2026-03-19T17:00:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
-  { id: 8, employee_id: 8, check_in_time: "2026-03-19T09:15:00Z", check_out_time: "2026-03-19T18:00:00Z", status: "checked_out", gps_lat: 10.762622, gps_lng: 106.660172 },
-];
+import { useAttendanceRecords, exportAttendanceCsv } from "@/hooks/useApi";
 
 const statusOptions = [
   { value: "", label: "Tất cả trạng thái" },
@@ -52,13 +41,14 @@ export default function AttendancePage() {
   const [dateTo, setDateTo] = useState("2026-03-19");
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const { data: response, isLoading } = useAttendanceRecords({
     start_date: dateFrom,
     end_date: dateTo,
   });
 
-  const attendanceData = response?.data ?? mockAttendance;
+  const attendanceData = response?.data ?? [];
 
   const filtered = attendanceData.filter((r) => {
     const employeeName = r.employee?.full_name ?? "";
@@ -73,6 +63,28 @@ export default function AttendancePage() {
     total: attendanceData.length,
     gpsVerified: attendanceData.filter((r) => r.gps_lat != null && r.gps_lng != null).length,
     wifiVerified: attendanceData.filter((r) => !!r.wifi_ssid).length,
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const blob = await exportAttendanceCsv({
+        start_date: dateFrom || undefined,
+        end_date: dateTo || undefined,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attendance_${dateFrom || "from"}_${dateTo || "to"}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export attendance failed", err);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -127,12 +139,12 @@ export default function AttendancePage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
               />
             </div>
-            <Button variant="outline" icon={
+            <Button variant="outline" onClick={handleExport} disabled={exporting} icon={
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
             }>
-              Xuất Excel
+              {exporting ? "Đang xuất..." : "Xuất CSV"}
             </Button>
           </div>
         </Card>
@@ -171,7 +183,7 @@ export default function AttendancePage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-100 bg-white stagger-children">
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">

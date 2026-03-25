@@ -29,6 +29,18 @@ func (r *SalaryRepository) DeleteAllowanceType(id uint) error {
 	return r.db.Delete(&models.Allowance{}, id).Error
 }
 
+func (r *SalaryRepository) UpdateAllowanceType(a *models.Allowance) error {
+	return r.db.Save(a).Error
+}
+
+func (r *SalaryRepository) GetAllowanceTypeByID(id uint) (*models.Allowance, error) {
+	var allowance models.Allowance
+	if err := r.db.First(&allowance, id).Error; err != nil {
+		return nil, err
+	}
+	return &allowance, nil
+}
+
 // --- Bonuses ---
 
 func (r *SalaryRepository) CreateBonus(b *models.Bonus) error {

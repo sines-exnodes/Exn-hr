@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -9,15 +10,6 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import type { Department } from "@/types";
 import { useDepartments, createDepartment, deleteDepartment } from "@/hooks/useApi";
-
-const mockDepartments: Department[] = [
-  { id: 1, name: "Engineering", description: "Phát triển sản phẩm và hạ tầng kỹ thuật" },
-  { id: 2, name: "Sales", description: "Kinh doanh và phát triển khách hàng" },
-  { id: 3, name: "HR", description: "Quản lý nhân sự và văn hoá doanh nghiệp" },
-  { id: 4, name: "Finance", description: "Tài chính, kế toán và kiểm soát chi phí" },
-  { id: 5, name: "Marketing", description: "Marketing, thương hiệu và nội dung" },
-  { id: 6, name: "Operations", description: "Vận hành và cải tiến quy trình" },
-];
 
 const deptColors: Record<number, string> = {
   1: "bg-blue-100 text-blue-700",
@@ -57,7 +49,7 @@ export default function OrganizationPage() {
   const [deptDesc, setDeptDesc] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  const departments = response?.data ?? mockDepartments;
+  const departments = response?.data ?? [];
 
   const totalEmployees = departments.reduce((s, d) => s + getMemberCount(d), 0);
 
@@ -211,7 +203,9 @@ export default function OrganizationPage() {
               <div className="flex justify-end gap-2">
                 <Button variant="danger" disabled={actionLoading} onClick={() => handleDelete(selected.id)}>Xoá phòng ban</Button>
                 <Button variant="outline" onClick={() => setSelected(null)}>Đóng</Button>
-                <Button>Xem nhân viên</Button>
+                <Link href={`/employees?department_id=${selected.id}`}>
+                  <Button>Xem nhân viên</Button>
+                </Link>
               </div>
             </div>
           </Modal>

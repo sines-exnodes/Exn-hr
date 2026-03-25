@@ -33,6 +33,22 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.OK(resp, "Login successful"))
 }
 
+// POST /api/v1/auth/forgot-password
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req dto.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("Invalid request: "+err.Error()))
+		return
+	}
+
+	if err := h.authService.ForgotPassword(req); err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err("failed to process forgot password request"))
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.OK(nil, "If the email exists, a reset link has been sent"))
+}
+
 // GET /api/v1/auth/me
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID, _ := c.Get("user_id")

@@ -72,7 +72,7 @@ export function Tabs({ tabs, defaultTab, onChange, children }: TabsProps) {
           role="tabpanel"
           id={`tabpanel-${active}`}
           aria-labelledby={`tab-${active}`}
-          className="mt-4"
+          className="mt-4 animate-fade-slide-up"
         >
           {children(active)}
         </div>

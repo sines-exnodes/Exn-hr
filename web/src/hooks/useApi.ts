@@ -50,6 +50,10 @@ export async function changePassword(data: ChangePasswordRequest) {
   return api.post<ApiResponse<null>>("/auth/change-password", data);
 }
 
+export async function forgotPassword(data: { email: string }) {
+  return api.post<ApiResponse<null>>("/auth/forgot-password", data);
+}
+
 // ============================================================
 // Employees
 // ============================================================
@@ -225,6 +229,10 @@ export async function deleteApprovedWifi(id: number) {
   return api.delete<ApiResponse<null>>(`/attendance/approved-wifi/${id}`);
 }
 
+export async function exportAttendanceCsv(params?: { start_date?: string; end_date?: string; employee_id?: number }) {
+  return api.download("/attendance/export", params);
+}
+
 // ============================================================
 // Leave
 // ============================================================
@@ -387,6 +395,10 @@ export async function confirmSalary(id: number) {
   return api.post<ApiResponse<null>>(`/salary/${id}/confirm`);
 }
 
+export async function exportPayrollCsv(params?: { month?: number; year?: number }) {
+  return api.download("/salary/export", params);
+}
+
 // ---- Allowance Types ----
 
 export function useAllowanceTypes(config?: SWRConfiguration) {
@@ -395,6 +407,10 @@ export function useAllowanceTypes(config?: SWRConfiguration) {
 
 export async function createAllowanceType(data: { name: string; description?: string }) {
   return api.post<ApiResponse<AllowanceType>>("/salary/allowance-types", data);
+}
+
+export async function updateAllowanceType(id: number, data: { name: string; description?: string }) {
+  return api.put<ApiResponse<AllowanceType>>(`/salary/allowance-types/${id}`, data);
 }
 
 export async function deleteAllowanceType(id: number) {

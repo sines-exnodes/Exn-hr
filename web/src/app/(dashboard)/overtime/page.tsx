@@ -10,14 +10,6 @@ import { Modal } from "@/components/ui/Modal";
 import type { OvertimeRequest } from "@/types";
 import { useOvertimeRequests, leaderApproveOT, ceoApproveOT, cancelOvertime } from "@/hooks/useApi";
 
-const mockOT: OvertimeRequest[] = [
-  { id: 1, employee_id: 1, date: "2026-03-18", start_time: "17:30", end_time: "20:30", hours: 3, reason: "Hoàn thiện tính năng release", leader_status: "pending", ceo_status: "pending", overall_status: "pending", created_at: "2026-03-18T21:00:00Z" },
-  { id: 2, employee_id: 4, date: "2026-03-17", start_time: "18:00", end_time: "21:00", hours: 3, reason: "Triển khai hệ thống", leader_status: "approved", ceo_status: "pending", overall_status: "pending", created_at: "2026-03-17T22:00:00Z" },
-  { id: 3, employee_id: 2, date: "2026-03-15", start_time: "17:30", end_time: "19:30", hours: 2, reason: "Xử lý tài liệu hợp đồng", leader_status: "approved", ceo_status: "approved", overall_status: "approved", created_at: "2026-03-15T20:00:00Z" },
-  { id: 4, employee_id: 6, date: "2026-03-10", start_time: "18:00", end_time: "20:00", hours: 2, reason: "Chuẩn bị tài liệu pitch", leader_status: "approved", ceo_status: "rejected", overall_status: "rejected", created_at: "2026-03-10T21:00:00Z" },
-  { id: 5, employee_id: 8, date: "2026-03-19", start_time: "17:30", end_time: "21:30", hours: 4, reason: "Bug fix khẩn cấp production", leader_status: "pending", ceo_status: "pending", overall_status: "pending", created_at: "2026-03-19T22:00:00Z" },
-];
-
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
@@ -108,7 +100,7 @@ export default function OvertimePage() {
   const [rejectStage, setRejectStage] = useState<"leader" | "ceo">("leader");
   const [actionLoading, setActionLoading] = useState(false);
 
-  const otData = response?.data ?? mockOT;
+  const otData = response?.data ?? [];
 
   const leaderPending = otData.filter((o) => o.leader_status === "pending");
   const ceoPending = otData.filter((o) => o.leader_status === "approved" && o.ceo_status === "pending");

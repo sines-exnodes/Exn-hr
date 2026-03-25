@@ -10,15 +10,6 @@ import { Modal } from "@/components/ui/Modal";
 import type { LeaveRequest } from "@/types";
 import { useLeaveRequests, leaderApproveLeave, hrApproveLeave, cancelLeave } from "@/hooks/useApi";
 
-const mockLeave: LeaveRequest[] = [
-  { id: 1, employee_id: 1, type: "paid", start_date: "2026-03-22", end_date: "2026-03-23", days: 2, reason: "Việc gia đình", leader_status: "pending", hr_status: "pending", overall_status: "pending", created_at: "2026-03-19T09:00:00Z" },
-  { id: 2, employee_id: 2, type: "unpaid", start_date: "2026-03-20", end_date: "2026-03-20", days: 1, reason: "Bị ốm", leader_status: "approved", hr_status: "pending", overall_status: "pending", created_at: "2026-03-18T14:00:00Z" },
-  { id: 3, employee_id: 3, type: "paid", start_date: "2026-03-25", end_date: "2026-03-26", days: 2, reason: "Du lịch gia đình", leader_status: "pending", hr_status: "pending", overall_status: "pending", created_at: "2026-03-17T10:00:00Z" },
-  { id: 4, employee_id: 4, type: "paid", start_date: "2026-03-01", end_date: "2026-03-02", days: 2, reason: "Nghỉ lễ", leader_status: "approved", hr_status: "approved", overall_status: "approved", created_at: "2026-02-26T00:00:00Z" },
-  { id: 5, employee_id: 5, type: "unpaid", start_date: "2026-02-15", end_date: "2026-02-15", days: 1, reason: "Sức khoẻ", leader_status: "approved", hr_status: "rejected", overall_status: "rejected", created_at: "2026-02-14T00:00:00Z" },
-  { id: 6, employee_id: 6, type: "unpaid", start_date: "2026-04-01", end_date: "2026-04-03", days: 3, reason: "Chuyện cá nhân", leader_status: "pending", hr_status: "pending", overall_status: "pending", created_at: "2026-03-18T08:00:00Z" },
-];
-
 const leaveTypeLabel: Record<string, string> = {
   paid: "Phép năm",
   unpaid: "Không lương",
@@ -101,7 +92,7 @@ export default function LeavePage() {
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  const leaveData = response?.data ?? mockLeave;
+  const leaveData = response?.data ?? [];
 
   const pending = leaveData.filter((l) => l.overall_status === "pending");
   const approved = leaveData.filter((l) => l.overall_status === "approved");

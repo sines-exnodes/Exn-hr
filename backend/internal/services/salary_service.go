@@ -194,6 +194,19 @@ func (s *SalaryService) DeleteAllowanceType(id uint) error {
 	return s.salaryRepo.DeleteAllowanceType(id)
 }
 
+func (s *SalaryService) UpdateAllowanceType(id uint, req dto.AllowanceTypeReq) (*models.Allowance, error) {
+	a, err := s.salaryRepo.GetAllowanceTypeByID(id)
+	if err != nil {
+		return nil, errors.New("allowance type not found")
+	}
+	a.Name = req.Name
+	a.Description = req.Description
+	if err := s.salaryRepo.UpdateAllowanceType(a); err != nil {
+		return nil, errors.New("failed to update allowance type")
+	}
+	return a, nil
+}
+
 // --- Bonuses ---
 
 func (s *SalaryService) AddBonus(req dto.AddBonusReq) (*models.Bonus, error) {

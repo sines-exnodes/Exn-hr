@@ -17,7 +17,7 @@ export function Card({ children, className = "", padding = "md" }: CardProps) {
   return (
     <div
       className={[
-        "rounded-xl border border-slate-200 bg-white shadow-sm",
+        "rounded-xl border border-slate-200 bg-white shadow-sm animate-fade-slide-up interactive-card",
         paddingClasses[padding],
         className,
       ].join(" ")}

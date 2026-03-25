@@ -9,21 +9,25 @@ interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
 }
 
+function buildUrl(path: string, params?: RequestOptions["params"]): string {
+  let url = `${API_BASE}${path}`;
+  if (!params) return url;
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined) qs.set(k, String(v));
+  }
+  const qsStr = qs.toString();
+  if (qsStr) url += `?${qsStr}`;
+  return url;
+}
+
 async function request<T>(
   path: string,
   options: RequestOptions = {}
 ): Promise<T> {
   const { params, ...init } = options;
 
-  let url = `${API_BASE}${path}`;
-  if (params) {
-    const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined) qs.set(k, String(v));
-    }
-    const qsStr = qs.toString();
-    if (qsStr) url += `?${qsStr}`;
-  }
+  const url = buildUrl(path, params);
 
   const token = getToken();
   const headers: HeadersInit = {
@@ -77,4 +81,19 @@ export const api = {
     }),
 
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+
+  download: async (path: string, params?: RequestOptions["params"]) => {
+    const url = buildUrl(path, params);
+    const token = getToken();
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`Download failed: ${res.status}`);
+    }
+    return res.blob();
+  },
 };

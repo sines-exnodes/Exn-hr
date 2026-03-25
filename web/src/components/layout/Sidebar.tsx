@@ -38,7 +38,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex h-screen w-60 flex-shrink-0 flex-col"
+      className="flex h-screen w-60 flex-shrink-0 flex-col animate-fade-slide-up"
       style={{ backgroundColor: "var(--bg-sidebar)" }}
     >
       {/* Logo */}
@@ -70,7 +70,7 @@ export function Sidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors"
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:translate-x-0.5"
                   style={{
                     backgroundColor: active ? "var(--sidebar-active-bg)" : "transparent",
                     color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",

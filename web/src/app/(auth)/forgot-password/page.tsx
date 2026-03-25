@@ -4,19 +4,26 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { forgotPassword } from "@/hooks/useApi";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: connect to real API — POST /auth/forgot-password
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    setSubmitted(true);
+    setError("");
+    try {
+      await forgotPassword({ email });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gửi yêu cầu thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,6 +68,7 @@ export default function ForgotPasswordPage() {
                 <Button type="submit" fullWidth loading={loading}>
                   Gửi link đặt lại mật khẩu
                 </Button>
+                {error && <p className="text-sm text-red-500">{error}</p>}
               </form>
             </>
           ) : (

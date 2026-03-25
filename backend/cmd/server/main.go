@@ -108,6 +108,7 @@ func main() {
 	{
 		// ---- Public routes ----
 		api.POST("/auth/login", authHandler.Login)
+		api.POST("/auth/forgot-password", authHandler.ForgotPassword)
 
 		// ---- Protected routes (require JWT) ----
 		protected := api.Group("")
@@ -167,6 +168,7 @@ func main() {
 
 				// List — Admin/HR/CEO/Leader can view all; employee sees own
 				attendance.GET("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), attendanceHandler.List)
+				attendance.GET("/export", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), attendanceHandler.ExportCSV)
 
 				// Office location config — Admin only
 				attendance.GET("/office-locations", attendanceHandler.GetOfficeLocations)
@@ -204,6 +206,7 @@ func main() {
 			{
 				salary.POST("/run-payroll", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.RunPayroll)
 				salary.GET("", salaryHandler.List)
+				salary.GET("/export", salaryHandler.ExportCSV)
 				salary.GET("/me", salaryHandler.GetMySalary)
 				salary.GET("/employee/:employee_id", salaryHandler.GetByEmployee)
 				salary.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
@@ -211,6 +214,7 @@ func main() {
 				// Allowance types
 				salary.GET("/allowance-types", salaryHandler.ListAllowanceTypes)
 				salary.POST("/allowance-types", middleware.RoleRequired(models.RoleAdmin), salaryHandler.CreateAllowanceType)
+				salary.PUT("/allowance-types/:id", middleware.RoleRequired(models.RoleAdmin), salaryHandler.UpdateAllowanceType)
 				salary.DELETE("/allowance-types/:id", middleware.RoleRequired(models.RoleAdmin), salaryHandler.DeleteAllowanceType)
 
 				// Bonuses

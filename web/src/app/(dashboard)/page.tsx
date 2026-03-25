@@ -5,28 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { useEmployees, useAttendanceRecords, useLeaveRequests } from "@/hooks/useApi";
-import type { DashboardStats, AttendanceRecord, LeaveRequest } from "@/types";
-
-// Fallback mock data used while API is loading or unavailable
-const mockStats: DashboardStats = {
-  total_employees: 42,
-  present_today: 38,
-  on_leave: 3,
-  pending_leave_requests: 5,
-  pending_overtime_requests: 2,
-  total_departments: 6,
-};
-
-const mockAttendance: AttendanceRecord[] = [
-  { id: 1, employee_id: 1, check_in_time: "2026-03-19T08:02:00Z", check_out_time: "2026-03-19T17:30:00Z", status: "checked_out", employee: { id: 1, user_id: 1, full_name: "Nguyen Van An", position: "Dev", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
-  { id: 2, employee_id: 2, check_in_time: "2026-03-19T08:45:00Z", check_out_time: "2026-03-19T17:15:00Z", status: "checked_out", employee: { id: 2, user_id: 2, full_name: "Tran Thi Binh", position: "HR", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
-  { id: 3, employee_id: 3, status: "checked_in", employee: { id: 3, user_id: 3, full_name: "Le Minh Chau", position: "Sales", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
-];
-
-const mockPendingLeave: LeaveRequest[] = [
-  { id: 1, employee_id: 1, type: "paid", start_date: "2026-03-22", end_date: "2026-03-23", days: 2, reason: "Việc gia đình", leader_status: "pending", hr_status: "pending", overall_status: "pending", employee: { id: 1, user_id: 1, full_name: "Nguyen Van An", position: "Dev", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
-  { id: 2, employee_id: 2, type: "unpaid", start_date: "2026-03-20", end_date: "2026-03-20", days: 1, reason: "Sức khoẻ", leader_status: "approved", hr_status: "pending", overall_status: "pending", employee: { id: 2, user_id: 2, full_name: "Tran Thi Binh", position: "HR", basic_salary: 0, insurance_salary: 0, join_date: "", created_at: "", updated_at: "" } },
-];
+import type { AttendanceRecord, LeaveRequest } from "@/types";
 
 // Format ISO time to HH:mm
 function formatTime(iso?: string): string {
@@ -77,12 +56,11 @@ export default function DashboardPage() {
   const { data: attendanceRes, isLoading: attendanceLoading } = useAttendanceRecords({ start_date: today, end_date: today, page: 1, size: 5 });
   const { data: pendingLeaveRes, isLoading: leaveLoading } = useLeaveRequests({ status: "pending", page: 1, size: 5 });
 
-  // Derive stats from API data or fall back to mock
-  const totalEmployees = employeesRes?.total ?? mockStats.total_employees;
-  const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? mockAttendance;
-  const presentToday = attendanceRes ? attendanceRes.total : mockStats.present_today;
-  const pendingLeaveList: LeaveRequest[] = pendingLeaveRes?.data ?? mockPendingLeave;
-  const pendingLeaveCount = pendingLeaveRes?.total ?? mockStats.pending_leave_requests;
+  const totalEmployees = employeesRes?.total ?? 0;
+  const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? [];
+  const presentToday = attendanceRes?.total ?? 0;
+  const pendingLeaveList: LeaveRequest[] = pendingLeaveRes?.data ?? [];
+  const pendingLeaveCount = pendingLeaveRes?.total ?? 0;
 
   const attendanceRate = totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0;
 
@@ -133,7 +111,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Nghỉ phép hôm nay"
-            value={mockStats.on_leave}
+            value={0}
             color="bg-yellow-50"
             icon={
               <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,7 +122,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="OT tháng"
-            value={126}
+            value={0}
             change="x1.5 hệ số"
             positive
             color="bg-orange-50"

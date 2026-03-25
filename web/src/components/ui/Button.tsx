@@ -48,7 +48,8 @@ export function Button({
     <button
       disabled={isDisabled}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors",
+        "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200",
+        "active:scale-[0.98]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         variantClasses[variant],

@@ -9,13 +9,6 @@ interface HeaderProps {
   breadcrumbs?: { label: string; href?: string }[];
 }
 
-// Fallback mock notifications
-const mockNotifications = [
-  { id: 1, title: "Leave", body: "Nguyen Van A submitted leave request", created_at: "2026-03-19T09:55:00Z", is_read: false },
-  { id: 2, title: "OT", body: "OT request pending CEO approval", created_at: "2026-03-19T09:00:00Z", is_read: false },
-  { id: 3, title: "Payroll", body: "Payroll for March ready to review", created_at: "2026-03-19T07:00:00Z", is_read: false },
-];
-
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -33,8 +26,8 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
   const { data: notifRes, mutate: mutateNotifs } = useNotifications({ page: 1, size: 10 });
   const { data: unreadRes, mutate: mutateUnread } = useUnreadCount();
 
-  const notifications = notifRes?.data ?? mockNotifications;
-  const unreadCount = unreadRes?.data?.count ?? 3;
+  const notifications = notifRes?.data ?? [];
+  const unreadCount = unreadRes?.data?.count ?? 0;
 
   const handleMarkRead = async (id: number) => {
     try {
@@ -47,7 +40,7 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
+    <header className="glass-surface sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 px-6">
       {/* Left: title + breadcrumbs */}
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
@@ -92,7 +85,7 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
         <div className="relative">
           <button
             onClick={() => setNotifOpen((o) => !o)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
+            className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all duration-200 hover:-translate-y-0.5"
             aria-label="Notifications"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,7 +100,7 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full z-20 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg">
+            <div className="absolute right-0 top-full z-20 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg animate-fade-slide-up">
               <div className="border-b border-slate-100 px-4 py-3">
                 <h3 className="text-sm font-semibold text-slate-700">Notifications</h3>
               </div>

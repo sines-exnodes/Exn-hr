@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/exn-hr/backend/internal/dto"
@@ -79,6 +82,53 @@ func (h *AttendanceHandler) List(c *gin.Context) {
 		Page:    filter.Page,
 		Size:    filter.Size,
 	})
+}
+
+// GET /api/v1/attendance/export
+func (h *AttendanceHandler) ExportCSV(c *gin.Context) {
+	var filter dto.AttendanceFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid query params: "+err.Error()))
+		return
+	}
+	filter.Page = 1
+	filter.Size = 10000
+	records, _, err := h.svc.List(filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+
+	filename := fmt.Sprintf("attendance_%s.csv", time.Now().Format("20060102_150405"))
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	c.Header("Cache-Control", "no-cache")
+
+	w := csv.NewWriter(c.Writer)
+	defer w.Flush()
+
+	_ = w.Write([]string{"ID", "EmployeeID", "EmployeeName", "CheckIn", "CheckOut", "Status", "GPSLat", "GPSLng", "WiFiSSID"})
+	for _, r := range records {
+		checkOut := ""
+		if r.CheckOutTime != nil {
+			checkOut = r.CheckOutTime.Format(time.RFC3339)
+		}
+		empName := ""
+		if r.Employee != nil {
+			empName = r.Employee.FullName
+		}
+		_ = w.Write([]string{
+			strconv.FormatUint(uint64(r.ID), 10),
+			strconv.FormatUint(uint64(r.EmployeeID), 10),
+			empName,
+			r.CheckInTime.Format(time.RFC3339),
+			checkOut,
+			r.Status,
+			strconv.FormatFloat(r.GPSLat, 'f', 6, 64),
+			strconv.FormatFloat(r.GPSLng, 'f', 6, 64),
+			r.WiFiSSID,
+		})
+	}
 }
 
 // GET /api/v1/attendance/office-locations

@@ -11,13 +11,6 @@ import { Card } from "@/components/ui/Card";
 import { useEmployees, useDepartments } from "@/hooks/useApi";
 import type { Employee } from "@/types";
 
-// Fallback mock data
-const mockEmployees: Employee[] = [
-  { id: 1, user_id: 1, full_name: "Nguyen Van An", position: "Senior Developer", basic_salary: 20000000, insurance_salary: 8000000, join_date: "2022-01-15", team_id: 1, created_at: "2022-01-15T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", user: { id: 1, email: "an.nv@company.com", role: "employee", is_active: true }, team: { id: 1, name: "Engineering", department_id: 1 } },
-  { id: 2, user_id: 2, full_name: "Tran Thi Binh", position: "HR Specialist", basic_salary: 15000000, insurance_salary: 7000000, join_date: "2021-06-01", team_id: 3, created_at: "2021-06-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", user: { id: 2, email: "binh.tt@company.com", role: "hr", is_active: true }, team: { id: 3, name: "HR", department_id: 3 } },
-  { id: 3, user_id: 3, full_name: "Le Minh Chau", position: "Sales Manager", basic_salary: 18000000, insurance_salary: 6000000, join_date: "2020-03-10", team_id: 2, created_at: "2020-03-10T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", user: { id: 3, email: "chau.lm@company.com", role: "employee", is_active: false }, team: { id: 2, name: "Sales", department_id: 2 } },
-];
-
 const statusOptions = [
   { value: "", label: "Tất cả trạng thái" },
   { value: "active", label: "Active" },
@@ -39,8 +32,8 @@ export default function EmployeesPage() {
   });
   const { data: deptRes } = useDepartments();
 
-  const employees: Employee[] = employeesRes?.data ?? mockEmployees;
-  const totalCount = employeesRes?.total ?? mockEmployees.length;
+  const employees: Employee[] = employeesRes?.data ?? [];
+  const totalCount = employeesRes?.total ?? 0;
 
   // Build department options from API
   const departments = deptRes?.data ?? [];
@@ -130,7 +123,7 @@ export default function EmployeesPage() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-100 bg-white stagger-children">
                 {isLoading ? (
                   <tr>
                     <td colSpan={8} className="px-4 py-10 text-center text-sm text-slate-400">
