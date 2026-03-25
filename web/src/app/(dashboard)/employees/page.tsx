@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,17 +19,23 @@ const statusOptions = [
 ];
 
 export default function EmployeesPage() {
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page] = useState(1);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("department_id");
+    setDeptFilter(fromUrl ?? "");
+  }, [searchParams]);
 
   // Real API calls
   const { data: employeesRes, isLoading } = useEmployees({
     page,
     size: 50,
     search: search || undefined,
-    team_id: deptFilter ? Number(deptFilter) : undefined,
+    department_id: deptFilter ? Number(deptFilter) : undefined,
   });
   const { data: deptRes } = useDepartments();
 
@@ -53,6 +60,10 @@ export default function EmployeesPage() {
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
+  const activeDeptName = deptFilter
+    ? departments.find((d) => String(d.id) === deptFilter)?.name
+    : undefined;
+
   return (
     <>
       <Header
@@ -60,6 +71,19 @@ export default function EmployeesPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Nhân viên" }]}
       />
       <div className="p-6 space-y-4">
+        {activeDeptName && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-green-100 bg-green-50/80 px-4 py-3 text-sm text-green-800">
+            <span>
+              Đang lọc theo phòng ban: <strong>{activeDeptName}</strong> (chỉ nhân viên đã gán team thuộc phòng ban này).
+            </span>
+            <Link
+              href="/employees"
+              className="shrink-0 font-medium text-[#15803d] underline-offset-2 hover:underline"
+            >
+              Xem tất cả nhân viên
+            </Link>
+          </div>
+        )}
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

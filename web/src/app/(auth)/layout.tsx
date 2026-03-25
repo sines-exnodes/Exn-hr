@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Exn-HR — Đăng nhập",
+  title: "Đăng nhập",
 };
 
 export default function AuthLayout({

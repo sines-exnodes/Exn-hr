@@ -101,17 +101,25 @@ export default function OrganizationPage() {
             return (
               <Card
                 key={dept.id}
-                padding="sm"
-                className="cursor-pointer border-2 transition-colors hover:border-[#22C55E]"
+                padding="none"
+                className="border-2 transition-colors hover:border-[#22C55E] overflow-hidden"
               >
                 <button
-                  className="w-full text-left"
+                  type="button"
+                  className="w-full cursor-pointer px-4 py-3 text-left"
                   onClick={() => setSelected(dept)}
                 >
                   <p className="text-xs text-slate-500">{dept.name}</p>
                   <p className="mt-1 text-2xl font-bold text-slate-800">{memberCount}</p>
                   <p className="text-xs text-slate-400">nhân viên</p>
                 </button>
+                <Link
+                  href={`/employees?department_id=${dept.id}`}
+                  className="block border-t border-slate-100 bg-slate-50/80 px-4 py-2 text-center text-xs font-medium text-[#22C55E] hover:bg-green-50 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Xem danh sách →
+                </Link>
               </Card>
             );
           })}
@@ -142,10 +150,12 @@ export default function OrganizationPage() {
             return (
               <Card
                 key={dept.id}
-                className="cursor-pointer transition-shadow hover:shadow-md"
+                padding="none"
+                className="overflow-hidden transition-shadow hover:shadow-md"
               >
                 <button
-                  className="w-full text-left"
+                  type="button"
+                  className="w-full cursor-pointer p-5 text-left"
                   onClick={() => setSelected(dept)}
                 >
                   <div className="flex items-start gap-4">
@@ -153,7 +163,7 @@ export default function OrganizationPage() {
                       {deptIcons[dept.id]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <h3 className="font-semibold text-slate-800">{dept.name}</h3>
                         <Badge variant="gray">{memberCount} người</Badge>
                       </div>
@@ -172,6 +182,14 @@ export default function OrganizationPage() {
                     </div>
                   </div>
                 </button>
+                <Link
+                  href={`/employees?department_id=${dept.id}`}
+                  className="flex items-center justify-center gap-1 border-t border-slate-100 bg-slate-50/80 px-4 py-2.5 text-sm font-medium text-[#22C55E] hover:bg-green-50 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Danh sách nhân viên
+                  <span aria-hidden>→</span>
+                </Link>
               </Card>
             );
           })}
@@ -190,11 +208,18 @@ export default function OrganizationPage() {
                 <p className="text-sm text-slate-500 mb-1">Mô tả</p>
                 <p className="text-sm text-slate-700">{selected.description || "Chưa có mô tả"}</p>
               </div>
+              <p className="text-xs text-slate-500">
+                Danh sách nhân viên theo phòng ban lấy từ API (nhân viên đã gán <strong>team</strong> thuộc phòng ban). Nhân viên chưa có team sẽ không xuất hiện khi lọc theo phòng ban.
+              </p>
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg bg-slate-50 p-4">
-                  <p className="text-xs text-slate-400 mb-1">Số nhân viên</p>
+                <Link
+                  href={`/employees?department_id=${selected.id}`}
+                  className="rounded-lg bg-slate-50 p-4 transition-colors hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]"
+                >
+                  <p className="text-xs text-slate-400 mb-1">Số nhân viên (ước tính từ team)</p>
                   <p className="text-2xl font-bold text-slate-800">{getMemberCount(selected)}</p>
-                </div>
+                  <p className="mt-2 text-xs font-medium text-[#22C55E]">Mở danh sách đầy đủ trên trang Nhân viên →</p>
+                </Link>
                 <div className="rounded-lg bg-slate-50 p-4">
                   <p className="text-xs text-slate-400 mb-1">Trưởng phòng</p>
                   <p className="text-sm font-semibold text-slate-700">{getLeaderName(selected) ?? "Chưa phân công"}</p>

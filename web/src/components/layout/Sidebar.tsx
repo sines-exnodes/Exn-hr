@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import {
   LayoutDashboard,
   Building2,
@@ -42,16 +43,8 @@ export function Sidebar() {
       style={{ backgroundColor: "var(--bg-sidebar)" }}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-        <div
-          className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ backgroundColor: "var(--primary)" }}
-        >
-          <span className="text-sm font-bold text-white">E</span>
-        </div>
-        <span className="text-lg font-semibold text-white" style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}>
-          Exn-Hr
-        </span>
+      <div className="flex h-16 items-center px-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+        <BrandLogo imageHeight={32} priority className="px-0" />
       </div>
 
       {/* Nav */}

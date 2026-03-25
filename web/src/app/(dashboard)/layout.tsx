@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Exn-HR",
-    default: "Dashboard | Exn-HR",
+    template: "%s | EXN HRM",
+    default: "Dashboard | EXN HRM",
   },
 };
 

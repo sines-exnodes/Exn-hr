@@ -1,13 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
-import { useEmployee, useAttendanceRecords, useLeaveRequests, useSalaryRecords } from "@/hooks/useApi";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import {
+  useEmployee,
+  useAttendanceRecords,
+  useLeaveRequests,
+  useSalaryRecords,
+  useDepartments,
+  useTeams,
+  updateEmployee,
+} from "@/hooks/useApi";
 import type { Employee, AttendanceRecord, LeaveRequest, SalaryRecord } from "@/types";
 
 const formatCurrency = (n: number) =>
@@ -29,6 +40,7 @@ function formatDate(iso?: string): string {
 }
 
 function ProfileTab({ emp }: { emp: Employee }) {
+  const deptName = emp.team?.department?.name ?? "—";
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <Card>
@@ -53,6 +65,7 @@ function ProfileTab({ emp }: { emp: Employee }) {
         <div className="space-y-3">
           {[
             { label: "Mã nhân viên", value: `#${emp.id}` },
+            { label: "Phòng ban", value: deptName },
             { label: "Team", value: emp.team?.name ?? "—" },
             { label: "Vị trí", value: emp.position },
             { label: "Vai trò", value: emp.user?.role ?? "—" },
@@ -207,19 +220,130 @@ function LeaveTab({ leaveRecords }: { leaveRecords: LeaveRequest[] }) {
 export default function EmployeeDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const numericId = Number(id);
 
-  // Real API calls
-  const { data: empRes, isLoading: empLoading } = useEmployee(id);
-  const { data: attendanceRes } = useAttendanceRecords({ employee_id: Number(id), page: 1, size: 20 });
-  const { data: leaveRes } = useLeaveRequests({ employee_id: Number(id), page: 1, size: 20 });
+  const { data: empRes, isLoading: empLoading, mutate: mutateEmp } = useEmployee(id);
+  const { data: attendanceRes } = useAttendanceRecords({ employee_id: numericId, page: 1, size: 20 });
+  const { data: leaveRes } = useLeaveRequests({ employee_id: numericId, page: 1, size: 20 });
   const { data: salaryRes } = useSalaryRecords();
+  const { data: deptRes } = useDepartments();
+  const { data: teamsRes } = useTeams();
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [dob, setDob] = useState("");
+  const [joinDate, setJoinDate] = useState("");
+  const [position, setPosition] = useState("");
+  const [deptFilter, setDeptFilter] = useState("");
+  const [teamId, setTeamId] = useState("");
+  const [basicSalary, setBasicSalary] = useState("");
+  const [insuranceSalary, setInsuranceSalary] = useState("");
 
   const emp = empRes?.data as Employee | undefined;
   const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? [];
   const leaveRecords: LeaveRequest[] = leaveRes?.data ?? [];
-  // Filter salary records for this employee from paginated results
   const allSalaryRecords = salaryRes?.data ?? [];
-  const salaryRecords: SalaryRecord[] = allSalaryRecords.filter((s) => s.employee_id === Number(id));
+  const salaryRecords: SalaryRecord[] = allSalaryRecords.filter((s) => s.employee_id === numericId);
+
+  const departments = deptRes?.data ?? [];
+  const teams = teamsRes?.data ?? [];
+
+  const departmentOptions = [
+    { value: "", label: "Tất cả phòng ban (xem mọi team)" },
+    ...departments.map((d) => ({ value: String(d.id), label: d.name })),
+  ];
+
+  const filteredTeams = teams.filter((t) => {
+    if (!deptFilter) return true;
+    return t.department_id === Number(deptFilter);
+  });
+
+  const teamOptions = [
+    { value: "", label: "Không gán team" },
+    ...filteredTeams.map((t) => ({
+      value: String(t.id),
+      label: `${t.name}${t.department?.name ? ` (${t.department.name})` : ""}`,
+    })),
+  ];
+
+  useEffect(() => {
+    if (!editOpen || !emp) return;
+    setFullName(emp.full_name);
+    setPhone(emp.phone ?? "");
+    setAddress(emp.address ?? "");
+    setDob(emp.dob ?? "");
+    setJoinDate(emp.join_date ?? "");
+    setPosition(emp.position ?? "");
+    const did = emp.team?.department_id ?? emp.team?.department?.id;
+    setDeptFilter(did != null ? String(did) : "");
+    setTeamId(emp.team_id != null ? String(emp.team_id) : "");
+    setBasicSalary(String(emp.basic_salary ?? ""));
+    setInsuranceSalary(String(emp.insurance_salary ?? ""));
+    setFormError("");
+  }, [editOpen, emp]);
+
+  useEffect(() => {
+    if (!editOpen || !teamId) return;
+    const t = teams.find((x) => x.id === Number(teamId));
+    if (t && deptFilter && t.department_id !== Number(deptFilter)) {
+      setTeamId("");
+    }
+  }, [deptFilter, editOpen, teamId, teams]);
+
+  const handleSaveEdit = async () => {
+    if (!emp) return;
+    if (!fullName.trim()) {
+      setFormError("Họ tên không được để trống.");
+      return;
+    }
+    if (!position.trim()) {
+      setFormError("Vị trí không được để trống.");
+      return;
+    }
+    setSaving(true);
+    setFormError("");
+    try {
+      const basic = Number(basicSalary) || 0;
+      const ins = Number(insuranceSalary) || 0;
+      await updateEmployee(emp.id, {
+        full_name: fullName.trim(),
+        phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
+        dob: dob || undefined,
+        join_date: joinDate || undefined,
+        position: position.trim(),
+        basic_salary: basic,
+        insurance_salary: ins,
+        ...(teamId === "" ? { clear_team: true } : { team_id: Number(teamId) }),
+      });
+      await mutateEmp();
+      setEditOpen(false);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "Cập nhật thất bại");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleActive = async () => {
+    if (!emp?.user) return;
+    setSaving(true);
+    try {
+      await updateEmployee(emp.id, { is_active: !emp.user.is_active });
+      await mutateEmp();
+      setStatusModalOpen(false);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "Thao tác thất bại");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (empLoading) {
     return (
@@ -258,6 +382,7 @@ export default function EmployeeDetailPage() {
   }
 
   const empStatus = emp.user?.is_active ? "active" : "inactive";
+  const isActive = emp.user?.is_active ?? false;
 
   return (
     <>
@@ -270,32 +395,40 @@ export default function EmployeeDetailPage() {
         ]}
       />
       <div className="p-6 space-y-4">
-        {/* Employee header card */}
         <Card>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-[#22C55E]/10 text-2xl font-bold text-[#22C55E]">
               {emp.full_name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-xl font-bold text-slate-900">{emp.full_name}</h2>
                 {statusBadge(empStatus)}
               </div>
-              <p className="text-sm text-slate-500">{emp.position} · {emp.team?.name ?? "—"}</p>
+              <p className="text-sm text-slate-500">
+                {emp.position} · {emp.team?.department?.name ? `${emp.team.department.name} · ` : ""}
+                {emp.team?.name ?? "Chưa gán team"}
+              </p>
               <p className="text-xs text-slate-400 mt-1">#{emp.id} · {emp.user?.email ?? "—"}</p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
                 Chỉnh sửa
               </Button>
-              <Button variant="danger" size="sm">
-                Vô hiệu hoá
+              <Button
+                variant={isActive ? "danger" : "primary"}
+                size="sm"
+                onClick={() => {
+                  setFormError("");
+                  setStatusModalOpen(true);
+                }}
+              >
+                {isActive ? "Vô hiệu hoá" : "Kích hoạt lại"}
               </Button>
             </div>
           </div>
         </Card>
 
-        {/* Tabs */}
         <Tabs
           tabs={[
             { id: "profile", label: "Hồ sơ" },
@@ -312,6 +445,94 @@ export default function EmployeeDetailPage() {
             return null;
           }}
         </Tabs>
+
+        <Modal
+          isOpen={editOpen}
+          onClose={() => setEditOpen(false)}
+          title="Chỉnh sửa nhân viên"
+          size="lg"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setEditOpen(false)} disabled={saving}>
+                Huỷ
+              </Button>
+              <Button onClick={handleSaveEdit} loading={saving}>
+                Lưu thay đổi
+              </Button>
+            </>
+          }
+        >
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            {formError && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {formError}
+              </div>
+            )}
+            <p className="text-xs text-slate-500">
+              Phòng ban được xác định qua <strong>team</strong>. Chọn phòng ban để lọc danh sách team, rồi chọn team tương ứng.
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input label="Họ và tên" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+              <Input label="Số điện thoại" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <div className="sm:col-span-2 flex flex-col gap-1">
+                <label className="text-sm font-medium text-slate-700">Địa chỉ</label>
+                <textarea
+                  rows={2}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
+                />
+              </div>
+              <Input label="Ngày sinh" type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+              <Input label="Ngày vào làm" type="date" value={joinDate} onChange={(e) => setJoinDate(e.target.value)} />
+              <Input label="Vị trí / Chức danh" value={position} onChange={(e) => setPosition(e.target.value)} required />
+              <Select
+                label="Lọc theo phòng ban"
+                options={departmentOptions}
+                value={deptFilter}
+                onChange={(e) => setDeptFilter(e.target.value)}
+              />
+              <Select label="Team" options={teamOptions} value={teamId} onChange={(e) => setTeamId(e.target.value)} />
+              <Input
+                label="Lương cơ bản (VND)"
+                type="number"
+                value={basicSalary}
+                onChange={(e) => setBasicSalary(e.target.value)}
+              />
+              <Input
+                label="Lương bảo hiểm (VND)"
+                type="number"
+                value={insuranceSalary}
+                onChange={(e) => setInsuranceSalary(e.target.value)}
+              />
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={statusModalOpen}
+          onClose={() => setStatusModalOpen(false)}
+          title={isActive ? "Vô hiệu hoá tài khoản" : "Kích hoạt lại tài khoản"}
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setStatusModalOpen(false)} disabled={saving}>
+                Huỷ
+              </Button>
+              <Button variant={isActive ? "danger" : "primary"} loading={saving} onClick={handleToggleActive}>
+                {isActive ? "Xác nhận vô hiệu hoá" : "Xác nhận kích hoạt"}
+              </Button>
+            </>
+          }
+        >
+          <p className="text-sm text-slate-600">
+            {isActive
+              ? "Nhân viên sẽ không thể đăng nhập cho đến khi được kích hoạt lại. Bạn có chắc chắn?"
+              : "Khôi phục quyền đăng nhập cho nhân viên này?"}
+          </p>
+          {formError && (
+            <p className="mt-3 text-sm text-red-600">{formError}</p>
+          )}
+        </Modal>
       </div>
     </>
   );

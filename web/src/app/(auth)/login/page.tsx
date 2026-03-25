@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { BrandLogoLight } from "@/components/layout/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
@@ -36,15 +37,10 @@ export default function LoginPage() {
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center bg-[#22C55E] p-12">
         <div className="max-w-md text-white">
-          <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
-            <svg className="h-9 w-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+          <h1 className="sr-only">EXN HRM — đăng nhập hệ thống quản lý nhân sự</h1>
+          <div className="mb-8 rounded-2xl bg-black/20 p-4 backdrop-blur-sm ring-1 ring-white/20" aria-hidden>
+            <BrandLogoLight imageHeight={52} titleOnDark />
           </div>
-          <h1 className="mb-4 text-4xl font-bold leading-tight">
-            Exn-HR
-          </h1>
           <p className="mb-8 text-lg text-green-100">
             Hệ thống quản lý nhân sự nội bộ. Quản lý nhân viên, chấm công, nghỉ phép và bảng lương tập trung.
           </p>
@@ -70,14 +66,8 @@ export default function LoginPage() {
       <div className="flex flex-1 items-center justify-center bg-white p-8">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#22C55E]">
-              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-slate-800">Exn-HR</span>
+          <div className="mb-8 lg:hidden">
+            <BrandLogoLight imageHeight={40} />
           </div>
 
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Đăng nhập</h2>

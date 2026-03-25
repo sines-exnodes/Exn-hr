@@ -14,8 +14,15 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Exn-Hr | Hệ thống quản lý nhân sự",
-  description: "Internal HR Management System",
+  title: {
+    default: "EXN HRM",
+    template: "%s | EXN HRM",
+  },
+  description: "Hệ thống quản lý nhân sự nội bộ — EXN HRM",
+  icons: {
+    icon: "/exn.png",
+    apple: "/exn.png",
+  },
 };
 
 export default function RootLayout({

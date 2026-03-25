@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { BrandLogoLight } from "@/components/layout/BrandLogo";
 import { forgotPassword } from "@/hooks/useApi";
 
 export default function ForgotPasswordPage() {
@@ -30,15 +31,8 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] p-4">
       <div className="w-full max-w-md">
         <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200">
-          {/* Logo */}
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#22C55E]">
-              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-slate-800">Exn-HR</span>
+          <div className="mb-6">
+            <BrandLogoLight imageHeight={40} />
           </div>
 
           {!submitted ? (

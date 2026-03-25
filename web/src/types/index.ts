@@ -99,8 +99,11 @@ export interface UpdateEmployeeRequest {
   address?: string;
   dob?: string;
   gender?: "male" | "female";
+  join_date?: string;
   position?: string;
   team_id?: number;
+  /** Gửi true để gỡ nhân viên khỏi team (không thuộc phòng ban qua team nữa) */
+  clear_team?: boolean;
   basic_salary?: number;
   insurance_salary?: number;
   is_active?: boolean;
