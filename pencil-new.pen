@@ -20187,6 +20187,1438 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "LqQTE",
+      "x": 3080,
+      "y": 7300,
+      "name": "Web - Employee Detail (Salary & Allowances)",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg-page",
+      "children": [
+        {
+          "type": "frame",
+          "id": "59AjE",
+          "name": "sb",
+          "width": 260,
+          "height": "fill_container",
+          "fill": "$bg-sidebar",
+          "stroke": {
+            "thickness": {
+              "right": 1
+            },
+            "fill": "$border"
+          },
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            32,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "zdR2n",
+              "name": "sL",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NBnk0",
+                  "name": "sLb",
+                  "width": 32,
+                  "height": 32,
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wbsgw",
+                      "name": "sLt",
+                      "fill": "$white",
+                      "content": "E",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "1VOiJ",
+                  "name": "sLn",
+                  "fill": "$text-primary",
+                  "content": "Exn-Hr",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 20,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vf8Yg",
+              "name": "sN",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 2,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "jhSXk",
+                  "name": "sNl",
+                  "fill": "$text-muted",
+                  "content": "MENU",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "id": "dJkAl",
+                  "type": "ref",
+                  "ref": "VGkJb",
+                  "width": "fill_container",
+                  "name": "na",
+                  "y": 15,
+                  "height": "fit_content",
+                  "descendants": {
+                    "nAZnr": {
+                      "iconFontName": "layout-dashboard",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "0uFNw": {
+                      "content": "Dashboard",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                },
+                {
+                  "id": "we1kl",
+                  "type": "ref",
+                  "ref": "SXTnw",
+                  "width": "fill_container",
+                  "name": "nb",
+                  "x": 0,
+                  "y": 55,
+                  "height": "fit_content",
+                  "descendants": {
+                    "lDo9D": {
+                      "iconFontName": "users",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "KkEU6": {
+                      "content": "Nhân viên",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                },
+                {
+                  "id": "ITEAT",
+                  "type": "ref",
+                  "ref": "VGkJb",
+                  "width": "fill_container",
+                  "name": "nc2",
+                  "y": 95,
+                  "height": "fit_content",
+                  "descendants": {
+                    "nAZnr": {
+                      "iconFontName": "scan-line",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "0uFNw": {
+                      "content": "Chấm công",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                },
+                {
+                  "id": "5gPKD",
+                  "type": "ref",
+                  "ref": "VGkJb",
+                  "width": "fill_container",
+                  "name": "nd2",
+                  "y": 135,
+                  "height": "fit_content",
+                  "descendants": {
+                    "nAZnr": {
+                      "iconFontName": "calendar",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "0uFNw": {
+                      "content": "Nghỉ phép",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                },
+                {
+                  "id": "kps6D",
+                  "type": "ref",
+                  "ref": "VGkJb",
+                  "width": "fill_container",
+                  "name": "ne2",
+                  "y": 175,
+                  "height": "fit_content",
+                  "descendants": {
+                    "nAZnr": {
+                      "iconFontName": "timer",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "0uFNw": {
+                      "content": "Làm thêm (OT)",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                },
+                {
+                  "id": "2sS1j",
+                  "type": "ref",
+                  "ref": "VGkJb",
+                  "width": "fill_container",
+                  "name": "nf2",
+                  "y": 215,
+                  "height": "fit_content",
+                  "descendants": {
+                    "nAZnr": {
+                      "iconFontName": "wallet",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "0uFNw": {
+                      "content": "Tính lương",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                },
+                {
+                  "id": "NKU0V",
+                  "type": "ref",
+                  "ref": "VGkJb",
+                  "width": "fill_container",
+                  "name": "ng2",
+                  "y": 255,
+                  "height": "fit_content",
+                  "descendants": {
+                    "nAZnr": {
+                      "iconFontName": "chart-bar",
+                      "x": 14,
+                      "y": 10
+                    },
+                    "0uFNw": {
+                      "content": "Báo cáo",
+                      "x": 42,
+                      "y": 10.5
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "X62eP",
+          "name": "main",
+          "clip": true,
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg-surface",
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            28,
+            36
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "jKDdQ",
+              "name": "hdr",
+              "width": "fill_container",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "UvFEn",
+                  "name": "hdrBk",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "arrow-left",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "frame",
+                  "id": "8iogu",
+                  "name": "hdrAv",
+                  "width": 56,
+                  "height": 56,
+                  "fill": "$primary",
+                  "cornerRadius": 28,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000001A",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 6
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Y98iL",
+                      "name": "hdrAvT",
+                      "fill": "$white",
+                      "content": "NA",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "CgYq9",
+                  "name": "hdrInfo",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TFWWn",
+                      "name": "hdrName",
+                      "fill": "$text-primary",
+                      "content": "Nguyễn Văn A",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 24,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wFSrw",
+                      "name": "hdrSub",
+                      "fill": "$text-secondary",
+                      "content": "Leader · Team BE · Engineering",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jOJoW",
+                  "name": "hdrBtn",
+                  "fill": "$primary",
+                  "cornerRadius": 10,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000001A",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "Qdo5q",
+                      "name": "hdrBtnIc",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "pencil",
+                      "iconFontFamily": "lucide",
+                      "fill": "$white"
+                    },
+                    {
+                      "type": "text",
+                      "id": "dMYHD",
+                      "name": "hdrBtnTx",
+                      "fill": "$white",
+                      "content": "Chỉnh sửa",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zB4fW",
+              "name": "tabs",
+              "width": "fill_container",
+              "stroke": {
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "$border"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QIeHY",
+                  "name": "tabProf",
+                  "stroke": {
+                    "thickness": 0,
+                    "fill": "#00000000"
+                  },
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sdF7s",
+                      "name": "tabProfT",
+                      "fill": "$text-secondary",
+                      "content": "Hồ sơ",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fGKUM",
+                  "name": "tabSal",
+                  "stroke": {
+                    "thickness": {
+                      "bottom": 2
+                    },
+                    "fill": "$primary"
+                  },
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GaWBU",
+                      "name": "tabSalT",
+                      "fill": "$primary",
+                      "content": "Lương & Phụ cấp",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GeTqN",
+                  "name": "tabAtt",
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "O89o0",
+                      "name": "tabAttT",
+                      "fill": "$text-secondary",
+                      "content": "Chấm công",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bNMXT",
+                  "name": "tabLv",
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "6D2dB",
+                      "name": "tabLvT",
+                      "fill": "$text-secondary",
+                      "content": "Nghỉ phép",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lEigz",
+              "name": "salaryContent",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "9kV64",
+                  "name": "statsRow",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Iiw14",
+                      "name": "statBasic",
+                      "width": "fill_container",
+                      "fill": "$bg-card",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000F",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ys2CC",
+                          "name": "lbl1",
+                          "fill": "$text-muted",
+                          "content": "Lương cơ bản",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bFVb1",
+                          "name": "val1",
+                          "fill": "$text-primary",
+                          "content": "15,000,000 đ",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "V56iD",
+                      "name": "statInsurance",
+                      "width": "fill_container",
+                      "fill": "$bg-card",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000F",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "virvi",
+                          "name": "lbl2",
+                          "fill": "$text-muted",
+                          "content": "Lương bảo hiểm",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "m5oVy",
+                          "name": "val2",
+                          "fill": "$info",
+                          "content": "5,000,000 đ",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dPTYR",
+                      "name": "statDeduct",
+                      "width": "fill_container",
+                      "fill": "$bg-card",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000F",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JQ8Cy",
+                          "name": "lbl3",
+                          "fill": "$text-muted",
+                          "content": "Khấu trừ BH (~10.5%)",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "wA55s",
+                          "name": "val3",
+                          "fill": "$danger",
+                          "content": "525,000 đ",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LcOsH",
+                  "name": "allowancesCard",
+                  "width": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000F",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 8
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "9BbJE",
+                      "name": "allowHdr",
+                      "width": "fill_container",
+                      "stroke": {
+                        "thickness": {
+                          "bottom": 1
+                        },
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        16,
+                        24
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "wxb4e",
+                          "name": "hdrLeft",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "T6DrP",
+                              "name": "hdrTitle",
+                              "fill": "$text-primary",
+                              "content": "Phụ cấp hiện tại",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "XnXLI",
+                              "name": "hdrSub",
+                              "fill": "$text-muted",
+                              "content": "Tổng: 3,500,000 đ/tháng",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "vlugv",
+                          "type": "ref",
+                          "ref": "St5Ib",
+                          "padding": [
+                            8,
+                            16
+                          ],
+                          "name": "addBtn",
+                          "width": "fit_content",
+                          "height": "fit_content",
+                          "x": 926,
+                          "y": 18.5,
+                          "descendants": {
+                            "BKk5p": {
+                              "x": 16,
+                              "y": 8
+                            },
+                            "Ejlmp": {
+                              "x": 40,
+                              "y": 8,
+                              "content": "+ Thêm phụ cấp",
+                              "fontSize": 13
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UbfCS",
+                      "name": "tableHead",
+                      "width": "fill_container",
+                      "fill": "$bg-surface",
+                      "padding": [
+                        12,
+                        24
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HRDlJ",
+                          "name": "th1",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "LOẠI PHỤ CẤP",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "ipOgX",
+                          "name": "th2",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "MÔ TẢ",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "xJpOe",
+                          "name": "th3",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": 160,
+                          "content": "SỐ TIỀN/THÁNG",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "0XHb2",
+                          "name": "th4",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": 100,
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s07X6",
+                      "name": "row1",
+                      "width": "fill_container",
+                      "stroke": {
+                        "thickness": {
+                          "bottom": 1
+                        },
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zcZvK",
+                          "name": "r1c1",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Phụ cấp ăn trưa",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "8tmtb",
+                          "name": "r1c2",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Hỗ trợ bữa trưa hàng ngày",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Emr4q",
+                          "name": "r1c3",
+                          "fill": "$success",
+                          "textGrowth": "fixed-width",
+                          "width": 160,
+                          "content": "1,000,000 đ",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JIe2s",
+                          "name": "actions",
+                          "width": 100,
+                          "gap": 8,
+                          "justifyContent": "end",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "wUPxK",
+                              "name": "r1edit",
+                              "fill": "$info",
+                              "content": "Sửa",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "f6HbX",
+                              "name": "r1del",
+                              "fill": "$danger",
+                              "content": "Xoá",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ntHu8",
+                      "name": "row2",
+                      "width": "fill_container",
+                      "stroke": {
+                        "thickness": {
+                          "bottom": 1
+                        },
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NBelO",
+                          "name": "r2c1",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Phụ cấp xăng xe",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rbABq",
+                          "name": "r2c2",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Hỗ trợ đi lại hàng tháng",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q0KmQ",
+                          "name": "r2c3",
+                          "fill": "$success",
+                          "textGrowth": "fixed-width",
+                          "width": 160,
+                          "content": "1,500,000 đ",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pItAy",
+                          "name": "actions",
+                          "width": 100,
+                          "gap": 8,
+                          "justifyContent": "end",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XzDH8",
+                              "name": "r2edit",
+                              "fill": "$info",
+                              "content": "Sửa",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "QpFKp",
+                              "name": "r2del",
+                              "fill": "$danger",
+                              "content": "Xoá",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iegb7",
+                      "name": "row3",
+                      "width": "fill_container",
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "f0L7d",
+                          "name": "r3c1",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Phụ cấp điện thoại",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "FLAx0",
+                          "name": "r3c2",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Hỗ trợ liên lạc công việc",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "KtR5Y",
+                          "name": "r3c3",
+                          "fill": "$success",
+                          "textGrowth": "fixed-width",
+                          "width": 160,
+                          "content": "1,000,000 đ",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "4A47N",
+                          "name": "actions",
+                          "width": 100,
+                          "gap": 8,
+                          "justifyContent": "end",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cmEZ2",
+                              "name": "r3edit",
+                              "fill": "$info",
+                              "content": "Sửa",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "3w5sH",
+                              "name": "r3del",
+                              "fill": "$danger",
+                              "content": "Xoá",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "i7HnK",
+                  "name": "salaryHistoryCard",
+                  "width": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000F",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 8
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "851YX",
+                      "name": "salHdr",
+                      "width": "fill_container",
+                      "stroke": {
+                        "thickness": {
+                          "bottom": 1
+                        },
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        16,
+                        24
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ga004",
+                          "name": "salTitle",
+                          "fill": "$text-primary",
+                          "content": "Lịch sử lương",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "9zfBj",
+                      "name": "salTHead",
+                      "width": "fill_container",
+                      "fill": "$bg-surface",
+                      "padding": [
+                        12,
+                        24
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "daGOx",
+                          "name": "sth1",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "KỲ LƯƠNG",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "rLO3v",
+                          "name": "sth2",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "LƯƠNG CB",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "z8WBU",
+                          "name": "sth3",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "PHỤ CẤP",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "c9Wxf",
+                          "name": "sth4",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "OT",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "R4NIx",
+                          "name": "sth5",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "KHẤU TRỪ",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "QochI",
+                          "name": "sth6",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "THỰC NHẬN",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q5jxk",
+                          "name": "sth7",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": 100,
+                          "content": "TRẠNG THÁI",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gBK2O",
+                      "name": "salRow1",
+                      "width": "fill_container",
+                      "stroke": {
+                        "thickness": {
+                          "bottom": 1
+                        },
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "1Nyff",
+                          "name": "sr1c1",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "T3/2026",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fXQOc",
+                          "name": "sr1c2",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "15,000,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uZ1xN",
+                          "name": "sr1c3",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "3,500,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "QGiVj",
+                          "name": "sr1c4",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "2,250,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q52iE",
+                          "name": "sr1c5",
+                          "fill": "$danger",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "-525,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "M67OO",
+                          "name": "sr1c6",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "20,225,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "id": "dfVIj",
+                          "type": "ref",
+                          "ref": "K8BMR",
+                          "name": "sr1badge",
+                          "x": 999,
+                          "y": 14,
+                          "descendants": {
+                            "JF4VY": {
+                              "content": "Confirmed"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Nqh5S",
+                      "name": "salRow2",
+                      "width": "fill_container",
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "yf4My",
+                          "name": "sr2c1",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "T2/2026",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kVVgE",
+                          "name": "sr2c2",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "15,000,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "HsZrs",
+                          "name": "sr2c3",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "3,500,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DQ2w3",
+                          "name": "sr2c4",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "1,125,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rYAJU",
+                          "name": "sr2c5",
+                          "fill": "$danger",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "-525,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "5HHwi",
+                          "name": "sr2c6",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "19,100,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "id": "Tmo41",
+                          "type": "ref",
+                          "ref": "K8BMR",
+                          "name": "sr2badge",
+                          "x": 999,
+                          "y": 14,
+                          "descendants": {
+                            "JF4VY": {
+                              "content": "Confirmed"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {

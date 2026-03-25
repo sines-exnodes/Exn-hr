@@ -18,17 +18,34 @@ import {
   useDepartments,
   useTeams,
   updateEmployee,
+  useEmployeeAllowances,
+  useAllowanceTypes,
+  setEmployeeAllowance,
+  deleteEmployeeAllowance,
 } from "@/hooks/useApi";
-import type { Employee, AttendanceRecord, LeaveRequest, SalaryRecord } from "@/types";
+import type {
+  Employee,
+  AttendanceRecord,
+  LeaveRequest,
+  SalaryRecord,
+  EmployeeAllowance,
+  AllowanceType,
+} from "@/types";
 
 const formatCurrency = (n: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    n,
+  );
 
 function formatTime(iso?: string): string {
   if (!iso) return "—";
   try {
     const d = new Date(iso);
-    return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false });
+    return d.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
   } catch {
     return "—";
   }
@@ -44,7 +61,9 @@ function ProfileTab({ emp }: { emp: Employee }) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <Card>
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">Thông tin cá nhân</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Thông tin cá nhân
+        </h3>
         <div className="space-y-3">
           {[
             { label: "Họ và tên", value: emp.full_name },
@@ -55,13 +74,17 @@ function ProfileTab({ emp }: { emp: Employee }) {
           ].map(({ label, value }) => (
             <div key={label} className="flex justify-between text-sm">
               <span className="text-slate-400">{label}</span>
-              <span className="font-medium text-slate-700 text-right max-w-xs">{value}</span>
+              <span className="font-medium text-slate-700 text-right max-w-xs">
+                {value}
+              </span>
             </div>
           ))}
         </div>
       </Card>
       <Card>
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">Thông tin công việc</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Thông tin công việc
+        </h3>
         <div className="space-y-3">
           {[
             { label: "Mã nhân viên", value: `#${emp.id}` },
@@ -70,9 +93,15 @@ function ProfileTab({ emp }: { emp: Employee }) {
             { label: "Vị trí", value: emp.position },
             { label: "Vai trò", value: emp.user?.role ?? "—" },
             { label: "Ngày vào làm", value: emp.join_date },
-            { label: "Trạng thái", value: statusBadge(emp.user?.is_active ? "active" : "inactive") },
+            {
+              label: "Trạng thái",
+              value: statusBadge(emp.user?.is_active ? "active" : "inactive"),
+            },
           ].map(({ label, value }) => (
-            <div key={label} className="flex items-center justify-between text-sm">
+            <div
+              key={label}
+              className="flex items-center justify-between text-sm"
+            >
               <span className="text-slate-400">{label}</span>
               <span className="font-medium text-slate-700">{value}</span>
             </div>
@@ -83,14 +112,304 @@ function ProfileTab({ emp }: { emp: Employee }) {
   );
 }
 
-function SalaryTab({ emp, salaryRecords }: { emp: Employee; salaryRecords: SalaryRecord[] }) {
+function AllowancesSection({
+  employeeId,
+  allowances,
+  allowanceTypes,
+  mutateAllowances,
+}: {
+  employeeId: number;
+  allowances: EmployeeAllowance[];
+  allowanceTypes: AllowanceType[];
+  mutateAllowances: () => void;
+}) {
+  const [addOpen, setAddOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+  const [amount, setAmount] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [editItem, setEditItem] = useState<EmployeeAllowance | null>(null);
+
+  const assignedIds = new Set(allowances.map((a) => a.allowance_id));
+  const availableTypes = allowanceTypes.filter((t) => !assignedIds.has(t.id));
+
+  const totalAllowances = allowances.reduce((sum, a) => sum + a.amount, 0);
+
+  const handleAdd = async () => {
+    if (!selectedType || !amount) return;
+    setSaving(true);
+    try {
+      await setEmployeeAllowance(employeeId, {
+        allowance_id: Number(selectedType),
+        amount: Number(amount),
+      });
+      mutateAllowances();
+      setAddOpen(false);
+      setSelectedType("");
+      setAmount("");
+    } catch {
+      // silent
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editItem || !amount) return;
+    setSaving(true);
+    try {
+      await setEmployeeAllowance(employeeId, {
+        allowance_id: editItem.allowance_id,
+        amount: Number(amount),
+      });
+      mutateAllowances();
+      setEditItem(null);
+      setAmount("");
+    } catch {
+      // silent
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (deleteId == null) return;
+    setSaving(true);
+    try {
+      await deleteEmployeeAllowance(employeeId, deleteId);
+      mutateAllowances();
+      setDeleteId(null);
+    } catch {
+      // silent
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <Card padding="none">
+        <div className="flex items-center justify-between border-b border-slate-100 p-4">
+          <div>
+            <h3 className="font-semibold text-slate-800">Phụ cấp hiện tại</h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Tổng:{" "}
+              <span className="font-semibold text-[#22C55E]">
+                {formatCurrency(totalAllowances)}
+              </span>
+              /tháng
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSelectedType("");
+              setAmount("");
+              setAddOpen(true);
+            }}
+            disabled={availableTypes.length === 0}
+          >
+            + Thêm phụ cấp
+          </Button>
+        </div>
+        {allowances.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-sm text-slate-400">
+              Chưa có phụ cấp nào được gán cho nhân viên này.
+            </p>
+          </div>
+        ) : (
+          <table className="min-w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                {["Loại phụ cấp", "Mô tả", "Số tiền/tháng", ""].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {allowances.map((a) => (
+                <tr key={a.id} className="hover:bg-slate-50/50">
+                  <td className="px-4 py-3 text-sm font-medium text-slate-700">
+                    {a.allowance?.name ?? `#${a.allowance_id}`}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-500">
+                    {a.allowance?.description ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-[#22C55E]">
+                    {formatCurrency(a.amount)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        className="rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                        onClick={() => {
+                          setEditItem(a);
+                          setAmount(String(a.amount));
+                        }}
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        className="rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        onClick={() => setDeleteId(a.allowance_id)}
+                      >
+                        Xoá
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+      {/* Add allowance modal */}
+      <Modal
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Thêm phụ cấp"
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setAddOpen(false)}
+              disabled={saving}
+            >
+              Huỷ
+            </Button>
+            <Button
+              onClick={handleAdd}
+              loading={saving}
+              disabled={!selectedType || !amount}
+            >
+              Thêm
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Select
+            label="Loại phụ cấp"
+            options={[
+              { value: "", label: "Chọn loại phụ cấp..." },
+              ...availableTypes.map((t) => ({
+                value: String(t.id),
+                label: t.name,
+              })),
+            ]}
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          />
+          <Input
+            label="Số tiền (VND/tháng)"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+        </div>
+      </Modal>
+
+      {/* Edit allowance modal */}
+      <Modal
+        isOpen={!!editItem}
+        onClose={() => setEditItem(null)}
+        title={`Sửa phụ cấp: ${editItem?.allowance?.name ?? ""}`}
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setEditItem(null)}
+              disabled={saving}
+            >
+              Huỷ
+            </Button>
+            <Button onClick={handleEdit} loading={saving} disabled={!amount}>
+              Lưu
+            </Button>
+          </>
+        }
+      >
+        <Input
+          label="Số tiền (VND/tháng)"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          required
+        />
+      </Modal>
+
+      {/* Delete confirmation modal */}
+      <Modal
+        isOpen={deleteId != null}
+        onClose={() => setDeleteId(null)}
+        title="Xoá phụ cấp"
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteId(null)}
+              disabled={saving}
+            >
+              Huỷ
+            </Button>
+            <Button variant="danger" onClick={handleDelete} loading={saving}>
+              Xác nhận xoá
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600">
+          Bạn có chắc muốn xoá phụ cấp này khỏi nhân viên? Thay đổi sẽ áp dụng
+          từ kỳ lương tiếp theo.
+        </p>
+      </Modal>
+    </>
+  );
+}
+
+function SalaryTab({
+  emp,
+  salaryRecords,
+  allowances,
+  allowanceTypes,
+  mutateAllowances,
+}: {
+  emp: Employee;
+  salaryRecords: SalaryRecord[];
+  allowances: EmployeeAllowance[];
+  allowanceTypes: AllowanceType[];
+  mutateAllowances: () => void;
+}) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[
-          { label: "Lương cơ bản", value: formatCurrency(emp.basic_salary), color: "text-slate-900" },
-          { label: "Lương bảo hiểm", value: formatCurrency(emp.insurance_salary), color: "text-blue-600" },
-          { label: "Khấu trừ BH (~8%)", value: formatCurrency(emp.insurance_salary * 0.08), color: "text-red-600" },
+          {
+            label: "Lương cơ bản",
+            value: formatCurrency(emp.basic_salary),
+            color: "text-slate-900",
+          },
+          {
+            label: "Lương bảo hiểm",
+            value: formatCurrency(emp.insurance_salary),
+            color: "text-blue-600",
+          },
+          {
+            label: "Khấu trừ BH (~8%)",
+            value: formatCurrency(emp.insurance_salary * 0.08),
+            color: "text-red-600",
+          },
         ].map(({ label, value, color }) => (
           <Card key={label}>
             <p className="text-xs text-slate-400 mb-1">{label}</p>
@@ -98,6 +417,14 @@ function SalaryTab({ emp, salaryRecords }: { emp: Employee; salaryRecords: Salar
           </Card>
         ))}
       </div>
+
+      <AllowancesSection
+        employeeId={emp.id}
+        allowances={allowances}
+        allowanceTypes={allowanceTypes}
+        mutateAllowances={mutateAllowances}
+      />
+
       <Card padding="none">
         <div className="border-b border-slate-100 p-4">
           <h3 className="font-semibold text-slate-800">Lịch sử lương</h3>
@@ -105,8 +432,21 @@ function SalaryTab({ emp, salaryRecords }: { emp: Employee; salaryRecords: Salar
         <table className="min-w-full">
           <thead className="bg-slate-50">
             <tr>
-              {["Kỳ lương", "Lương CB", "Phụ cấp", "OT", "Khấu trừ", "Thực nhận", "Trạng thái"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">{h}</th>
+              {[
+                "Kỳ lương",
+                "Lương CB",
+                "Phụ cấp",
+                "OT",
+                "Khấu trừ",
+                "Thực nhận",
+                "Trạng thái",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
@@ -116,11 +456,21 @@ function SalaryTab({ emp, salaryRecords }: { emp: Employee; salaryRecords: Salar
                 <td className="px-4 py-3 text-sm font-medium text-slate-700">
                   T{p.month}/{p.year}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-600">{formatCurrency(p.basic_salary)}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{formatCurrency(p.total_allowances)}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{formatCurrency(p.total_ot_pay)}</td>
-                <td className="px-4 py-3 text-sm text-red-600">-{formatCurrency(p.total_deductions)}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-slate-800">{formatCurrency(p.net_salary)}</td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {formatCurrency(p.basic_salary)}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {formatCurrency(p.total_allowances)}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {formatCurrency(p.total_ot_pay)}
+                </td>
+                <td className="px-4 py-3 text-sm text-red-600">
+                  -{formatCurrency(p.total_deductions)}
+                </td>
+                <td className="px-4 py-3 text-sm font-semibold text-slate-800">
+                  {formatCurrency(p.net_salary)}
+                </td>
                 <td className="px-4 py-3">{statusBadge(p.status)}</td>
               </tr>
             ))}
@@ -141,7 +491,12 @@ function AttendanceTab({ records }: { records: AttendanceRecord[] }) {
         <thead className="bg-slate-50">
           <tr>
             {["Ngày", "Check-in", "Check-out", "Trạng thái", "GPS"].map((h) => (
-              <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">{h}</th>
+              <th
+                key={h}
+                className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400"
+              >
+                {h}
+              </th>
             ))}
           </tr>
         </thead>
@@ -150,9 +505,15 @@ function AttendanceTab({ records }: { records: AttendanceRecord[] }) {
             const hasGps = !!(a.gps_lat && a.gps_lng);
             return (
               <tr key={a.id} className="hover:bg-slate-50/50">
-                <td className="px-4 py-3 text-sm text-slate-700">{formatDate(a.check_in_time)}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{formatTime(a.check_in_time)}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{formatTime(a.check_out_time)}</td>
+                <td className="px-4 py-3 text-sm text-slate-700">
+                  {formatDate(a.check_in_time)}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {formatTime(a.check_in_time)}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {formatTime(a.check_out_time)}
+                </td>
                 <td className="px-4 py-3">{statusBadge(a.status)}</td>
                 <td className="px-4 py-3">
                   <Badge variant={hasGps ? "green" : "gray"} dot>
@@ -169,7 +530,9 @@ function AttendanceTab({ records }: { records: AttendanceRecord[] }) {
 }
 
 function LeaveTab({ leaveRecords }: { leaveRecords: LeaveRequest[] }) {
-  const leaveUsed = leaveRecords.filter((l) => l.overall_status === "approved").reduce((s, l) => s + l.days, 0);
+  const leaveUsed = leaveRecords
+    .filter((l) => l.overall_status === "approved")
+    .reduce((s, l) => s + l.days, 0);
   const leaveTotal = 12;
   const leaveRemaining = leaveTotal - leaveUsed;
 
@@ -177,13 +540,20 @@ function LeaveTab({ leaveRecords }: { leaveRecords: LeaveRequest[] }) {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Tổng phép năm", value: leaveTotal, color: "text-slate-900" },
+          {
+            label: "Tổng phép năm",
+            value: leaveTotal,
+            color: "text-slate-900",
+          },
           { label: "Đã sử dụng", value: leaveUsed, color: "text-orange-600" },
           { label: "Còn lại", value: leaveRemaining, color: "text-green-600" },
         ].map(({ label, value, color }) => (
           <Card key={label}>
             <p className="text-xs text-slate-400 mb-1">{label}</p>
-            <p className={`text-3xl font-bold ${color}`}>{value} <span className="text-sm font-normal text-slate-400">ngày</span></p>
+            <p className={`text-3xl font-bold ${color}`}>
+              {value}{" "}
+              <span className="text-sm font-normal text-slate-400">ngày</span>
+            </p>
           </Card>
         ))}
       </div>
@@ -194,19 +564,41 @@ function LeaveTab({ leaveRecords }: { leaveRecords: LeaveRequest[] }) {
         <table className="min-w-full">
           <thead className="bg-slate-50">
             <tr>
-              {["Loại", "Từ ngày", "Đến ngày", "Số ngày", "Lý do", "Trạng thái"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">{h}</th>
+              {[
+                "Loại",
+                "Từ ngày",
+                "Đến ngày",
+                "Số ngày",
+                "Lý do",
+                "Trạng thái",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {leaveRecords.map((l) => (
               <tr key={l.id} className="hover:bg-slate-50/50">
-                <td className="px-4 py-3 text-sm text-slate-700 capitalize">{l.type}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{l.start_date}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{l.end_date}</td>
-                <td className="px-4 py-3 text-sm font-medium text-slate-700">{l.days}</td>
-                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{l.reason}</td>
+                <td className="px-4 py-3 text-sm text-slate-700 capitalize">
+                  {l.type}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {l.start_date}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {l.end_date}
+                </td>
+                <td className="px-4 py-3 text-sm font-medium text-slate-700">
+                  {l.days}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">
+                  {l.reason}
+                </td>
                 <td className="px-4 py-3">{statusBadge(l.overall_status)}</td>
               </tr>
             ))}
@@ -222,12 +614,27 @@ export default function EmployeeDetailPage() {
   const id = params.id as string;
   const numericId = Number(id);
 
-  const { data: empRes, isLoading: empLoading, mutate: mutateEmp } = useEmployee(id);
-  const { data: attendanceRes } = useAttendanceRecords({ employee_id: numericId, page: 1, size: 20 });
-  const { data: leaveRes } = useLeaveRequests({ employee_id: numericId, page: 1, size: 20 });
+  const {
+    data: empRes,
+    isLoading: empLoading,
+    mutate: mutateEmp,
+  } = useEmployee(id);
+  const { data: attendanceRes } = useAttendanceRecords({
+    employee_id: numericId,
+    page: 1,
+    size: 20,
+  });
+  const { data: leaveRes } = useLeaveRequests({
+    employee_id: numericId,
+    page: 1,
+    size: 20,
+  });
   const { data: salaryRes } = useSalaryRecords();
   const { data: deptRes } = useDepartments();
   const { data: teamsRes } = useTeams();
+  const { data: allowancesRes, mutate: mutateAllowances } =
+    useEmployeeAllowances(numericId);
+  const { data: allowanceTypesRes } = useAllowanceTypes();
 
   const [editOpen, setEditOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
@@ -249,10 +656,14 @@ export default function EmployeeDetailPage() {
   const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? [];
   const leaveRecords: LeaveRequest[] = leaveRes?.data ?? [];
   const allSalaryRecords = salaryRes?.data ?? [];
-  const salaryRecords: SalaryRecord[] = allSalaryRecords.filter((s) => s.employee_id === numericId);
+  const salaryRecords: SalaryRecord[] = allSalaryRecords.filter(
+    (s) => s.employee_id === numericId,
+  );
 
   const departments = deptRes?.data ?? [];
   const teams = teamsRes?.data ?? [];
+  const employeeAllowances: EmployeeAllowance[] = allowancesRes?.data ?? [];
+  const allowanceTypes: AllowanceType[] = allowanceTypesRes?.data ?? [];
 
   const departmentOptions = [
     { value: "", label: "Tất cả phòng ban (xem mọi team)" },
@@ -357,7 +768,9 @@ export default function EmployeeDetailPage() {
           ]}
         />
         <div className="p-6">
-          <p className="text-sm text-slate-400">Đang tải thông tin nhân viên...</p>
+          <p className="text-sm text-slate-400">
+            Đang tải thông tin nhân viên...
+          </p>
         </div>
       </>
     );
@@ -402,17 +815,28 @@ export default function EmployeeDetailPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-xl font-bold text-slate-900">{emp.full_name}</h2>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {emp.full_name}
+                </h2>
                 {statusBadge(empStatus)}
               </div>
               <p className="text-sm text-slate-500">
-                {emp.position} · {emp.team?.department?.name ? `${emp.team.department.name} · ` : ""}
+                {emp.position} ·{" "}
+                {emp.team?.department?.name
+                  ? `${emp.team.department.name} · `
+                  : ""}
                 {emp.team?.name ?? "Chưa gán team"}
               </p>
-              <p className="text-xs text-slate-400 mt-1">#{emp.id} · {emp.user?.email ?? "—"}</p>
+              <p className="text-xs text-slate-400 mt-1">
+                #{emp.id} · {emp.user?.email ?? "—"}
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditOpen(true)}
+              >
                 Chỉnh sửa
               </Button>
               <Button
@@ -439,9 +863,20 @@ export default function EmployeeDetailPage() {
         >
           {(active) => {
             if (active === "profile") return <ProfileTab emp={emp} />;
-            if (active === "salary") return <SalaryTab emp={emp} salaryRecords={salaryRecords} />;
-            if (active === "attendance") return <AttendanceTab records={attendanceRecords} />;
-            if (active === "leave") return <LeaveTab leaveRecords={leaveRecords} />;
+            if (active === "salary")
+              return (
+                <SalaryTab
+                  emp={emp}
+                  salaryRecords={salaryRecords}
+                  allowances={employeeAllowances}
+                  allowanceTypes={allowanceTypes}
+                  mutateAllowances={mutateAllowances}
+                />
+              );
+            if (active === "attendance")
+              return <AttendanceTab records={attendanceRecords} />;
+            if (active === "leave")
+              return <LeaveTab leaveRecords={leaveRecords} />;
             return null;
           }}
         </Tabs>
@@ -453,7 +888,11 @@ export default function EmployeeDetailPage() {
           size="lg"
           footer={
             <>
-              <Button variant="outline" onClick={() => setEditOpen(false)} disabled={saving}>
+              <Button
+                variant="outline"
+                onClick={() => setEditOpen(false)}
+                disabled={saving}
+              >
                 Huỷ
               </Button>
               <Button onClick={handleSaveEdit} loading={saving}>
@@ -469,13 +908,25 @@ export default function EmployeeDetailPage() {
               </div>
             )}
             <p className="text-xs text-slate-500">
-              Phòng ban được xác định qua <strong>team</strong>. Chọn phòng ban để lọc danh sách team, rồi chọn team tương ứng.
+              Phòng ban được xác định qua <strong>team</strong>. Chọn phòng ban
+              để lọc danh sách team, rồi chọn team tương ứng.
             </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input label="Họ và tên" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              <Input label="Số điện thoại" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <Input
+                label="Họ và tên"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+              <Input
+                label="Số điện thoại"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
               <div className="sm:col-span-2 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-700">Địa chỉ</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Địa chỉ
+                </label>
                 <textarea
                   rows={2}
                   value={address}
@@ -483,16 +934,36 @@ export default function EmployeeDetailPage() {
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
                 />
               </div>
-              <Input label="Ngày sinh" type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
-              <Input label="Ngày vào làm" type="date" value={joinDate} onChange={(e) => setJoinDate(e.target.value)} />
-              <Input label="Vị trí / Chức danh" value={position} onChange={(e) => setPosition(e.target.value)} required />
+              <Input
+                label="Ngày sinh"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+              />
+              <Input
+                label="Ngày vào làm"
+                type="date"
+                value={joinDate}
+                onChange={(e) => setJoinDate(e.target.value)}
+              />
+              <Input
+                label="Vị trí / Chức danh"
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                required
+              />
               <Select
                 label="Lọc theo phòng ban"
                 options={departmentOptions}
                 value={deptFilter}
                 onChange={(e) => setDeptFilter(e.target.value)}
               />
-              <Select label="Team" options={teamOptions} value={teamId} onChange={(e) => setTeamId(e.target.value)} />
+              <Select
+                label="Team"
+                options={teamOptions}
+                value={teamId}
+                onChange={(e) => setTeamId(e.target.value)}
+              />
               <Input
                 label="Lương cơ bản (VND)"
                 type="number"
@@ -515,10 +986,18 @@ export default function EmployeeDetailPage() {
           title={isActive ? "Vô hiệu hoá tài khoản" : "Kích hoạt lại tài khoản"}
           footer={
             <>
-              <Button variant="outline" onClick={() => setStatusModalOpen(false)} disabled={saving}>
+              <Button
+                variant="outline"
+                onClick={() => setStatusModalOpen(false)}
+                disabled={saving}
+              >
                 Huỷ
               </Button>
-              <Button variant={isActive ? "danger" : "primary"} loading={saving} onClick={handleToggleActive}>
+              <Button
+                variant={isActive ? "danger" : "primary"}
+                loading={saving}
+                onClick={handleToggleActive}
+              >
                 {isActive ? "Xác nhận vô hiệu hoá" : "Xác nhận kích hoạt"}
               </Button>
             </>
