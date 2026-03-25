@@ -41,4 +41,26 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
       return const Right(null);
     } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
   }
+
+  @override
+  Future<Either<ApiError, OtRequest>> leaderApprove(int id, {required String status, String? comment}) async {
+    try {
+      final body = <String, dynamic>{'status': status};
+      if (comment != null && comment.isNotEmpty) body['comment'] = comment;
+      final response = await _apiClient.post(ApiEndpoints.overtimeLeaderApprove(id), data: body);
+      final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      return Right(OtModel.fromJson(data).toEntity());
+    } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
+  }
+
+  @override
+  Future<Either<ApiError, OtRequest>> ceoApprove(int id, {required String status, String? comment}) async {
+    try {
+      final body = <String, dynamic>{'status': status};
+      if (comment != null && comment.isNotEmpty) body['comment'] = comment;
+      final response = await _apiClient.post(ApiEndpoints.overtimeCeoApprove(id), data: body);
+      final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      return Right(OtModel.fromJson(data).toEntity());
+    } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
+  }
 }

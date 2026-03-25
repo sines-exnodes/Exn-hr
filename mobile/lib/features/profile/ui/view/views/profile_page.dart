@@ -3,6 +3,7 @@ import 'package:exn_hr/core/routing/app_router.dart';
 import 'package:exn_hr/core/storage/secure_storage.dart';
 import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
+import 'package:exn_hr/features/profile/domain/entities/profile.dart';
 import 'package:exn_hr/features/profile/ui/view/view_models/profile_cubit.dart';
 import 'package:exn_hr/features/profile/ui/view/view_models/profile_state.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +72,7 @@ class _ProfileView extends StatelessWidget {
                 SizedBox(height: 24.w),
                 _buildInfoSection(profile),
                 SizedBox(height: 24.w),
-                _buildSettingsSection(context),
+                _buildSettingsSection(context, profile),
               ],
             ),
           );
@@ -159,15 +160,45 @@ class _ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
+  bool _canApproveLeaveLeader(String role) {
+    final r = role.toLowerCase();
+    return r == 'leader' || r == 'admin';
+  }
+
+  bool _canApproveOt(String role) {
+    final r = role.toLowerCase();
+    return r == 'leader' || r == 'ceo' || r == 'admin';
+  }
+
+  Widget _buildSettingsSection(BuildContext context, Profile profile) {
+    final role = profile.role;
+    final showLeaveLeader = _canApproveLeaveLeader(role);
+    final showOtApproval = _canApproveOt(role);
+
+    final children = <Widget>[];
+
+    if (showLeaveLeader) {
+      children.addAll([
+        _buildSettingsTile(
+          icon: Icons.approval_outlined,
+          label: 'Duyệt nghỉ phép',
+          onTap: () => context.push(AppRoutes.leaveApproval),
+        ),
+        Divider(height: 1, color: AppColors.divider),
+      ]);
+    }
+    if (showOtApproval) {
+      children.addAll([
+        _buildSettingsTile(
+          icon: Icons.more_time_outlined,
+          label: 'Duyệt làm thêm (OT)',
+          onTap: () => context.push(AppRoutes.otApproval),
+        ),
+        Divider(height: 1, color: AppColors.divider),
+      ]);
+    }
+
+    children.addAll([
           _buildSettingsTile(
             icon: Icons.lock_outline_rounded,
             label: 'Change Password',
@@ -211,8 +242,15 @@ class _ProfileView extends StatelessWidget {
               }
             },
           ),
-        ],
+    ]);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.border),
       ),
+      child: Column(children: children),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:exn_hr/features/main_home/ui/home/models/home_activity_preview.dart';
 
 enum HomeStatus { initial, loading, success, failure }
 
@@ -11,6 +12,8 @@ class HomeState extends Equatable {
     this.errorMessage,
     this.userName = '',
     this.userRole = '',
+    this.activities = const [],
+    this.attendanceWarning,
   });
 
   final HomeStatus status;
@@ -20,6 +23,9 @@ class HomeState extends Equatable {
   final String? errorMessage;
   final String userName;
   final String userRole;
+  final List<HomeActivityPreview> activities;
+  /// Lỗi tải chấm công hôm nay (không chặn phần còn lại của home).
+  final String? attendanceWarning;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -29,6 +35,9 @@ class HomeState extends Equatable {
     String? errorMessage,
     String? userName,
     String? userRole,
+    List<HomeActivityPreview>? activities,
+    String? attendanceWarning,
+    bool setAttendanceWarning = false,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -38,6 +47,9 @@ class HomeState extends Equatable {
       errorMessage: errorMessage ?? this.errorMessage,
       userName: userName ?? this.userName,
       userRole: userRole ?? this.userRole,
+      activities: activities ?? this.activities,
+      attendanceWarning:
+          setAttendanceWarning ? attendanceWarning : this.attendanceWarning,
     );
   }
 
@@ -50,5 +62,7 @@ class HomeState extends Equatable {
         errorMessage,
         userName,
         userRole,
+        activities,
+        attendanceWarning,
       ];
 }

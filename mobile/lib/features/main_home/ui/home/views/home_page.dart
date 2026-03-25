@@ -20,8 +20,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   int _currentNavIndex = 0;
+  late final AnimationController _entranceCtrl;
+  late final Animation<double> _entranceFade;
+  late final Animation<Offset> _entranceSlide;
+  late final Animation<double> _logoScale;
 
   final _navItems = const [
     AppBottomNavItem(
@@ -46,6 +50,30 @@ class _HomePageState extends State<HomePage> {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _entranceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 880),
+    );
+    _entranceFade = CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutCubic);
+    _entranceSlide = Tween<Offset>(
+      begin: const Offset(0, 0.028),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutCubic));
+    _logoScale = Tween<double>(begin: 0.9, end: 1).animate(
+      CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutBack),
+    );
+    _entranceCtrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _entranceCtrl.dispose();
+    super.dispose();
+  }
+
   void _onNavTap(int index) {
     setState(() => _currentNavIndex = index);
     switch (index) {
@@ -67,7 +95,15 @@ class _HomePageState extends State<HomePage> {
       create: (_) => getIt<HomeCubit>()..loadHomeData(),
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(child: _buildHomeContent()),
+        body: SafeArea(
+          child: FadeTransition(
+            opacity: _entranceFade,
+            child: SlideTransition(
+              position: _entranceSlide,
+              child: _buildHomeContent(),
+            ),
+          ),
+        ),
         bottomNavigationBar: AppBottomNav(
           currentIndex: _currentNavIndex,
           onTap: _onNavTap,
@@ -89,6 +125,40 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 16.w),
+                ScaleTransition(
+                  scale: _logoScale,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/exn.png',
+                        height: 48.w,
+                        fit: BoxFit.contain,
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'EXN HRM',
+                              style: AppTextStyles.h4.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            Text(
+                              'Quản lý nhân sự',
+                              style: AppTextStyles.caption
+                                  .copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 20.w),
                 _buildGreeting(state),
                 SizedBox(height: 24.w),
@@ -96,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 28.w),
                 const QuickActions(),
                 SizedBox(height: 28.w),
-                const RecentActivity(),
+                RecentActivity(items: state.activities),
                 SizedBox(height: 24.w),
               ],
             ),
@@ -108,35 +178,40 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildGreeting(HomeState state) {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    final greeting = hour < 12
+        ? 'Chào buổi sáng'
+        : hour < 17
+            ? 'Chào buổi chiều'
+            : 'Chào buổi tối';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              greeting,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-            ),
-            Text(
-              state.userName.isEmpty ? 'Employee' : state.userName,
-              style: AppTextStyles.h3,
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => context.push(AppRoutes.notifications),
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: AppColors.textPrimary,
-                size: 24.sp,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                greeting,
+                style:
+                    AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
               ),
-            ),
-          ],
+              Text(
+                state.userName.isEmpty ? 'Nhân viên' : state.userName,
+                style: AppTextStyles.h3,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          onPressed: () => context.push(AppRoutes.notifications),
+          icon: Icon(
+            Icons.notifications_outlined,
+            color: AppColors.textPrimary,
+            size: 24.sp,
+          ),
         ),
       ],
     );

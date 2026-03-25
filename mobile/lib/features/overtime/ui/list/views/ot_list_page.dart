@@ -46,6 +46,30 @@ class _OtListView extends StatelessWidget {
           if (state.status == OtListStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (state.status == OtListStatus.failure) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
+                    SizedBox(height: 12.w),
+                    Text(
+                      state.errorMessage ?? 'Không tải được danh sách',
+                      style: AppTextStyles.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16.w),
+                    TextButton(
+                      onPressed: () => context.read<OtListCubit>().loadList(),
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
           if (state.requests.isEmpty) {
             return Center(
               child: Column(

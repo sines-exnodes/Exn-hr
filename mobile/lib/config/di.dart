@@ -20,9 +20,11 @@ import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_cubit.dart'
 import 'package:exn_hr/features/leave/ui/approval/view_models/leave_approval_cubit.dart';
 import 'package:exn_hr/features/overtime/data/repositories/overtime_repository_impl.dart';
 import 'package:exn_hr/features/overtime/domain/repositories/overtime_repository.dart';
+import 'package:exn_hr/features/overtime/domain/usecases/approve_overtime_usecase.dart';
 import 'package:exn_hr/features/overtime/domain/usecases/create_ot_request_usecase.dart';
 import 'package:exn_hr/features/overtime/domain/usecases/get_ot_list_usecase.dart';
 import 'package:exn_hr/features/overtime/ui/request/view_models/ot_request_cubit.dart';
+import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_cubit.dart';
 import 'package:exn_hr/features/overtime/ui/list/view_models/ot_list_cubit.dart';
 import 'package:exn_hr/features/salary/data/repositories/salary_repository_impl.dart';
 import 'package:exn_hr/features/salary/domain/repositories/salary_repository.dart';
@@ -37,6 +39,7 @@ import 'package:exn_hr/features/profile/ui/change_password/view_models/change_pa
 import 'package:exn_hr/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:exn_hr/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:exn_hr/features/notifications/domain/usecases/get_notifications_usecase.dart';
+import 'package:exn_hr/features/notifications/domain/usecases/mark_notification_read_usecase.dart';
 import 'package:exn_hr/features/notifications/ui/list/view_models/notifications_cubit.dart';
 import 'package:exn_hr/features/main_home/ui/home/view_models/home_cubit.dart';
 import 'package:get_it/get_it.dart';
@@ -75,8 +78,14 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<OvertimeRepository>(() => OvertimeRepositoryImpl(apiClient: getIt<ApiClient>()));
   getIt.registerLazySingleton<CreateOtRequestUseCase>(() => CreateOtRequestUseCase(getIt<OvertimeRepository>()));
   getIt.registerLazySingleton<GetOtListUseCase>(() => GetOtListUseCase(getIt<OvertimeRepository>()));
+  getIt.registerLazySingleton<ApproveOvertimeUseCase>(() => ApproveOvertimeUseCase(getIt<OvertimeRepository>()));
   getIt.registerFactory<OtRequestCubit>(() => OtRequestCubit(createOtRequestUseCase: getIt<CreateOtRequestUseCase>()));
   getIt.registerFactory<OtListCubit>(() => OtListCubit(getOtListUseCase: getIt<GetOtListUseCase>()));
+  getIt.registerFactory<OtApprovalCubit>(() => OtApprovalCubit(
+        getProfileUseCase: getIt<GetProfileUseCase>(),
+        getOtListUseCase: getIt<GetOtListUseCase>(),
+        approveOvertimeUseCase: getIt<ApproveOvertimeUseCase>(),
+      ));
 
   // Salary
   getIt.registerLazySingleton<SalaryRepository>(() => SalaryRepositoryImpl(apiClient: getIt<ApiClient>()));
@@ -93,8 +102,17 @@ Future<void> configureDependencies() async {
   // Notifications
   getIt.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl(apiClient: getIt<ApiClient>()));
   getIt.registerLazySingleton<GetNotificationsUseCase>(() => GetNotificationsUseCase(getIt<NotificationsRepository>()));
-  getIt.registerFactory<NotificationsCubit>(() => NotificationsCubit(getNotificationsUseCase: getIt<GetNotificationsUseCase>()));
+  getIt.registerLazySingleton<MarkNotificationReadUseCase>(() => MarkNotificationReadUseCase(getIt<NotificationsRepository>()));
+  getIt.registerFactory<NotificationsCubit>(() => NotificationsCubit(
+        getNotificationsUseCase: getIt<GetNotificationsUseCase>(),
+        markNotificationReadUseCase: getIt<MarkNotificationReadUseCase>(),
+      ));
 
   // Home
-  getIt.registerFactory<HomeCubit>(() => HomeCubit(checkInUseCase: getIt<CheckInUseCase>(), getAttendanceHistoryUseCase: getIt<GetAttendanceHistoryUseCase>()));
+  getIt.registerFactory<HomeCubit>(() => HomeCubit(
+        getAttendanceHistoryUseCase: getIt<GetAttendanceHistoryUseCase>(),
+        getProfileUseCase: getIt<GetProfileUseCase>(),
+        getLeaveListUseCase: getIt<GetLeaveListUseCase>(),
+        getOtListUseCase: getIt<GetOtListUseCase>(),
+      ));
 }

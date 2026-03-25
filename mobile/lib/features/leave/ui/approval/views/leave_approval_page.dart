@@ -23,18 +23,54 @@ class LeaveApprovalPage extends StatelessWidget {
 class _LeaveApprovalView extends StatelessWidget {
   const _LeaveApprovalView();
 
+  Future<void> _confirmReject(BuildContext context, int id) async {
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Từ chối đơn nghỉ?'),
+        content: const Text(
+          'Hệ thống sẽ gửi trạng thái từ chối lên máy chủ.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Từ chối', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (go == true && context.mounted) {
+      context.read<LeaveApprovalCubit>().reject(id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Leave Approvals'),
+        title: const Text('Duyệt nghỉ phép'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
       ),
-      body: BlocBuilder<LeaveApprovalCubit, LeaveApprovalState>(
+      body: BlocConsumer<LeaveApprovalCubit, LeaveApprovalState>(
+        listener: (context, state) {
+          if (state.status == LeaveApprovalStatus.failure &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           if (state.status == LeaveApprovalStatus.loading) {
             return const Center(child: CircularProgressIndicator());
@@ -44,69 +80,100 @@ class _LeaveApprovalView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline, size: 48.sp, color: AppColors.success),
+                  Icon(Icons.check_circle_outline,
+                      size: 48.sp, color: AppColors.success),
                   SizedBox(height: 12.w),
-                  Text('No pending approvals', style: AppTextStyles.bodyMedium),
+                  Text('Không có đơn chờ duyệt',
+                      style: AppTextStyles.bodyMedium),
                 ],
               ),
             );
           }
-          return ListView.builder(
-            padding: EdgeInsets.all(16.w),
-            itemCount: state.requests.length,
-            itemBuilder: (context, index) {
-              final req = state.requests[index];
-              return Container(
-                margin: EdgeInsets.only(bottom: 12.w),
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(req.employeeName ?? 'Employee', style: AppTextStyles.labelLarge),
-                    SizedBox(height: 4.w),
-                    Text(
-                      '${req.type} leave • ${req.days} day(s)',
-                      style: AppTextStyles.bodySmall,
-                    ),
-                    Text(
-                      '${req.startDate} — ${req.endDate}',
-                      style: AppTextStyles.caption,
-                    ),
-                    SizedBox(height: 4.w),
-                    Text(req.reason, style: AppTextStyles.caption, maxLines: 2),
-                    SizedBox(height: 12.w),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {},
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.error),
-                            ),
-                            child: Text('Reject',
+          return RefreshIndicator(
+            onRefresh: () =>
+                context.read<LeaveApprovalCubit>().loadPendingRequests(),
+            color: AppColors.primary,
+            child: ListView.builder(
+              padding: EdgeInsets.all(16.w),
+              itemCount: state.requests.length,
+              itemBuilder: (context, index) {
+                final req = state.requests[index];
+                final busy = state.actionLoadingId == req.id;
+                return Container(
+                  margin: EdgeInsets.only(bottom: 12.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (busy)
+                        LinearProgressIndicator(
+                          minHeight: 3.w,
+                          backgroundColor: AppColors.primary.withOpacity(0.08),
+                          color: AppColors.primary,
+                        ),
+                      Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                      Text(req.employeeName ?? 'Nhân viên',
+                          style: AppTextStyles.labelLarge),
+                      SizedBox(height: 4.w),
+                      Text(
+                        'Nghỉ ${req.type} · ${req.days} ngày',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                      Text(
+                        '${req.startDate} — ${req.endDate}',
+                        style: AppTextStyles.caption,
+                      ),
+                      SizedBox(height: 4.w),
+                      Text(req.reason,
+                          style: AppTextStyles.caption, maxLines: 2),
+                      SizedBox(height: 12.w),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: busy
+                                  ? null
+                                  : () => _confirmReject(context, req.id),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: AppColors.error),
+                              ),
+                              child: Text(
+                                'Từ chối',
                                 style: AppTextStyles.labelMedium
-                                    .copyWith(color: AppColors.error)),
+                                    .copyWith(color: AppColors.error),
+                              ),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                context.read<LeaveApprovalCubit>().approve(req.id),
-                            child: const Text('Approve'),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: busy
+                                  ? null
+                                  : () => context
+                                      .read<LeaveApprovalCubit>()
+                                      .approve(req.id),
+                              child: const Text('Duyệt'),
+                            ),
                           ),
+                        ],
+                      ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

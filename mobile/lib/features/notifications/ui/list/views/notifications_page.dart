@@ -91,6 +91,31 @@ class _NotificationsView extends StatelessWidget {
           if (state.status == NotificationsStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (state.status == NotificationsStatus.failure) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
+                    SizedBox(height: 12.w),
+                    Text(
+                      state.errorMessage ?? 'Không tải được thông báo',
+                      style: AppTextStyles.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16.w),
+                    TextButton(
+                      onPressed: () =>
+                          context.read<NotificationsCubit>().loadNotifications(),
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
           if (state.notifications.isEmpty) {
             return Center(
               child: Column(
@@ -99,7 +124,7 @@ class _NotificationsView extends StatelessWidget {
                   Icon(Icons.notifications_off_outlined,
                       size: 48.sp, color: AppColors.textHint),
                   SizedBox(height: 12.w),
-                  Text('No notifications yet', style: AppTextStyles.bodyMedium),
+                  Text('Chưa có thông báo', style: AppTextStyles.bodyMedium),
                 ],
               ),
             );
@@ -113,7 +138,7 @@ class _NotificationsView extends StatelessWidget {
               itemCount: state.notifications.length,
               itemBuilder: (context, index) {
                 final notification = state.notifications[index];
-                return _buildNotificationTile(notification);
+                return _buildNotificationTile(context, notification);
               },
             ),
           );
@@ -122,84 +147,93 @@ class _NotificationsView extends StatelessWidget {
     );
   }
 
-  Widget _buildNotificationTile(AppNotification notification) {
+  Widget _buildNotificationTile(BuildContext context, AppNotification notification) {
     final color = _iconColor(notification.type);
     final icon = _icon(notification.type);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 8.w),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: notification.isRead
-            ? AppColors.surface
-            : AppColors.primary.withOpacity(0.04),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          context.read<NotificationsCubit>().markAsRead(notification.id);
+        },
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: notification.isRead
-              ? AppColors.border
-              : AppColors.primary.withOpacity(0.2),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40.w,
-            height: 40.w,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10.r),
+        child: Container(
+          margin: EdgeInsets.only(bottom: 8.w),
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: notification.isRead
+                ? AppColors.surface
+                : AppColors.primary.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: notification.isRead
+                  ? AppColors.border
+                  : AppColors.primary.withOpacity(0.2),
             ),
-            child: Icon(icon, color: color, size: 20.sp),
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(icon, color: color, size: 20.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        notification.title,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          fontWeight: notification.isRead
-                              ? FontWeight.w500
-                              : FontWeight.w600,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            notification.title,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              fontWeight: notification.isRead
+                                  ? FontWeight.w500
+                                  : FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        Text(
+                          _formatTime(notification.createdAt),
+                          style: AppTextStyles.caption,
+                        ),
+                      ],
                     ),
+                    SizedBox(height: 4.w),
                     Text(
-                      _formatTime(notification.createdAt),
-                      style: AppTextStyles.caption,
+                      notification.body,
+                      style: AppTextStyles.bodySmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-                SizedBox(height: 4.w),
-                Text(
-                  notification.body,
-                  style: AppTextStyles.bodySmall,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              ),
+              if (!notification.isRead) ...[
+                SizedBox(width: 8.w),
+                Container(
+                  width: 8.w,
+                  height: 8.w,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ],
-            ),
+            ],
           ),
-          if (!notification.isRead) ...[
-            SizedBox(width: 8.w),
-            Container(
-              width: 8.w,
-              height: 8.w,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

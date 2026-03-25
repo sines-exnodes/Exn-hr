@@ -86,20 +86,38 @@ class _SignInViewState extends State<_SignInView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 56.w,
-          height: 56.w,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Icon(Icons.business_center_rounded, color: Colors.white, size: 28.sp),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/exn.png',
+              height: 56.w,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'EXN HRM',
+                    style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    'Quản lý nhân sự',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 24.w),
-        Text('Welcome back', style: AppTextStyles.h2),
+        SizedBox(height: 28.w),
+        Text('Đăng nhập', style: AppTextStyles.h2),
         SizedBox(height: 8.w),
         Text(
-          'Sign in to your HR account',
+          'Dùng email công ty để tiếp tục',
           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
       ],

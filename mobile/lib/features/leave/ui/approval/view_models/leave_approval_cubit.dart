@@ -16,32 +16,56 @@ class LeaveApprovalCubit extends Cubit<LeaveApprovalState> {
   final GetLeaveListUseCase _getLeaveListUseCase;
   final ApproveLeaveUseCase _approveLeaveUseCase;
 
-  Future<void> loadPendingRequests() async {
-    emit(state.copyWith(status: LeaveApprovalStatus.loading));
+  Future<void> loadPendingRequests({bool silent = false}) async {
+    if (!silent) {
+      emit(state.copyWith(
+        status: LeaveApprovalStatus.loading,
+        errorMessage: null,
+        clearActionLoading: true,
+      ));
+    }
     final result = await _getLeaveListUseCase(status: 'pending');
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(
         status: LeaveApprovalStatus.failure,
         errorMessage: error.message,
+        clearActionLoading: true,
       )),
       (requests) => emit(state.copyWith(
         status: LeaveApprovalStatus.success,
         requests: requests,
+        clearActionLoading: true,
       )),
     );
   }
 
   Future<void> approve(int id) async {
-    emit(state.copyWith(status: LeaveApprovalStatus.approving));
+    emit(state.copyWith(actionLoadingId: id, errorMessage: null));
     final result = await _approveLeaveUseCase(id, status: 'approved');
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(
         status: LeaveApprovalStatus.failure,
         errorMessage: error.message,
+        clearActionLoading: true,
       )),
-      (_) => loadPendingRequests(),
+      (_) => loadPendingRequests(silent: true),
+    );
+  }
+
+  Future<void> reject(int id, {String? comment}) async {
+    emit(state.copyWith(actionLoadingId: id, errorMessage: null));
+    final result =
+        await _approveLeaveUseCase(id, status: 'rejected', comment: comment);
+    if (isClosed) return;
+    result.fold(
+      (error) => emit(state.copyWith(
+        status: LeaveApprovalStatus.failure,
+        errorMessage: error.message,
+        clearActionLoading: true,
+      )),
+      (_) => loadPendingRequests(silent: true),
     );
   }
 }

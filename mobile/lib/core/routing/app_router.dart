@@ -8,6 +8,7 @@ import 'package:exn_hr/features/leave/ui/request/views/leave_request_page.dart';
 import 'package:exn_hr/features/leave/ui/list/views/leave_list_page.dart';
 import 'package:exn_hr/features/leave/ui/approval/views/leave_approval_page.dart';
 import 'package:exn_hr/features/overtime/ui/request/views/ot_request_page.dart';
+import 'package:exn_hr/features/overtime/ui/approval/views/ot_approval_page.dart';
 import 'package:exn_hr/features/overtime/ui/list/views/ot_list_page.dart';
 import 'package:exn_hr/features/salary/ui/payslip/views/payslip_page.dart';
 import 'package:exn_hr/features/profile/ui/view/views/profile_page.dart';
@@ -27,6 +28,7 @@ class AppRoutes {
   static const String leaveApproval = '/leave/approval';
   static const String otRequest = '/overtime/request';
   static const String otList = '/overtime/list';
+  static const String otApproval = '/overtime/approval';
   static const String payslip = '/salary/payslip';
   static const String profile = '/profile';
   static const String changePassword = '/profile/change-password';
@@ -93,6 +95,10 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.otList,
         builder: (context, state) => const OtListPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.otApproval,
+        builder: (context, state) => const OtApprovalPage(),
       ),
       GoRoute(
         path: AppRoutes.payslip,
