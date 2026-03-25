@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
@@ -18,7 +18,7 @@ const statusOptions = [
   { value: "inactive", label: "Inactive" },
 ];
 
-export default function EmployeesPage() {
+function EmployeesPageContent() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
@@ -200,5 +200,25 @@ export default function EmployeesPage() {
         </Card>
       </div>
     </>
+  );
+}
+
+export default function EmployeesPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Header
+            title="Quản lý nhân viên"
+            breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Nhân viên" }]}
+          />
+          <div className="p-6">
+            <p className="text-sm text-slate-500">Đang tải...</p>
+          </div>
+        </>
+      }
+    >
+      <EmployeesPageContent />
+    </Suspense>
   );
 }
