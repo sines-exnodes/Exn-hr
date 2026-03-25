@@ -100,7 +100,12 @@ func (s *EmployeeService) Update(id uint, req dto.UpdateEmployeeReq) (*models.Em
 	if req.Position != "" {
 		emp.Position = req.Position
 	}
-	if req.TeamID != nil {
+	if req.JoinDate != "" {
+		emp.JoinDate = req.JoinDate
+	}
+	if req.ClearTeam != nil && *req.ClearTeam {
+		emp.TeamID = nil
+	} else if req.TeamID != nil {
 		emp.TeamID = req.TeamID
 	}
 	if req.BasicSalary != nil {

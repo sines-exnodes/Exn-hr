@@ -27,8 +27,10 @@ type UpdateEmployeeReq struct {
 	Address         string  `json:"address"`
 	DOB             string  `json:"dob"`
 	Gender          string  `json:"gender"`
+	JoinDate        string  `json:"join_date"`
 	Position        string  `json:"position"`
 	TeamID          *uint   `json:"team_id"`
+	ClearTeam       *bool   `json:"clear_team"` // when true, remove employee from any team
 	BasicSalary     *float64 `json:"basic_salary"`
 	InsuranceSalary *float64 `json:"insurance_salary"`
 	IsActive        *bool    `json:"is_active"`
