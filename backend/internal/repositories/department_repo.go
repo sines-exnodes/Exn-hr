@@ -19,7 +19,10 @@ func (r *DepartmentRepository) Create(dept *models.Department) error {
 
 func (r *DepartmentRepository) FindByID(id uint) (*models.Department, error) {
 	var dept models.Department
-	err := r.db.Preload("Teams").First(&dept, id).Error
+	err := r.db.
+		Preload("Teams.Leader").
+		Preload("Teams.Members").
+		First(&dept, id).Error
 	return &dept, err
 }
 
@@ -33,6 +36,10 @@ func (r *DepartmentRepository) Delete(id uint) error {
 
 func (r *DepartmentRepository) List() ([]models.Department, error) {
 	var depts []models.Department
-	err := r.db.Preload("Teams").Order("id ASC").Find(&depts).Error
+	err := r.db.
+		Preload("Teams.Leader").
+		Preload("Teams.Members").
+		Order("id ASC").
+		Find(&depts).Error
 	return depts, err
 }
