@@ -114,7 +114,7 @@ export function UserMenu({ notifOpen = false, onMenuOpen }: UserMenuProps) {
               href="/account"
               role="menuitem"
               className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => setOpen(false)}
             >
               Hồ sơ &amp; tài khoản
             </Link>
@@ -123,7 +123,7 @@ export function UserMenu({ notifOpen = false, onMenuOpen }: UserMenuProps) {
                 href={`/employees/${emp.id}`}
                 role="menuitem"
                 className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => setOpen(false)}
               >
                 Chỉnh sửa thông tin nhân viên
               </Link>
@@ -132,7 +132,7 @@ export function UserMenu({ notifOpen = false, onMenuOpen }: UserMenuProps) {
               href="/account/password"
               role="menuitem"
               className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => setOpen(false)}
             >
               Đổi mật khẩu
             </Link>
@@ -144,7 +144,7 @@ export function UserMenu({ notifOpen = false, onMenuOpen }: UserMenuProps) {
               role="menuitem"
               className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
               onClick={() => {
-                setMenuOpen(false);
+                setOpen(false);
                 signOutWeb();
               }}
             >
