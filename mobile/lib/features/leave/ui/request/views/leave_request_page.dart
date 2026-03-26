@@ -5,6 +5,7 @@ import 'package:exn_hr/features/leave/ui/request/view_models/leave_request_cubit
 import 'package:exn_hr/features/leave/ui/request/view_models/leave_request_state.dart';
 import 'package:exn_hr/shared/ui/widgets/app_button.dart';
 import 'package:exn_hr/shared/ui/widgets/app_input.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -98,48 +99,67 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Leave Type', style: AppTextStyles.labelMedium),
-                  SizedBox(height: 8.w),
-                  _buildLeaveTypeSelector(context, state),
-                  SizedBox(height: 16.w),
-                  AppInput(
-                    label: 'Start Date',
-                    hint: 'Select start date',
-                    controller: _startController,
-                    readOnly: true,
-                    onTap: () => _pickDate(context, true),
-                    suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  FadeSlideAnimation(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Leave Type', style: AppTextStyles.labelMedium),
+                        SizedBox(height: 8.w),
+                        _buildLeaveTypeSelector(context, state),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 16.w),
-                  AppInput(
-                    label: 'End Date',
-                    hint: 'Select end date',
-                    controller: _endController,
-                    readOnly: true,
-                    onTap: () => _pickDate(context, false),
-                    suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 100),
+                    child: AppInput(
+                      label: 'Start Date',
+                      hint: 'Select start date',
+                      controller: _startController,
+                      readOnly: true,
+                      onTap: () => _pickDate(context, true),
+                      suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
+                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    ),
                   ),
                   SizedBox(height: 16.w),
-                  AppInput(
-                    label: 'Reason',
-                    hint: 'Describe the reason for your leave',
-                    controller: _reasonController,
-                    maxLines: 4,
-                    validator: (v) => v == null || v.isEmpty ? 'Reason is required' : null,
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 200),
+                    child: AppInput(
+                      label: 'End Date',
+                      hint: 'Select end date',
+                      controller: _endController,
+                      readOnly: true,
+                      onTap: () => _pickDate(context, false),
+                      suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
+                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    ),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 300),
+                    child: AppInput(
+                      label: 'Reason',
+                      hint: 'Describe the reason for your leave',
+                      controller: _reasonController,
+                      maxLines: 4,
+                      validator: (v) => v == null || v.isEmpty ? 'Reason is required' : null,
+                    ),
                   ),
                   SizedBox(height: 32.w),
-                  AppButton(
-                    label: 'Submit Request',
-                    isLoading: state.status == LeaveRequestStatus.loading,
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        context.read<LeaveRequestCubit>().submit(
-                          reason: _reasonController.text.trim(),
-                        );
-                      }
-                    },
+                  ScaleFadeAnimation(
+                    delay: const Duration(milliseconds: 400),
+                    child: AppButton(
+                      label: 'Submit Request',
+                      isLoading: state.status == LeaveRequestStatus.loading,
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          context.read<LeaveRequestCubit>().submit(
+                            reason: _reasonController.text.trim(),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),

@@ -2,6 +2,7 @@ import 'package:exn_hr/config/di.dart';
 import 'package:exn_hr/core/routing/app_router.dart';
 import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_cubit.dart';
 import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_state.dart';
 import 'package:exn_hr/shared/ui/widgets/app_badge.dart';
@@ -87,7 +88,9 @@ class _LeaveListView extends StatelessWidget {
               itemCount: state.requests.length,
               itemBuilder: (context, index) {
                 final request = state.requests[index];
-                return Container(
+                return AnimatedListItem(
+                  index: index,
+                  child: Container(
                   margin: EdgeInsets.only(bottom: 10.w),
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
@@ -125,6 +128,7 @@ class _LeaveListView extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
                 );
               },
             ),
