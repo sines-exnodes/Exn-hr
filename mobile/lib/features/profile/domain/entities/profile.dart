@@ -10,6 +10,7 @@ class Profile extends Equatable {
     this.phone, this.address, this.dob, this.gender,
     this.joinDate, this.position, this.teamId, this.teamName,
     this.basicSalary, this.insuranceSalary,
+    this.department,
   });
 
   final int id;
@@ -27,6 +28,7 @@ class Profile extends Equatable {
   final String? teamName;
   final double? basicSalary;
   final double? insuranceSalary;
+  final String? department;
 
   @override
   List<Object?> get props => [id, userId, fullName, email, role];
