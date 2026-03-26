@@ -123,9 +123,8 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 	if err != nil {
 		return bd, fmt.Errorf("failed to get allowances: %w", err)
 	}
-	bd.TaxableAllowances = allowanceSplit.TaxableTotal
-	bd.NonTaxableAllowances = allowanceSplit.NonTaxableTotal
-	bd.TotalAllowances = bd.TaxableAllowances + bd.NonTaxableAllowances
+	taxableAllowances := allowanceSplit.TaxableTotal
+	bd.TotalAllowances = allowanceSplit.TaxableTotal + allowanceSplit.NonTaxableTotal
 
 	// --- OT Pay (3 types) ---
 	var hourlyRate float64
@@ -182,7 +181,7 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 		bd.PersonalDeduction = PersonalDeductionAmount
 		bd.DependentDeduction = float64(emp.NumberOfDependents) * DependentDeductionAmount
 
-		bd.TaxableIncome = (bd.ProratedSalary + bd.TaxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
+		bd.TaxableIncome = (bd.ProratedSalary + taxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
 			bd.TotalInsuranceEmployee - bd.PersonalDeduction - bd.DependentDeduction
 
 		if bd.TaxableIncome < 0 {
@@ -193,7 +192,7 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 
 	case "probation", "collaborator":
 		// Flat 10% on gross taxable income, no deductions
-		bd.TaxableIncome = bd.ProratedSalary + bd.TaxableAllowances + bd.TotalOTPay + bd.TotalBonus
+		bd.TaxableIncome = bd.ProratedSalary + taxableAllowances + bd.TotalOTPay + bd.TotalBonus
 		bd.PITAmount = math.Round(bd.TaxableIncome * 0.10)
 
 	case "intern", "service_contract":
@@ -205,7 +204,7 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 		bd.PersonalDeduction = PersonalDeductionAmount
 		bd.DependentDeduction = float64(emp.NumberOfDependents) * DependentDeductionAmount
 
-		bd.TaxableIncome = (bd.ProratedSalary + bd.TaxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
+		bd.TaxableIncome = (bd.ProratedSalary + taxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
 			bd.TotalInsuranceEmployee - bd.PersonalDeduction - bd.DependentDeduction
 
 		if bd.TaxableIncome < 0 {
@@ -268,9 +267,7 @@ func (s *SalaryService) RunPayroll(req dto.RunPayrollReq) ([]dto.SalaryBreakdown
 			ActualWorkDays:   breakdown.ActualWorkDays,
 			ProratedSalary:   breakdown.ProratedSalary,
 
-			TaxableAllowances:    breakdown.TaxableAllowances,
-			NonTaxableAllowances: breakdown.NonTaxableAllowances,
-			TotalAllowances:      breakdown.TotalAllowances,
+			TotalAllowances: breakdown.TotalAllowances,
 
 			OTPayNormal:  breakdown.OTPayNormal,
 			OTPayWeekend: breakdown.OTPayWeekend,

@@ -60,9 +60,7 @@ type SalaryRecord struct {
 	ProratedSalary   float64 `json:"prorated_salary"`
 
 	// Allowances
-	TaxableAllowances    float64 `json:"taxable_allowances"`
-	NonTaxableAllowances float64 `json:"non_taxable_allowances"`
-	TotalAllowances      float64 `json:"total_allowances"`
+	TotalAllowances float64 `json:"total_allowances"`
 
 	// OT breakdown
 	OTPayNormal  float64 `json:"ot_pay_normal"`
@@ -105,9 +103,12 @@ type SalaryRecord struct {
 	NetSalary         float64 `json:"net_salary"`
 	TotalEmployerCost float64 `json:"total_employer_cost"`
 
-	Status    string    `gorm:"default:draft" json:"status"` // draft, confirmed
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ParkingFee float64 `json:"parking_fee"`
+
+	Status      string     `gorm:"default:draft" json:"status"` // draft, confirmed
+	PaymentDate *time.Time `json:"payment_date,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 
 	Employee *Employee `gorm:"foreignKey:EmployeeID" json:"employee,omitempty"`
 }

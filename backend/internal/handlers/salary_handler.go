@@ -87,7 +87,7 @@ func (h *SalaryHandler) ExportCSV(c *gin.Context) {
 	_ = w.Write([]string{
 		"ID", "EmployeeID", "EmployeeName", "ContractType", "Month", "Year",
 		"BasicSalary", "InsuranceSalary", "StandardWorkDays", "ActualWorkDays", "ProratedSalary",
-		"TaxableAllowances", "NonTaxableAllowances", "TotalAllowances",
+		"TotalAllowances",
 		"OTPayNormal", "OTPayWeekend", "OTPayHoliday", "TotalOTPay",
 		"TotalBonus", "TotalIncome",
 		"BHXH", "BHYT", "BHTN", "TotalInsuranceEmployee",
@@ -113,7 +113,7 @@ func (h *SalaryHandler) ExportCSV(c *gin.Context) {
 			strconv.Itoa(r.StandardWorkDays),
 			strconv.FormatFloat(r.ActualWorkDays, 'f', 1, 64),
 			ff(r.ProratedSalary),
-			ff(r.TaxableAllowances), ff(r.NonTaxableAllowances), ff(r.TotalAllowances),
+			ff(r.TotalAllowances),
 			ff(r.OTPayNormal), ff(r.OTPayWeekend), ff(r.OTPayHoliday), ff(r.TotalOTPay),
 			ff(r.TotalBonus), ff(r.TotalIncome),
 			ff(r.BHXH), ff(r.BHYT), ff(r.BHTN), ff(r.TotalInsuranceEmployee),

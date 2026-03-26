@@ -510,7 +510,7 @@ export async function runPayroll(data: RunPayrollRequest) {
 }
 
 export async function confirmSalary(id: number) {
-  return api.post<ApiResponse<null>>(`/salary/${id}/confirm`);
+  return api.post<ApiResponse<null>>(`/salary-records/${id}/confirm`);
 }
 
 export async function exportPayrollCsv(params?: {

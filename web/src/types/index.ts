@@ -280,8 +280,6 @@ export interface SalaryRecord {
   net_salary: number;
   standard_work_days?: number;
   actual_work_days?: number;
-  taxable_allowances?: number;
-  non_taxable_allowances?: number;
   ot_pay_normal?: number;
   ot_pay_weekend?: number;
   ot_pay_holiday?: number;
@@ -300,6 +298,7 @@ export interface SalaryRecord {
   employer_tnnn?: number;
   total_employer_cost?: number;
   status: "draft" | "confirmed";
+  payment_date?: string;
   employee?: Employee;
 }
 

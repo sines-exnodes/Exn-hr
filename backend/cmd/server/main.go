@@ -209,8 +209,6 @@ func main() {
 				salary.GET("/export", salaryHandler.ExportCSV)
 				salary.GET("/me", salaryHandler.GetMySalary)
 				salary.GET("/employee/:employee_id", salaryHandler.GetByEmployee)
-				salary.GET("/:id", salaryHandler.GetByID)
-				salary.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
 
 				// Allowance types
 				salary.GET("/allowance-types", salaryHandler.ListAllowanceTypes)
@@ -223,6 +221,14 @@ func main() {
 
 				// Salary advances
 				salary.POST("/advances", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.AddSalaryAdvance)
+			}
+
+			// --- Salary Records (separate group to avoid Gin wildcard conflicts) ---
+			salaryRecord := protected.Group("/salary-records")
+			salaryRecord.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
+			{
+				salaryRecord.GET("/:id", salaryHandler.GetByID)
+				salaryRecord.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
 			}
 
 			// --- Notifications — all authenticated users ---

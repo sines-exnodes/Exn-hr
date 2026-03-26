@@ -43,9 +43,7 @@ type SalaryBreakdown struct {
 	ProratedSalary   float64 `json:"prorated_salary"`
 
 	// Allowances
-	TaxableAllowances    float64 `json:"taxable_allowances"`
-	NonTaxableAllowances float64 `json:"non_taxable_allowances"`
-	TotalAllowances      float64 `json:"total_allowances"`
+	TotalAllowances float64 `json:"total_allowances"`
 
 	// OT
 	OTHourlyRate float64 `json:"ot_hourly_rate"`
