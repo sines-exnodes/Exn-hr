@@ -209,6 +209,7 @@ func main() {
 				salary.GET("/export", salaryHandler.ExportCSV)
 				salary.GET("/me", salaryHandler.GetMySalary)
 				salary.GET("/employee/:employee_id", salaryHandler.GetByEmployee)
+				salary.GET("/:id", salaryHandler.GetByID)
 				salary.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
 
 				// Allowance types
