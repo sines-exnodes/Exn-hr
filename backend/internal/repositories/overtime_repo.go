@@ -75,3 +75,44 @@ func (r *OvertimeRepository) SumApprovedHours(employeeID uint, month, year int) 
 		Select("COALESCE(SUM(hours), 0)").Scan(&total).Error
 	return total, err
 }
+
+// OTHoursByType holds approved OT hours split by type
+type OTHoursByType struct {
+	Normal  float64
+	Weekend float64
+	Holiday float64
+}
+
+// SumApprovedHoursByType returns approved OT hours split by ot_type for an employee in a given month/year
+func (r *OvertimeRepository) SumApprovedHoursByType(employeeID uint, month, year int) (OTHoursByType, error) {
+	var result OTHoursByType
+
+	type otRow struct {
+		OTType string  `gorm:"column:ot_type"`
+		Total  float64 `gorm:"column:total"`
+	}
+
+	var rows []otRow
+	err := r.db.Model(&models.OvertimeRequest{}).
+		Where("employee_id = ? AND overall_status = ? AND EXTRACT(MONTH FROM created_at) = ? AND EXTRACT(YEAR FROM created_at) = ?",
+			employeeID, "approved", month, year).
+		Select("ot_type, COALESCE(SUM(hours), 0) as total").
+		Group("ot_type").
+		Scan(&rows).Error
+	if err != nil {
+		return result, err
+	}
+
+	for _, row := range rows {
+		switch row.OTType {
+		case "normal":
+			result.Normal = row.Total
+		case "weekend":
+			result.Weekend = row.Total
+		case "holiday":
+			result.Holiday = row.Total
+		}
+	}
+
+	return result, nil
+}

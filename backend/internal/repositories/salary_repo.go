@@ -133,3 +133,41 @@ func (r *SalaryRepository) GetEmployeeAllowancesTotal(employeeID uint) (float64,
 		Select("COALESCE(SUM(amount), 0)").Scan(&total).Error
 	return total, err
 }
+
+// AllowanceSplit holds taxable and non-taxable allowance totals
+type AllowanceSplit struct {
+	TaxableTotal    float64
+	NonTaxableTotal float64
+}
+
+// GetEmployeeAllowancesSplit returns taxable and non-taxable allowance totals for an employee
+func (r *SalaryRepository) GetEmployeeAllowancesSplit(employeeID uint) (AllowanceSplit, error) {
+	var result AllowanceSplit
+
+	// Taxable
+	err := r.db.Model(&models.EmployeeAllowance{}).
+		Joins("JOIN allowances ON allowances.id = employee_allowances.allowance_id").
+		Where("employee_allowances.employee_id = ? AND allowances.is_taxable = ?", employeeID, true).
+		Select("COALESCE(SUM(employee_allowances.amount), 0)").Scan(&result.TaxableTotal).Error
+	if err != nil {
+		return result, err
+	}
+
+	// Non-taxable
+	err = r.db.Model(&models.EmployeeAllowance{}).
+		Joins("JOIN allowances ON allowances.id = employee_allowances.allowance_id").
+		Where("employee_allowances.employee_id = ? AND allowances.is_taxable = ?", employeeID, false).
+		Select("COALESCE(SUM(employee_allowances.amount), 0)").Scan(&result.NonTaxableTotal).Error
+
+	return result, err
+}
+
+// CountWorkDays returns the number of distinct days an employee checked in for a given month/year
+func (r *SalaryRepository) CountWorkDays(employeeID uint, month, year int) (float64, error) {
+	var count float64
+	err := r.db.Model(&models.AttendanceRecord{}).
+		Where("employee_id = ? AND EXTRACT(MONTH FROM check_in_time) = ? AND EXTRACT(YEAR FROM check_in_time) = ?",
+			employeeID, month, year).
+		Select("COUNT(DISTINCT DATE(check_in_time))").Scan(&count).Error
+	return count, err
+}

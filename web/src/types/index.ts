@@ -71,6 +71,18 @@ export interface Employee {
   team_id?: number;
   basic_salary: number;
   insurance_salary: number;
+  contract_type?:
+    | "full_time"
+    | "expat"
+    | "probation"
+    | "intern"
+    | "collaborator"
+    | "service_contract";
+  number_of_dependents?: number;
+  bank_account?: string;
+  bank_name?: string;
+  bank_holder_name?: string;
+  payment_method?: "bank_transfer" | "cash";
   created_at: string;
   updated_at: string;
   user?: User;
@@ -91,6 +103,18 @@ export interface CreateEmployeeRequest {
   team_id?: number;
   basic_salary: number;
   insurance_salary: number;
+  contract_type?:
+    | "full_time"
+    | "expat"
+    | "probation"
+    | "intern"
+    | "collaborator"
+    | "service_contract";
+  number_of_dependents?: number;
+  bank_account?: string;
+  bank_name?: string;
+  bank_holder_name?: string;
+  payment_method?: "bank_transfer" | "cash";
 }
 
 export interface UpdateEmployeeRequest {
@@ -107,6 +131,18 @@ export interface UpdateEmployeeRequest {
   basic_salary?: number;
   insurance_salary?: number;
   is_active?: boolean;
+  contract_type?:
+    | "full_time"
+    | "expat"
+    | "probation"
+    | "intern"
+    | "collaborator"
+    | "service_contract";
+  number_of_dependents?: number;
+  bank_account?: string;
+  bank_name?: string;
+  bank_holder_name?: string;
+  payment_method?: "bank_transfer" | "cash";
 }
 
 // ---- Department ----
@@ -217,6 +253,7 @@ export interface OvertimeRequest {
   overall_status: ApprovalStatus;
   leader_comment?: string;
   ceo_comment?: string;
+  ot_type?: "normal" | "weekend" | "holiday";
   created_at?: string;
   employee?: Employee;
 }
@@ -241,6 +278,27 @@ export interface SalaryRecord {
   total_deductions: number;
   salary_advance: number;
   net_salary: number;
+  standard_work_days?: number;
+  actual_work_days?: number;
+  taxable_allowances?: number;
+  non_taxable_allowances?: number;
+  ot_pay_normal?: number;
+  ot_pay_weekend?: number;
+  ot_pay_holiday?: number;
+  parking_fee?: number;
+  taxable_income?: number;
+  personal_deduction?: number;
+  dependent_deduction?: number;
+  pit_amount?: number;
+  union_fee_employee?: number;
+  union_fee_employer?: number;
+  prorated_salary?: number;
+  employer_insurance_cost?: number;
+  employer_bhxh?: number;
+  employer_bhyt?: number;
+  employer_bhtn?: number;
+  employer_tnnn?: number;
+  total_employer_cost?: number;
   status: "draft" | "confirmed";
   employee?: Employee;
 }
@@ -248,6 +306,7 @@ export interface SalaryRecord {
 export interface RunPayrollRequest {
   month: number;
   year: number;
+  standard_work_days: number;
 }
 
 // ---- Allowance ----
@@ -256,6 +315,7 @@ export interface AllowanceType {
   id: number;
   name: string;
   description?: string;
+  is_taxable?: boolean;
 }
 
 export interface EmployeeAllowance {

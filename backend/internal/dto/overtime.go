@@ -7,6 +7,7 @@ type CreateOTReq struct {
 	StartTime string  `json:"start_time" binding:"required"`
 	EndTime   string  `json:"end_time" binding:"required"`
 	Hours     float64 `json:"hours" binding:"required,min=0.5"`
+	OTType    string  `json:"ot_type"` // normal, weekend, holiday
 	Reason    string  `json:"reason"`
 }
 

@@ -82,7 +82,21 @@ func (h *SalaryHandler) ExportCSV(c *gin.Context) {
 	w := csv.NewWriter(c.Writer)
 	defer w.Flush()
 
-	_ = w.Write([]string{"ID", "EmployeeID", "EmployeeName", "Month", "Year", "BasicSalary", "TotalAllowances", "TotalOTPay", "TotalBonus", "TotalDeductions", "SalaryAdvance", "NetSalary", "Status", "UpdatedAt"})
+	ff := func(v float64) string { return strconv.FormatFloat(v, 'f', 0, 64) }
+
+	_ = w.Write([]string{
+		"ID", "EmployeeID", "EmployeeName", "ContractType", "Month", "Year",
+		"BasicSalary", "InsuranceSalary", "StandardWorkDays", "ActualWorkDays", "ProratedSalary",
+		"TaxableAllowances", "NonTaxableAllowances", "TotalAllowances",
+		"OTPayNormal", "OTPayWeekend", "OTPayHoliday", "TotalOTPay",
+		"TotalBonus", "TotalIncome",
+		"BHXH", "BHYT", "BHTN", "TotalInsuranceEmployee",
+		"BHXHEmployer", "TNNNEmployer", "BHYTEmployer", "BHTNEmployer", "EmployerInsuranceCost",
+		"UnionFeeEmployee", "UnionFeeEmployer",
+		"PersonalDeduction", "DependentDeduction", "TaxableIncome", "PITAmount",
+		"TotalDeductions", "SalaryAdvance", "NetSalary", "TotalEmployerCost",
+		"Status", "UpdatedAt",
+	})
 	for _, r := range records {
 		empName := ""
 		if r.Employee != nil {
@@ -92,15 +106,21 @@ func (h *SalaryHandler) ExportCSV(c *gin.Context) {
 			strconv.FormatUint(uint64(r.ID), 10),
 			strconv.FormatUint(uint64(r.EmployeeID), 10),
 			empName,
+			r.ContractType,
 			strconv.Itoa(r.Month),
 			strconv.Itoa(r.Year),
-			strconv.FormatFloat(r.BasicSalary, 'f', 0, 64),
-			strconv.FormatFloat(r.TotalAllowances, 'f', 0, 64),
-			strconv.FormatFloat(r.TotalOTPay, 'f', 0, 64),
-			strconv.FormatFloat(r.TotalBonus, 'f', 0, 64),
-			strconv.FormatFloat(r.TotalDeductions, 'f', 0, 64),
-			strconv.FormatFloat(r.SalaryAdvance, 'f', 0, 64),
-			strconv.FormatFloat(r.NetSalary, 'f', 0, 64),
+			ff(r.BasicSalary), ff(r.InsuranceSalary),
+			strconv.Itoa(r.StandardWorkDays),
+			strconv.FormatFloat(r.ActualWorkDays, 'f', 1, 64),
+			ff(r.ProratedSalary),
+			ff(r.TaxableAllowances), ff(r.NonTaxableAllowances), ff(r.TotalAllowances),
+			ff(r.OTPayNormal), ff(r.OTPayWeekend), ff(r.OTPayHoliday), ff(r.TotalOTPay),
+			ff(r.TotalBonus), ff(r.TotalIncome),
+			ff(r.BHXH), ff(r.BHYT), ff(r.BHTN), ff(r.TotalInsuranceEmployee),
+			ff(r.BHXHEmployer), ff(r.TNNNEmployer), ff(r.BHYTEmployer), ff(r.BHTNEmployer), ff(r.EmployerInsuranceCost),
+			ff(r.UnionFeeEmployee), ff(r.UnionFeeEmployer),
+			ff(r.PersonalDeduction), ff(r.DependentDeduction), ff(r.TaxableIncome), ff(r.PITAmount),
+			ff(r.TotalDeductions), ff(r.SalaryAdvance), ff(r.NetSalary), ff(r.TotalEmployerCost),
 			r.Status,
 			r.UpdatedAt.Format(time.RFC3339),
 		})

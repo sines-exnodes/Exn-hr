@@ -9,6 +9,7 @@ type OvertimeRequest struct {
 	StartTime     string    `gorm:"not null" json:"start_time"`
 	EndTime       string    `gorm:"not null" json:"end_time"`
 	Hours         float64   `gorm:"not null" json:"hours"`
+	OTType        string    `gorm:"default:normal" json:"ot_type"` // normal (x1.5), weekend (x2.0), holiday (x3.0)
 	Reason        string    `json:"reason"`
 	LeaderStatus  string    `gorm:"default:pending" json:"leader_status"`  // pending, approved, rejected
 	CEOStatus     string    `gorm:"default:pending" json:"ceo_status"`     // pending, approved, rejected

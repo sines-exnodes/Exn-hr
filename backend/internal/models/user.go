@@ -36,10 +36,16 @@ type Employee struct {
 	JoinDate        string    `json:"join_date"`
 	Position        string    `json:"position"`
 	TeamID          *uint     `json:"team_id"`
-	BasicSalary     float64   `gorm:"default:0" json:"basic_salary"`
-	InsuranceSalary float64   `gorm:"default:0" json:"insurance_salary"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	BasicSalary        float64   `gorm:"default:0" json:"basic_salary"`
+	InsuranceSalary    float64   `gorm:"default:0" json:"insurance_salary"`
+	ContractType       string    `gorm:"default:full_time" json:"contract_type"`                // full_time, expat, probation, intern, collaborator, service_contract
+	NumberOfDependents int       `gorm:"default:0" json:"number_of_dependents"`
+	BankAccount        string    `json:"bank_account,omitempty"`
+	BankName           string    `json:"bank_name,omitempty"`
+	BankHolderName     string    `json:"bank_holder_name,omitempty"`
+	PaymentMethod      string    `gorm:"default:bank_transfer" json:"payment_method"`           // bank_transfer, cash
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 
 	User *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 	Team *Team `gorm:"foreignKey:TeamID" json:"team,omitempty"`

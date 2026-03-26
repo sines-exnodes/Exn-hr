@@ -32,6 +32,21 @@ import type {
   AllowanceType,
 } from "@/types";
 
+const contractTypeOptions = [
+  { value: "", label: "Chọn loại hợp đồng" },
+  { value: "full_time", label: "Nhân viên chính thức (HĐLĐ)" },
+  { value: "expat", label: "Nhân viên nước ngoài" },
+  { value: "probation", label: "Thử việc (HĐTV)" },
+  { value: "intern", label: "Thực tập sinh" },
+  { value: "collaborator", label: "Cộng tác viên" },
+  { value: "service_contract", label: "Hợp đồng dịch vụ" },
+];
+
+const paymentMethodOptions = [
+  { value: "bank_transfer", label: "Chuyển khoản" },
+  { value: "cash", label: "Tiền mặt" },
+];
+
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
     n,
@@ -651,6 +666,12 @@ export default function EmployeeDetailPage() {
   const [teamId, setTeamId] = useState("");
   const [basicSalary, setBasicSalary] = useState("");
   const [insuranceSalary, setInsuranceSalary] = useState("");
+  const [contractType, setContractType] = useState("");
+  const [numberOfDependents, setNumberOfDependents] = useState("0");
+  const [bankAccount, setBankAccount] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankHolderName, setBankHolderName] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
 
   const emp = empRes?.data as Employee | undefined;
   const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? [];
@@ -696,6 +717,12 @@ export default function EmployeeDetailPage() {
     setTeamId(emp.team_id != null ? String(emp.team_id) : "");
     setBasicSalary(String(emp.basic_salary ?? ""));
     setInsuranceSalary(String(emp.insurance_salary ?? ""));
+    setContractType(emp.contract_type ?? "");
+    setNumberOfDependents(String(emp.number_of_dependents ?? 0));
+    setBankAccount(emp.bank_account ?? "");
+    setBankName(emp.bank_name ?? "");
+    setBankHolderName(emp.bank_holder_name ?? "");
+    setPaymentMethod(emp.payment_method ?? "bank_transfer");
     setFormError("");
   }, [editOpen, emp]);
 
@@ -732,6 +759,20 @@ export default function EmployeeDetailPage() {
         basic_salary: basic,
         insurance_salary: ins,
         ...(teamId === "" ? { clear_team: true } : { team_id: Number(teamId) }),
+        contract_type:
+          (contractType as
+            | "full_time"
+            | "expat"
+            | "probation"
+            | "intern"
+            | "collaborator"
+            | "service_contract") || undefined,
+        number_of_dependents: Number(numberOfDependents) || 0,
+        bank_account: bankAccount.trim() || undefined,
+        bank_name: bankName.trim() || undefined,
+        bank_holder_name: bankHolderName.trim() || undefined,
+        payment_method:
+          (paymentMethod as "bank_transfer" | "cash") || undefined,
       });
       await mutateEmp();
       setEditOpen(false);
@@ -975,6 +1016,48 @@ export default function EmployeeDetailPage() {
                 type="number"
                 value={insuranceSalary}
                 onChange={(e) => setInsuranceSalary(e.target.value)}
+              />
+              <Select
+                label="Loại hợp đồng"
+                options={contractTypeOptions}
+                value={contractType}
+                onChange={(e) => setContractType(e.target.value)}
+              />
+              <Input
+                label="Số người phụ thuộc"
+                type="number"
+                value={numberOfDependents}
+                onChange={(e) => setNumberOfDependents(e.target.value)}
+              />
+            </div>
+            <hr className="my-4 border-slate-200" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
+              Thông tin ngân hàng
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input
+                label="Số tài khoản"
+                placeholder="0123456789"
+                value={bankAccount}
+                onChange={(e) => setBankAccount(e.target.value)}
+              />
+              <Input
+                label="Ngân hàng"
+                placeholder="Vietcombank"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+              />
+              <Input
+                label="Tên chủ tài khoản"
+                placeholder="NGUYEN VAN A"
+                value={bankHolderName}
+                onChange={(e) => setBankHolderName(e.target.value)}
+              />
+              <Select
+                label="Hình thức nhận lương"
+                options={paymentMethodOptions}
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
               />
             </div>
           </div>

@@ -18,6 +18,21 @@ const roleOptions = [
   { value: "admin", label: "Admin" },
 ];
 
+const contractTypeOptions = [
+  { value: "", label: "Chọn loại hợp đồng" },
+  { value: "full_time", label: "Nhân viên chính thức (HĐLĐ)" },
+  { value: "expat", label: "Nhân viên nước ngoài" },
+  { value: "probation", label: "Thử việc (HĐTV)" },
+  { value: "intern", label: "Thực tập sinh" },
+  { value: "collaborator", label: "Cộng tác viên" },
+  { value: "service_contract", label: "Hợp đồng dịch vụ" },
+];
+
+const paymentMethodOptions = [
+  { value: "bank_transfer", label: "Chuyển khoản" },
+  { value: "cash", label: "Tiền mặt" },
+];
+
 const initialForm: Partial<CreateEmployeeRequest> = {
   full_name: "",
   email: "",
@@ -30,6 +45,12 @@ const initialForm: Partial<CreateEmployeeRequest> = {
   address: "",
   insurance_salary: 0,
   basic_salary: 0,
+  contract_type: undefined,
+  number_of_dependents: 0,
+  bank_account: "",
+  bank_name: "",
+  bank_holder_name: "",
+  payment_method: "bank_transfer",
 };
 
 export default function NewEmployeePage() {
@@ -46,12 +67,24 @@ export default function NewEmployeePage() {
   const departments = deptRes?.data ?? [];
   const teams = teamsRes?.data ?? [];
 
-  const departmentOptions = departments.map((d) => ({ value: String(d.id), label: d.name }));
-  const teamOptions = teams.map((t) => ({ value: String(t.id), label: `${t.name}${t.department?.name ? ` (${t.department.name})` : ""}` }));
+  const departmentOptions = departments.map((d) => ({
+    value: String(d.id),
+    label: d.name,
+  }));
+  const teamOptions = teams.map((t) => ({
+    value: String(t.id),
+    label: `${t.name}${t.department?.name ? ` (${t.department.name})` : ""}`,
+  }));
 
-  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm((f) => ({ ...f, [key]: e.target.value }));
-  };
+  const set =
+    (key: keyof typeof form) =>
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >,
+    ) => {
+      setForm((f) => ({ ...f, [key]: e.target.value }));
+    };
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -85,10 +118,22 @@ export default function NewEmployeePage() {
         team_id: teamId ? Number(teamId) : undefined,
         basic_salary: Number(form.basic_salary) || 0,
         insurance_salary: Number(form.insurance_salary) || 0,
+        contract_type:
+          (form.contract_type as CreateEmployeeRequest["contract_type"]) ||
+          undefined,
+        number_of_dependents: Number(form.number_of_dependents) || 0,
+        bank_account: form.bank_account || undefined,
+        bank_name: form.bank_name || undefined,
+        bank_holder_name: form.bank_holder_name || undefined,
+        payment_method:
+          (form.payment_method as CreateEmployeeRequest["payment_method"]) ||
+          undefined,
       });
       router.push("/employees");
     } catch (err) {
-      setErrors({ _form: err instanceof Error ? err.message : "Tạo nhân viên thất bại" });
+      setErrors({
+        _form: err instanceof Error ? err.message : "Tạo nhân viên thất bại",
+      });
     } finally {
       setLoading(false);
     }
@@ -115,8 +160,12 @@ export default function NewEmployeePage() {
           {/* Section 1: Thông tin cơ bản */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">1</div>
-              <h2 className="text-base font-semibold text-slate-800">Thông tin cơ bản</h2>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
+                1
+              </div>
+              <h2 className="text-base font-semibold text-slate-800">
+                Thông tin cơ bản
+              </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="sm:col-span-2">
@@ -162,7 +211,9 @@ export default function NewEmployeePage() {
               />
               <div className="sm:col-span-2 lg:col-span-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-slate-700">Địa chỉ</label>
+                  <label className="text-sm font-medium text-slate-700">
+                    Địa chỉ
+                  </label>
                   <textarea
                     rows={2}
                     placeholder="Địa chỉ thường trú..."
@@ -178,8 +229,12 @@ export default function NewEmployeePage() {
           {/* Section 2: Thông tin công việc */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">2</div>
-              <h2 className="text-base font-semibold text-slate-800">Thông tin công việc</h2>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
+                2
+              </div>
+              <h2 className="text-base font-semibold text-slate-800">
+                Thông tin công việc
+              </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {departmentOptions.length > 0 ? (
@@ -210,7 +265,9 @@ export default function NewEmployeePage() {
                 label="Vai trò hệ thống"
                 options={roleOptions}
                 value={form.role}
-                onChange={set("role") as React.ChangeEventHandler<HTMLSelectElement>}
+                onChange={
+                  set("role") as React.ChangeEventHandler<HTMLSelectElement>
+                }
                 required
               />
               <Input
@@ -221,14 +278,35 @@ export default function NewEmployeePage() {
                 error={errors.join_date}
                 required
               />
+              <Select
+                label="Loại hợp đồng"
+                options={contractTypeOptions}
+                value={form.contract_type ?? ""}
+                onChange={
+                  set(
+                    "contract_type",
+                  ) as React.ChangeEventHandler<HTMLSelectElement>
+                }
+              />
+              <Input
+                label="Số người phụ thuộc"
+                type="number"
+                placeholder="0"
+                value={form.number_of_dependents ?? 0}
+                onChange={set("number_of_dependents")}
+              />
             </div>
           </Card>
 
           {/* Section 3: Lương & Bảo hiểm */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">3</div>
-              <h2 className="text-base font-semibold text-slate-800">Lương & Bảo hiểm</h2>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
+                3
+              </div>
+              <h2 className="text-base font-semibold text-slate-800">
+                Lương & Bảo hiểm
+              </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
@@ -251,6 +329,48 @@ export default function NewEmployeePage() {
             <p className="mt-3 text-xs text-slate-400">
               * Phụ cấp có thể thêm sau trong mục Quản lý phụ cấp.
             </p>
+          </Card>
+
+          {/* Section 4: Thông tin ngân hàng */}
+          <Card>
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
+                4
+              </div>
+              <h2 className="text-base font-semibold text-slate-800">
+                Thông tin ngân hàng
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Input
+                label="Số tài khoản"
+                placeholder="0123456789"
+                value={form.bank_account}
+                onChange={set("bank_account")}
+              />
+              <Input
+                label="Ngân hàng"
+                placeholder="Vietcombank"
+                value={form.bank_name}
+                onChange={set("bank_name")}
+              />
+              <Input
+                label="Tên chủ tài khoản"
+                placeholder="NGUYEN VAN A"
+                value={form.bank_holder_name}
+                onChange={set("bank_holder_name")}
+              />
+              <Select
+                label="Hình thức nhận lương"
+                options={paymentMethodOptions}
+                value={form.payment_method ?? "bank_transfer"}
+                onChange={
+                  set(
+                    "payment_method",
+                  ) as React.ChangeEventHandler<HTMLSelectElement>
+                }
+              />
+            </div>
           </Card>
 
           {/* Actions */}

@@ -3,18 +3,39 @@ package services
 import (
 	"errors"
 	"fmt"
+	"math"
 
 	"github.com/exn-hr/backend/internal/dto"
 	"github.com/exn-hr/backend/internal/models"
 	"github.com/exn-hr/backend/internal/repositories"
 )
 
-// Insurance deduction rates (applied on insurance_salary)
+// Insurance rates (employee side, on InsuranceSalary)
 const (
 	BHXHRate = 0.08  // 8%
 	BHYTRate = 0.015 // 1.5%
 	BHTNRate = 0.01  // 1%
-	OTRate   = 1.5   // x1.5
+	TotalInsuranceEmployeeRate = 0.105 // 10.5%
+
+	// Insurance rates (employer side)
+	BHXHEmployerRate = 0.17  // 17%
+	TNNNEmployerRate = 0.005 // 0.5%
+	BHYTEmployerRate = 0.03  // 3%
+	BHTNEmployerRate = 0.01  // 1%
+	TotalInsuranceEmployerRate = 0.215 // 21.5%
+
+	// Union fee rates
+	UnionFeeEmployeeRate = 0.01 // 1%
+	UnionFeeEmployerRate = 0.02 // 2%
+
+	// OT multipliers
+	OTRateNormal  = 1.5
+	OTRateWeekend = 2.0
+	OTRateHoliday = 3.0
+
+	// PIT deductions
+	PersonalDeductionAmount  = 11000000.0 // 11,000,000 VND
+	DependentDeductionAmount = 4400000.0  // 4,400,000 VND per dependent
 )
 
 type SalaryService struct {
@@ -33,73 +54,184 @@ func NewSalaryService(
 	return &SalaryService{salaryRepo: salaryRepo, empRepo: empRepo, otRepo: otRepo, notifSvc: notifSvc}
 }
 
+// calculateProgressivePIT calculates PIT using Vietnam's progressive tax brackets
+func calculateProgressivePIT(taxableIncome float64) float64 {
+	if taxableIncome <= 0 {
+		return 0
+	}
+
+	// Progressive tax brackets (VND)
+	brackets := []struct {
+		limit float64
+		rate  float64
+	}{
+		{5000000, 0.05},   // Up to 5M: 5%
+		{10000000, 0.10},  // 5M - 10M: 10%
+		{18000000, 0.15},  // 10M - 18M: 15%
+		{32000000, 0.20},  // 18M - 32M: 20%
+		{52000000, 0.25},  // 32M - 52M: 25%
+		{80000000, 0.30},  // 52M - 80M: 30%
+		{math.MaxFloat64, 0.35}, // Over 80M: 35%
+	}
+
+	var totalTax float64
+	var prevLimit float64
+
+	for _, b := range brackets {
+		if taxableIncome <= prevLimit {
+			break
+		}
+		taxableInBracket := math.Min(taxableIncome, b.limit) - prevLimit
+		if taxableInBracket > 0 {
+			totalTax += taxableInBracket * b.rate
+		}
+		prevLimit = b.limit
+	}
+
+	return math.Round(totalTax)
+}
+
 // computeBreakdown calculates payroll for a single employee for a given month/year
-func (s *SalaryService) computeBreakdown(emp models.Employee, month, year int) (dto.SalaryBreakdown, error) {
+func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, standardWorkDays int) (dto.SalaryBreakdown, error) {
+	var bd dto.SalaryBreakdown
+
+	bd.EmployeeID = emp.ID
+	bd.FullName = emp.FullName
+	bd.ContractType = emp.ContractType
+
 	basicSalary := emp.BasicSalary
 	insuranceSalary := emp.InsuranceSalary
 
-	// Total allowances
-	totalAllowances, err := s.salaryRepo.GetEmployeeAllowancesTotal(emp.ID)
+	bd.BasicSalary = basicSalary
+	bd.InsuranceSalary = insuranceSalary
+	bd.StandardWorkDays = standardWorkDays
+
+	// --- Actual work days from attendance ---
+	actualWorkDays, err := s.salaryRepo.CountWorkDays(emp.ID, month, year)
 	if err != nil {
-		return dto.SalaryBreakdown{}, fmt.Errorf("failed to get allowances: %w", err)
+		return bd, fmt.Errorf("failed to count work days: %w", err)
+	}
+	bd.ActualWorkDays = actualWorkDays
+
+	// --- Prorated salary ---
+	if standardWorkDays > 0 {
+		bd.ProratedSalary = math.Round(basicSalary / float64(standardWorkDays) * actualWorkDays)
 	}
 
-	// Approved OT hours for the month
-	otHours, err := s.otRepo.SumApprovedHours(emp.ID, month, year)
+	// --- Allowances (taxable vs non-taxable) ---
+	allowanceSplit, err := s.salaryRepo.GetEmployeeAllowancesSplit(emp.ID)
 	if err != nil {
-		return dto.SalaryBreakdown{}, fmt.Errorf("failed to get OT hours: %w", err)
+		return bd, fmt.Errorf("failed to get allowances: %w", err)
+	}
+	bd.TaxableAllowances = allowanceSplit.TaxableTotal
+	bd.NonTaxableAllowances = allowanceSplit.NonTaxableTotal
+	bd.TotalAllowances = bd.TaxableAllowances + bd.NonTaxableAllowances
+
+	// --- OT Pay (3 types) ---
+	var hourlyRate float64
+	if basicSalary > 0 && standardWorkDays > 0 {
+		hourlyRate = basicSalary / float64(standardWorkDays) / 8.0
+	}
+	bd.OTHourlyRate = hourlyRate
+
+	otByType, err := s.otRepo.SumApprovedHoursByType(emp.ID, month, year)
+	if err != nil {
+		return bd, fmt.Errorf("failed to get OT hours: %w", err)
 	}
 
-	// OT hourly rate = basicSalary / 26 working days / 8 hours * 1.5
-	var otHourlyRate float64
-	if basicSalary > 0 {
-		otHourlyRate = (basicSalary / 26 / 8) * OTRate
-	}
-	totalOTPay := otHours * otHourlyRate
+	bd.OTPayNormal = math.Round(otByType.Normal * hourlyRate * OTRateNormal)
+	bd.OTPayWeekend = math.Round(otByType.Weekend * hourlyRate * OTRateWeekend)
+	bd.OTPayHoliday = math.Round(otByType.Holiday * hourlyRate * OTRateHoliday)
+	bd.TotalOTPay = bd.OTPayNormal + bd.OTPayWeekend + bd.OTPayHoliday
 
-	// Bonuses
+	// --- Bonuses ---
 	totalBonus, err := s.salaryRepo.SumBonuses(emp.ID, month, year)
 	if err != nil {
-		return dto.SalaryBreakdown{}, fmt.Errorf("failed to get bonuses: %w", err)
+		return bd, fmt.Errorf("failed to get bonuses: %w", err)
+	}
+	bd.TotalBonus = totalBonus
+
+	// --- Total Income ---
+	bd.TotalIncome = bd.ProratedSalary + bd.TotalAllowances + bd.TotalOTPay + bd.TotalBonus
+
+	// --- Insurance (skip for probation/intern/collaborator/service_contract if InsuranceSalary is 0) ---
+	skipInsurance := insuranceSalary == 0
+	if !skipInsurance {
+		// Employee side
+		bd.BHXH = math.Round(insuranceSalary * BHXHRate)
+		bd.BHYT = math.Round(insuranceSalary * BHYTRate)
+		bd.BHTN = math.Round(insuranceSalary * BHTNRate)
+		bd.TotalInsuranceEmployee = math.Round(insuranceSalary * TotalInsuranceEmployeeRate)
+
+		// Employer side
+		bd.BHXHEmployer = math.Round(insuranceSalary * BHXHEmployerRate)
+		bd.TNNNEmployer = math.Round(insuranceSalary * TNNNEmployerRate)
+		bd.BHYTEmployer = math.Round(insuranceSalary * BHYTEmployerRate)
+		bd.BHTNEmployer = math.Round(insuranceSalary * BHTNEmployerRate)
+		bd.EmployerInsuranceCost = math.Round(insuranceSalary * TotalInsuranceEmployerRate)
+
+		// Union fees
+		bd.UnionFeeEmployee = math.Round(insuranceSalary * UnionFeeEmployeeRate)
+		bd.UnionFeeEmployer = math.Round(insuranceSalary * UnionFeeEmployerRate)
 	}
 
-	// Deductions based on insurance_salary
-	bhxh := insuranceSalary * BHXHRate
-	bhyt := insuranceSalary * BHYTRate
-	bhtn := insuranceSalary * BHTNRate
-	totalDeductions := bhxh + bhyt + bhtn
+	// --- PIT (Personal Income Tax) ---
+	switch emp.ContractType {
+	case "full_time", "expat":
+		// Progressive tax with deductions
+		bd.PersonalDeduction = PersonalDeductionAmount
+		bd.DependentDeduction = float64(emp.NumberOfDependents) * DependentDeductionAmount
 
-	// Salary advance deduction
+		bd.TaxableIncome = (bd.ProratedSalary + bd.TaxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
+			bd.TotalInsuranceEmployee - bd.PersonalDeduction - bd.DependentDeduction
+
+		if bd.TaxableIncome < 0 {
+			bd.TaxableIncome = 0
+		}
+
+		bd.PITAmount = calculateProgressivePIT(bd.TaxableIncome)
+
+	case "probation", "collaborator":
+		// Flat 10% on gross taxable income, no deductions
+		bd.TaxableIncome = bd.ProratedSalary + bd.TaxableAllowances + bd.TotalOTPay + bd.TotalBonus
+		bd.PITAmount = math.Round(bd.TaxableIncome * 0.10)
+
+	case "intern", "service_contract":
+		// No tax
+		bd.PITAmount = 0
+
+	default:
+		// Default: treat as full_time
+		bd.PersonalDeduction = PersonalDeductionAmount
+		bd.DependentDeduction = float64(emp.NumberOfDependents) * DependentDeductionAmount
+
+		bd.TaxableIncome = (bd.ProratedSalary + bd.TaxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
+			bd.TotalInsuranceEmployee - bd.PersonalDeduction - bd.DependentDeduction
+
+		if bd.TaxableIncome < 0 {
+			bd.TaxableIncome = 0
+		}
+
+		bd.PITAmount = calculateProgressivePIT(bd.TaxableIncome)
+	}
+
+	// --- Total Deductions ---
+	bd.TotalDeductions = bd.TotalInsuranceEmployee + bd.PITAmount + bd.UnionFeeEmployee
+
+	// --- Salary Advance ---
 	salaryAdvance, err := s.salaryRepo.SumSalaryAdvances(emp.ID, month, year)
 	if err != nil {
-		return dto.SalaryBreakdown{}, fmt.Errorf("failed to get salary advance: %w", err)
+		return bd, fmt.Errorf("failed to get salary advance: %w", err)
 	}
+	bd.SalaryAdvance = salaryAdvance
 
-	// Net salary
-	netSalary := basicSalary + totalAllowances + totalOTPay + totalBonus - totalDeductions - salaryAdvance
+	// --- Net Salary ---
+	bd.NetSalary = bd.TotalIncome - bd.TotalDeductions - bd.SalaryAdvance
 
-	fullName := emp.FullName
-	if emp.User != nil {
-		_ = emp.User.Email // just access user to avoid lint
-	}
+	// --- Total Employer Cost ---
+	bd.TotalEmployerCost = bd.NetSalary + bd.TotalDeductions + bd.EmployerInsuranceCost + bd.UnionFeeEmployer
 
-	return dto.SalaryBreakdown{
-		EmployeeID:      emp.ID,
-		FullName:        fullName,
-		BasicSalary:     basicSalary,
-		InsuranceSalary: insuranceSalary,
-		TotalAllowances: totalAllowances,
-		OTHours:         otHours,
-		OTRate:          otHourlyRate,
-		TotalOTPay:      totalOTPay,
-		TotalBonus:      totalBonus,
-		BHXH:            bhxh,
-		BHYT:            bhyt,
-		BHTN:            bhtn,
-		TotalDeductions: totalDeductions,
-		SalaryAdvance:   salaryAdvance,
-		NetSalary:       netSalary,
-	}, nil
+	return bd, nil
 }
 
 // RunPayroll computes and saves salary records for all active employees for the given month/year
@@ -118,24 +250,61 @@ func (s *SalaryService) RunPayroll(req dto.RunPayrollReq) ([]dto.SalaryBreakdown
 			continue
 		}
 
-		breakdown, err := s.computeBreakdown(emp, req.Month, req.Year)
+		breakdown, err := s.computeBreakdown(emp, req.Month, req.Year, req.StandardWorkDays)
 		if err != nil {
 			continue
 		}
 
 		// Upsert salary record
 		record := &models.SalaryRecord{
-			EmployeeID:      emp.ID,
-			Month:           req.Month,
-			Year:            req.Year,
-			BasicSalary:     breakdown.BasicSalary,
-			TotalAllowances: breakdown.TotalAllowances,
-			TotalOTPay:      breakdown.TotalOTPay,
-			TotalBonus:      breakdown.TotalBonus,
-			TotalDeductions: breakdown.TotalDeductions,
-			SalaryAdvance:   breakdown.SalaryAdvance,
-			NetSalary:       breakdown.NetSalary,
-			Status:          "draft",
+			EmployeeID:   emp.ID,
+			Month:        req.Month,
+			Year:         req.Year,
+			ContractType: emp.ContractType,
+
+			BasicSalary:      breakdown.BasicSalary,
+			InsuranceSalary:  breakdown.InsuranceSalary,
+			StandardWorkDays: breakdown.StandardWorkDays,
+			ActualWorkDays:   breakdown.ActualWorkDays,
+			ProratedSalary:   breakdown.ProratedSalary,
+
+			TaxableAllowances:    breakdown.TaxableAllowances,
+			NonTaxableAllowances: breakdown.NonTaxableAllowances,
+			TotalAllowances:      breakdown.TotalAllowances,
+
+			OTPayNormal:  breakdown.OTPayNormal,
+			OTPayWeekend: breakdown.OTPayWeekend,
+			OTPayHoliday: breakdown.OTPayHoliday,
+			TotalOTPay:   breakdown.TotalOTPay,
+
+			TotalBonus:  breakdown.TotalBonus,
+			TotalIncome: breakdown.TotalIncome,
+
+			BHXH:                   breakdown.BHXH,
+			BHYT:                   breakdown.BHYT,
+			BHTN:                   breakdown.BHTN,
+			TotalInsuranceEmployee: breakdown.TotalInsuranceEmployee,
+
+			BHXHEmployer:          breakdown.BHXHEmployer,
+			TNNNEmployer:          breakdown.TNNNEmployer,
+			BHYTEmployer:          breakdown.BHYTEmployer,
+			BHTNEmployer:          breakdown.BHTNEmployer,
+			EmployerInsuranceCost: breakdown.EmployerInsuranceCost,
+
+			UnionFeeEmployee: breakdown.UnionFeeEmployee,
+			UnionFeeEmployer: breakdown.UnionFeeEmployer,
+
+			PersonalDeduction:  breakdown.PersonalDeduction,
+			DependentDeduction: breakdown.DependentDeduction,
+			TaxableIncome:      breakdown.TaxableIncome,
+			PITAmount:          breakdown.PITAmount,
+
+			TotalDeductions:   breakdown.TotalDeductions,
+			SalaryAdvance:     breakdown.SalaryAdvance,
+			NetSalary:         breakdown.NetSalary,
+			TotalEmployerCost: breakdown.TotalEmployerCost,
+
+			Status: "draft",
 		}
 		s.salaryRepo.UpsertSalaryRecord(record)
 
@@ -180,6 +349,11 @@ func (s *SalaryService) CreateAllowanceType(req dto.AllowanceTypeReq) (*models.A
 		Name:        req.Name,
 		Description: req.Description,
 	}
+	if req.IsTaxable != nil {
+		a.IsTaxable = *req.IsTaxable
+	} else {
+		a.IsTaxable = true // default
+	}
 	if err := s.salaryRepo.CreateAllowanceType(a); err != nil {
 		return nil, errors.New("failed to create allowance type")
 	}
@@ -201,6 +375,9 @@ func (s *SalaryService) UpdateAllowanceType(id uint, req dto.AllowanceTypeReq) (
 	}
 	a.Name = req.Name
 	a.Description = req.Description
+	if req.IsTaxable != nil {
+		a.IsTaxable = *req.IsTaxable
+	}
 	if err := s.salaryRepo.UpdateAllowanceType(a); err != nil {
 		return nil, errors.New("failed to update allowance type")
 	}

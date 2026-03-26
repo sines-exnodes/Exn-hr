@@ -17,8 +17,14 @@ type CreateEmployeeReq struct {
 	JoinDate        string  `json:"join_date"`
 	Position        string  `json:"position"`
 	TeamID          *uint   `json:"team_id"`
-	BasicSalary     float64 `json:"basic_salary"`
-	InsuranceSalary float64 `json:"insurance_salary"`
+	BasicSalary        float64 `json:"basic_salary"`
+	InsuranceSalary    float64 `json:"insurance_salary"`
+	ContractType       string  `json:"contract_type"`         // full_time, expat, probation, intern, collaborator, service_contract
+	NumberOfDependents int     `json:"number_of_dependents"`
+	BankAccount        string  `json:"bank_account"`
+	BankName           string  `json:"bank_name"`
+	BankHolderName     string  `json:"bank_holder_name"`
+	PaymentMethod      string  `json:"payment_method"`        // bank_transfer, cash
 }
 
 type UpdateEmployeeReq struct {
@@ -31,9 +37,15 @@ type UpdateEmployeeReq struct {
 	Position        string  `json:"position"`
 	TeamID          *uint   `json:"team_id"`
 	ClearTeam       *bool   `json:"clear_team"` // when true, remove employee from any team
-	BasicSalary     *float64 `json:"basic_salary"`
-	InsuranceSalary *float64 `json:"insurance_salary"`
-	IsActive        *bool    `json:"is_active"`
+	BasicSalary        *float64 `json:"basic_salary"`
+	InsuranceSalary    *float64 `json:"insurance_salary"`
+	IsActive           *bool    `json:"is_active"`
+	ContractType       string   `json:"contract_type"`
+	NumberOfDependents *int     `json:"number_of_dependents"`
+	BankAccount        string   `json:"bank_account"`
+	BankName           string   `json:"bank_name"`
+	BankHolderName     string   `json:"bank_holder_name"`
+	PaymentMethod      string   `json:"payment_method"`
 }
 
 type EmployeeFilter struct {

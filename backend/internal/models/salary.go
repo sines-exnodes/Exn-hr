@@ -6,6 +6,7 @@ type Allowance struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
 	Name        string    `gorm:"not null" json:"name"`
 	Description string    `json:"description"`
+	IsTaxable   bool      `gorm:"default:true" json:"is_taxable"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -45,20 +46,68 @@ type SalaryAdvance struct {
 }
 
 type SalaryRecord struct {
-	ID              uint      `gorm:"primaryKey" json:"id"`
-	EmployeeID      uint      `gorm:"not null;uniqueIndex:idx_emp_month_year" json:"employee_id"`
-	Month           int       `gorm:"not null;uniqueIndex:idx_emp_month_year" json:"month"`
-	Year            int       `gorm:"not null;uniqueIndex:idx_emp_month_year" json:"year"`
-	BasicSalary     float64   `json:"basic_salary"`
-	TotalAllowances float64   `json:"total_allowances"`
-	TotalOTPay      float64   `json:"total_ot_pay"`
-	TotalBonus      float64   `json:"total_bonus"`
-	TotalDeductions float64   `json:"total_deductions"`
-	SalaryAdvance   float64   `json:"salary_advance"`
-	NetSalary       float64   `json:"net_salary"`
-	Status          string    `gorm:"default:draft" json:"status"` // draft, confirmed
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	EmployeeID   uint   `gorm:"not null;uniqueIndex:idx_emp_month_year" json:"employee_id"`
+	Month        int    `gorm:"not null;uniqueIndex:idx_emp_month_year" json:"month"`
+	Year         int    `gorm:"not null;uniqueIndex:idx_emp_month_year" json:"year"`
+	ContractType string `json:"contract_type"`
+
+	// Salary basics
+	BasicSalary      float64 `json:"basic_salary"`
+	InsuranceSalary  float64 `json:"insurance_salary"`
+	StandardWorkDays int     `json:"standard_work_days"`
+	ActualWorkDays   float64 `json:"actual_work_days"`
+	ProratedSalary   float64 `json:"prorated_salary"`
+
+	// Allowances
+	TaxableAllowances    float64 `json:"taxable_allowances"`
+	NonTaxableAllowances float64 `json:"non_taxable_allowances"`
+	TotalAllowances      float64 `json:"total_allowances"`
+
+	// OT breakdown
+	OTPayNormal  float64 `json:"ot_pay_normal"`
+	OTPayWeekend float64 `json:"ot_pay_weekend"`
+	OTPayHoliday float64 `json:"ot_pay_holiday"`
+	TotalOTPay   float64 `json:"total_ot_pay"`
+
+	// Bonus
+	TotalBonus float64 `json:"total_bonus"`
+
+	// Total income
+	TotalIncome float64 `json:"total_income"`
+
+	// Employee insurance (on InsuranceSalary)
+	BHXH                   float64 `json:"bhxh"`
+	BHYT                   float64 `json:"bhyt"`
+	BHTN                   float64 `json:"bhtn"`
+	TotalInsuranceEmployee float64 `json:"total_insurance_employee"`
+
+	// Employer insurance (on InsuranceSalary)
+	BHXHEmployer          float64 `json:"bhxh_employer"`
+	TNNNEmployer          float64 `json:"tnnn_employer"`
+	BHYTEmployer          float64 `json:"bhyt_employer"`
+	BHTNEmployer          float64 `json:"bhtn_employer"`
+	EmployerInsuranceCost float64 `json:"employer_insurance_cost"`
+
+	// Union fees
+	UnionFeeEmployee float64 `json:"union_fee_employee"`
+	UnionFeeEmployer float64 `json:"union_fee_employer"`
+
+	// PIT (Personal Income Tax)
+	PersonalDeduction  float64 `json:"personal_deduction"`
+	DependentDeduction float64 `json:"dependent_deduction"`
+	TaxableIncome      float64 `json:"taxable_income"`
+	PITAmount          float64 `json:"pit_amount"`
+
+	// Deductions & net
+	TotalDeductions   float64 `json:"total_deductions"`
+	SalaryAdvance     float64 `json:"salary_advance"`
+	NetSalary         float64 `json:"net_salary"`
+	TotalEmployerCost float64 `json:"total_employer_cost"`
+
+	Status    string    `gorm:"default:draft" json:"status"` // draft, confirmed
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	Employee *Employee `gorm:"foreignKey:EmployeeID" json:"employee,omitempty"`
 }
