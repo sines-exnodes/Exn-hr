@@ -326,6 +326,14 @@ func (s *SalaryService) RunPayroll(req dto.RunPayrollReq) ([]dto.SalaryBreakdown
 	return results, nil
 }
 
+func (s *SalaryService) GetSalaryRecordByID(id uint) (*models.SalaryRecord, error) {
+	record, err := s.salaryRepo.GetSalaryRecordByID(id)
+	if err != nil {
+		return nil, errors.New("salary record not found")
+	}
+	return record, nil
+}
+
 func (s *SalaryService) GetSalaryRecord(employeeID uint, month, year int) (*models.SalaryRecord, error) {
 	record, err := s.salaryRepo.FindSalaryRecord(employeeID, month, year)
 	if err != nil {

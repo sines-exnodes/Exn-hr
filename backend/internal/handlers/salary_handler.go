@@ -160,6 +160,21 @@ func (h *SalaryHandler) GetByEmployee(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.OK(record, "OK"))
 }
 
+// GET /api/v1/salary/:id — Get single salary record by ID
+func (h *SalaryHandler) GetByID(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	record, err := h.svc.GetSalaryRecordByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(record, "OK"))
+}
+
 // POST /api/v1/salary/:id/confirm  — Admin confirms salary record
 func (h *SalaryHandler) Confirm(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

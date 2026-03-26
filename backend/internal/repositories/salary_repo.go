@@ -88,6 +88,12 @@ func (r *SalaryRepository) UpsertSalaryRecord(record *models.SalaryRecord) error
 	return r.db.Save(record).Error
 }
 
+func (r *SalaryRepository) GetSalaryRecordByID(id uint) (*models.SalaryRecord, error) {
+	var record models.SalaryRecord
+	err := r.db.Preload("Employee.User").Preload("Employee.Team.Department").First(&record, id).Error
+	return &record, err
+}
+
 func (r *SalaryRepository) FindSalaryRecord(employeeID uint, month, year int) (*models.SalaryRecord, error) {
 	var record models.SalaryRecord
 	err := r.db.Preload("Employee.User").
