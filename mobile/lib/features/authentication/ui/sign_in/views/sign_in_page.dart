@@ -2,6 +2,7 @@ import 'package:exn_hr/config/di.dart';
 import 'package:exn_hr/core/routing/app_router.dart';
 import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:exn_hr/features/authentication/ui/sign_in/view_models/sign_in_cubit.dart';
 import 'package:exn_hr/features/authentication/ui/sign_in/view_models/sign_in_state.dart';
 import 'package:exn_hr/shared/ui/widgets/app_button.dart';
@@ -68,11 +69,36 @@ class _SignInViewState extends State<_SignInView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 60.w),
-                  _buildHeader(),
+                  ScaleFadeAnimation(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutBack,
+                    child: _buildLogoRow(),
+                  ),
+                  SizedBox(height: 28.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 150),
+                    child: _buildTitleSection(),
+                  ),
                   SizedBox(height: 48.w),
-                  _buildForm(),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 300),
+                    offset: const Offset(-20, 0),
+                    child: _buildEmailField(),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 420),
+                    offset: const Offset(-20, 0),
+                    child: _buildPasswordField(),
+                  ),
                   SizedBox(height: 32.w),
-                  _buildSignInButton(),
+                  ScaleFadeAnimation(
+                    delay: const Duration(milliseconds: 580),
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeOutCubic,
+                    beginScale: 0.92,
+                    child: _buildSignInButton(),
+                  ),
                 ],
               ),
             ),
@@ -82,38 +108,40 @@ class _SignInViewState extends State<_SignInView> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildLogoRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Image.asset(
+          'assets/images/exn.png',
+          height: 56.w,
+          fit: BoxFit.contain,
+        ),
+        SizedBox(width: 14.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'EXN HRM',
+                style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+              ),
+              Text(
+                'Quản lý nhân sự',
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTitleSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/exn.png',
-              height: 56.w,
-              fit: BoxFit.contain,
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'EXN HRM',
-                    style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  Text(
-                    'Quản lý nhân sự',
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 28.w),
         Text('Đăng nhập', style: AppTextStyles.h2),
         SizedBox(height: 8.w),
         Text(
@@ -124,35 +152,33 @@ class _SignInViewState extends State<_SignInView> {
     );
   }
 
-  Widget _buildForm() {
-    return Column(
-      children: [
-        AppInput(
-          label: 'Email',
-          hint: 'Enter your work email',
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary, size: 20.sp),
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Email is required';
-            if (!value.contains('@')) return 'Enter a valid email';
-            return null;
-          },
-        ),
-        SizedBox(height: 16.w),
-        AppInput(
-          label: 'Password',
-          hint: 'Enter your password',
-          controller: _passwordController,
-          obscureText: true,
-          prefixIcon: Icon(Icons.lock_outline_rounded, color: AppColors.textSecondary, size: 20.sp),
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Password is required';
-            if (value.length < 6) return 'Password must be at least 6 characters';
-            return null;
-          },
-        ),
-      ],
+  Widget _buildEmailField() {
+    return AppInput(
+      label: 'Email',
+      hint: 'Enter your work email',
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary, size: 20.sp),
+      validator: (value) {
+        if (value == null || value.isEmpty) return 'Email is required';
+        if (!value.contains('@')) return 'Enter a valid email';
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return AppInput(
+      label: 'Password',
+      hint: 'Enter your password',
+      controller: _passwordController,
+      obscureText: true,
+      prefixIcon: Icon(Icons.lock_outline_rounded, color: AppColors.textSecondary, size: 20.sp),
+      validator: (value) {
+        if (value == null || value.isEmpty) return 'Password is required';
+        if (value.length < 6) return 'Password must be at least 6 characters';
+        return null;
+      },
     );
   }
 

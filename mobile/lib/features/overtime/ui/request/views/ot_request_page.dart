@@ -5,6 +5,7 @@ import 'package:exn_hr/features/overtime/ui/request/view_models/ot_request_cubit
 import 'package:exn_hr/features/overtime/ui/request/view_models/ot_request_state.dart';
 import 'package:exn_hr/shared/ui/widgets/app_button.dart';
 import 'package:exn_hr/shared/ui/widgets/app_input.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -108,81 +109,95 @@ class _OtRequestViewState extends State<_OtRequestView> {
               key: _formKey,
               child: Column(
                 children: [
-                  AppInput(
-                    label: 'Date',
-                    hint: 'Select OT date',
-                    controller: _dateController,
-                    readOnly: true,
-                    onTap: () => _pickDate(context),
-                    suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                  ),
-                  SizedBox(height: 16.w),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppInput(
-                          label: 'Start Time',
-                          hint: '18:00',
-                          controller: _startController,
-                          readOnly: true,
-                          onTap: () => _pickTime(context, true),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: AppInput(
-                          label: 'End Time',
-                          hint: '20:00',
-                          controller: _endController,
-                          readOnly: true,
-                          onTap: () => _pickTime(context, false),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16.w),
-                  Container(
-                    padding: EdgeInsets.all(14.w),
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                  FadeSlideAnimation(
+                    child: AppInput(
+                      label: 'Date',
+                      hint: 'Select OT date',
+                      controller: _dateController,
+                      readOnly: true,
+                      onTap: () => _pickDate(context),
+                      suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
+                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                     ),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 100),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline, color: AppColors.warning, size: 18.sp),
-                        SizedBox(width: 8.w),
                         Expanded(
-                          child: Text(
-                            'OT is compensated at x1.5 rate. Requires leader and CEO approval.',
-                            style: AppTextStyles.caption,
+                          child: AppInput(
+                            label: 'Start Time',
+                            hint: '18:00',
+                            controller: _startController,
+                            readOnly: true,
+                            onTap: () => _pickTime(context, true),
+                            validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: AppInput(
+                            label: 'End Time',
+                            hint: '20:00',
+                            controller: _endController,
+                            readOnly: true,
+                            onTap: () => _pickTime(context, false),
+                            validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                           ),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(height: 16.w),
-                  AppInput(
-                    label: 'Reason',
-                    hint: 'Describe the reason for overtime',
-                    controller: _reasonController,
-                    maxLines: 4,
-                    validator: (v) => v == null || v.isEmpty ? 'Reason is required' : null,
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 200),
+                    child: Container(
+                      padding: EdgeInsets.all(14.w),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline, color: AppColors.warning, size: 18.sp),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              'OT is compensated at x1.5 rate. Requires leader and CEO approval.',
+                              style: AppTextStyles.caption,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 300),
+                    child: AppInput(
+                      label: 'Reason',
+                      hint: 'Describe the reason for overtime',
+                      controller: _reasonController,
+                      maxLines: 4,
+                      validator: (v) => v == null || v.isEmpty ? 'Reason is required' : null,
+                    ),
                   ),
                   SizedBox(height: 32.w),
-                  AppButton(
-                    label: 'Submit OT Request',
-                    isLoading: state.status == OtRequestStatus.loading,
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        context.read<OtRequestCubit>().submit(
-                          reason: _reasonController.text.trim(),
-                        );
-                      }
-                    },
+                  ScaleFadeAnimation(
+                    delay: const Duration(milliseconds: 400),
+                    child: AppButton(
+                      label: 'Submit OT Request',
+                      isLoading: state.status == OtRequestStatus.loading,
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          context.read<OtRequestCubit>().submit(
+                            reason: _reasonController.text.trim(),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),

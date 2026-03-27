@@ -4,6 +4,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/salary/domain/entities/payslip.dart';
 import 'package:exn_hr/features/salary/ui/payslip/view_models/payslip_cubit.dart';
 import 'package:exn_hr/features/salary/ui/payslip/view_models/payslip_state.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -72,9 +73,14 @@ class _PayslipView extends StatelessWidget {
                 _buildMonthSelector(context, state),
                 SizedBox(height: 24.w),
                 if (state.selectedPayslip != null) ...[
-                  _buildNetSalaryCard(state.selectedPayslip!),
+                  ScaleFadeAnimation(
+                    child: _buildNetSalaryCard(state.selectedPayslip!),
+                  ),
                   SizedBox(height: 20.w),
-                  _buildBreakdownCard(state.selectedPayslip!),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 200),
+                    child: _buildBreakdownCard(state.selectedPayslip!),
+                  ),
                 ] else
                   _buildEmptyState(),
               ],

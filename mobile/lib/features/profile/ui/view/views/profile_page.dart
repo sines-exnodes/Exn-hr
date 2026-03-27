@@ -6,6 +6,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/profile/domain/entities/profile.dart';
 import 'package:exn_hr/features/profile/ui/view/view_models/profile_cubit.dart';
 import 'package:exn_hr/features/profile/ui/view/view_models/profile_state.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -65,11 +66,19 @@ class _ProfileView extends StatelessWidget {
             padding: EdgeInsets.all(20.w),
             child: Column(
               children: [
-                _buildAvatarSection(profile.fullName, profile.email, profile.role),
+                ScaleFadeAnimation(
+                  child: _buildAvatarSection(profile.fullName, profile.email, profile.role),
+                ),
                 SizedBox(height: 24.w),
-                _buildInfoSection(profile),
+                FadeSlideAnimation(
+                  delay: const Duration(milliseconds: 150),
+                  child: _buildInfoSection(profile),
+                ),
                 SizedBox(height: 24.w),
-                _buildSettingsSection(context, profile),
+                FadeSlideAnimation(
+                  delay: const Duration(milliseconds: 300),
+                  child: _buildSettingsSection(context, profile),
+                ),
               ],
             ),
           );

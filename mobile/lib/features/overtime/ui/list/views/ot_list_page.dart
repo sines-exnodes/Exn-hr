@@ -5,6 +5,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/overtime/ui/list/view_models/ot_list_cubit.dart';
 import 'package:exn_hr/features/overtime/ui/list/view_models/ot_list_state.dart';
 import 'package:exn_hr/shared/ui/widgets/app_badge.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -87,7 +88,9 @@ class _OtListView extends StatelessWidget {
               itemCount: state.requests.length,
               itemBuilder: (context, index) {
                 final req = state.requests[index];
-                return Container(
+                return AnimatedListItem(
+                  index: index,
+                  child: Container(
                   margin: EdgeInsets.only(bottom: 10.w),
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
@@ -117,6 +120,7 @@ class _OtListView extends StatelessWidget {
                       Text(req.reason, style: AppTextStyles.caption, maxLines: 2),
                     ],
                   ),
+                ),
                 );
               },
             ),

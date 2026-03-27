@@ -4,6 +4,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/notifications/domain/entities/app_notification.dart';
 import 'package:exn_hr/features/notifications/ui/list/view_models/notifications_cubit.dart';
 import 'package:exn_hr/features/notifications/ui/list/view_models/notifications_state.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -138,7 +139,10 @@ class _NotificationsView extends StatelessWidget {
               itemCount: state.notifications.length,
               itemBuilder: (context, index) {
                 final notification = state.notifications[index];
-                return _buildNotificationTile(context, notification);
+                return AnimatedListItem(
+                  index: index,
+                  child: _buildNotificationTile(context, notification),
+                );
               },
             ),
           );

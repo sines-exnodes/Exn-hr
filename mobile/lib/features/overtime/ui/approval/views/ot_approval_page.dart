@@ -4,6 +4,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/overtime/domain/entities/ot_request.dart';
 import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_cubit.dart';
 import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_state.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -121,7 +122,9 @@ class _OtApprovalView extends StatelessWidget {
               itemBuilder: (context, index) {
                 final req = state.requests[index];
                 final busy = state.actionLoadingId == req.id;
-                return Container(
+                return AnimatedListItem(
+                  index: index,
+                  child: Container(
                   margin: EdgeInsets.only(bottom: 12.w),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
@@ -216,6 +219,7 @@ class _OtApprovalView extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
                 );
               },
             ),

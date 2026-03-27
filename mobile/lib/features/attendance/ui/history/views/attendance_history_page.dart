@@ -3,6 +3,7 @@ import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/attendance/ui/history/view_models/attendance_history_cubit.dart';
 import 'package:exn_hr/features/attendance/ui/history/view_models/attendance_history_state.dart';
+import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -96,7 +97,9 @@ class _AttendanceHistoryView extends StatelessWidget {
                     hoursLabel = '0h';
                   }
                 }
-                return Container(
+                return AnimatedListItem(
+                  index: index,
+                  child: Container(
                   margin: EdgeInsets.only(bottom: 10.w),
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
@@ -142,6 +145,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
                 );
               },
             ),
