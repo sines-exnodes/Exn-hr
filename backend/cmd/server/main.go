@@ -43,6 +43,8 @@ func main() {
 		&models.SalaryAdvance{},
 		&models.SalaryRecord{},
 		&models.Notification{},
+		&models.Project{},
+		&models.ProjectAssignment{},
 	)
 
 	// Seed default admin
@@ -58,6 +60,7 @@ func main() {
 	otRepo := repositories.NewOvertimeRepository(db)
 	salaryRepo := repositories.NewSalaryRepository(db)
 	notifRepo := repositories.NewNotificationRepository(db)
+	projectRepo := repositories.NewProjectRepository(db)
 
 	// --- Services (notification first — others depend on it) ---
 	notifSvc := services.NewNotificationService(notifRepo)
@@ -70,6 +73,7 @@ func main() {
 	leaveSvc := services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo)
 	otSvc := services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo)
 	salarySvc := services.NewSalaryService(salaryRepo, empRepo, otRepo, notifSvc)
+	projectSvc := services.NewProjectService(projectRepo)
 
 	// --- Handlers ---
 	authHandler := handlers.NewAuthHandler(authService)
@@ -81,6 +85,7 @@ func main() {
 	otHandler := handlers.NewOvertimeHandler(otSvc)
 	salaryHandler := handlers.NewSalaryHandler(salarySvc)
 	notifHandler := handlers.NewNotificationHandler(notifSvc)
+	projectHandler := handlers.NewProjectHandler(projectSvc)
 
 	// Setup Gin
 	gin.SetMode(cfg.GinMode)
@@ -229,6 +234,29 @@ func main() {
 			{
 				salaryRecord.GET("/:id", salaryHandler.GetByID)
 				salaryRecord.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
+			}
+
+			// --- Projects ---
+			projects := protected.Group("/projects")
+			{
+				projects.GET("", projectHandler.List)
+				projects.GET("/:id", projectHandler.GetByID)
+				projects.POST("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.Create)
+				projects.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.Update)
+				projects.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin), projectHandler.Delete)
+				projects.GET("/:id/members", projectHandler.ListMembers)
+				projects.POST("/:id/members", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.AddMember)
+				projects.PUT("/:id/members/:employee_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.UpdateMember)
+				projects.DELETE("/:id/members/:employee_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.RemoveMember)
+			}
+
+			// --- Workload ---
+			workload := protected.Group("/workload")
+			workload.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
+			{
+				workload.GET("/overview", projectHandler.WorkloadOverview)
+				workload.GET("/matrix", projectHandler.WorkloadMatrix)
+				workload.GET("/employee/:employee_id", projectHandler.EmployeeWorkload)
 			}
 
 			// --- Notifications — all authenticated users ---

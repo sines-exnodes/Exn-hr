@@ -11,6 +11,7 @@ import {
   Timer,
   Wallet,
   BarChart3,
+  LayoutGrid,
   Moon,
   Sun,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/leave", label: "Nghỉ phép", icon: Calendar },
   { href: "/overtime", label: "Làm thêm (OT)", icon: Timer },
   { href: "/payroll", label: "Tính lương", icon: Wallet },
+  { href: "/workload", label: "Phân bổ NV", icon: LayoutGrid },
   { href: "/reports", label: "Báo cáo", icon: BarChart3 },
 ];
 
@@ -57,7 +59,9 @@ export function Sidebar() {
           />
           <span
             className="text-lg font-semibold text-white tracking-tight"
-            style={{ fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)" }}
+            style={{
+              fontFamily: "var(--font-heading, 'Space Grotesk', sans-serif)",
+            }}
           >
             EXN HRM
           </span>
@@ -82,8 +86,12 @@ export function Sidebar() {
                   href={item.href}
                   className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:translate-x-0.5"
                   style={{
-                    backgroundColor: active ? "var(--sidebar-active-bg)" : "transparent",
-                    color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
+                    backgroundColor: active
+                      ? "var(--sidebar-active-bg)"
+                      : "transparent",
+                    color: active
+                      ? "var(--sidebar-active-text)"
+                      : "var(--sidebar-text)",
                   }}
                 >
                   <Icon size={18} />
@@ -96,7 +104,10 @@ export function Sidebar() {
       </nav>
 
       {/* Theme toggle + User */}
-      <div className="px-3 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+      <div
+        className="px-3 pb-4"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
+      >
         <button
           onClick={toggleTheme}
           className="mt-3 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors"

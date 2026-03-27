@@ -372,3 +372,74 @@ export interface DashboardStats {
   pending_overtime_requests: number;
   total_departments: number;
 }
+
+// ---- Project & Workload ----
+
+export type ProjectStatus = "active" | "completed" | "on_hold";
+export type ProjectRole =
+  | "backend"
+  | "frontend"
+  | "mobile"
+  | "qa"
+  | "ba"
+  | "designer"
+  | "pm"
+  | "devops";
+
+export interface Project {
+  id: number;
+  name: string;
+  description?: string;
+  status: ProjectStatus;
+  start_date?: string;
+  end_date?: string;
+  created_at: string;
+  updated_at: string;
+  assignments?: ProjectAssignment[];
+}
+
+export interface ProjectAssignment {
+  id: number;
+  project_id: number;
+  employee_id: number;
+  role: ProjectRole;
+  allocation_percentage: number;
+  start_date?: string;
+  end_date?: string;
+  project?: Project;
+  employee?: Employee;
+}
+
+export interface CreateProjectRequest {
+  name: string;
+  description?: string;
+  status?: ProjectStatus;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string;
+  status?: ProjectStatus;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface AssignMemberRequest {
+  employee_id: number;
+  role: ProjectRole;
+  allocation_percentage?: number;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface WorkloadOverview {
+  total_employees: number;
+  total_projects: number;
+  employees_by_department: Record<string, number>;
+  overloaded_employees: Array<{
+    employee: Employee;
+    project_count: number;
+  }>;
+}

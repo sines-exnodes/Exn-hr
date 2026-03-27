@@ -25,6 +25,12 @@ import type {
   Bonus,
   SalaryAdvance,
   EmployeeAllowance,
+  Project,
+  ProjectAssignment,
+  CreateProjectRequest,
+  UpdateProjectRequest,
+  AssignMemberRequest,
+  WorkloadOverview,
 } from "@/types";
 
 // ---- SWR fetcher ----
@@ -623,4 +629,104 @@ export async function markNotificationRead(id: number) {
 
 export async function markAllNotificationsRead() {
   return api.patch<ApiResponse<null>>("/notifications/read-all");
+}
+
+// ============================================================
+// Projects
+// ============================================================
+
+export function useProjects(config?: SWRConfiguration) {
+  return useSWR<ApiResponse<Project[]>>("/projects", fetcher, config);
+}
+
+export function useProject(id?: number, config?: SWRConfiguration) {
+  return useSWR<ApiResponse<Project>>(
+    id ? `/projects/${id}` : null,
+    fetcher,
+    config,
+  );
+}
+
+export async function createProject(data: CreateProjectRequest) {
+  return api.post<ApiResponse<Project>>("/projects", data);
+}
+
+export async function updateProject(id: number, data: UpdateProjectRequest) {
+  return api.put<ApiResponse<Project>>(`/projects/${id}`, data);
+}
+
+export async function deleteProject(id: number) {
+  return api.delete<ApiResponse<null>>(`/projects/${id}`);
+}
+
+export function useProjectMembers(
+  projectId?: number,
+  config?: SWRConfiguration,
+) {
+  return useSWR<ApiResponse<ProjectAssignment[]>>(
+    projectId ? `/projects/${projectId}/members` : null,
+    fetcher,
+    config,
+  );
+}
+
+export async function addProjectMember(
+  projectId: number,
+  data: AssignMemberRequest,
+) {
+  return api.post<ApiResponse<ProjectAssignment>>(
+    `/projects/${projectId}/members`,
+    data,
+  );
+}
+
+export async function updateProjectMember(
+  projectId: number,
+  employeeId: number,
+  data: { role?: string; allocation_percentage?: number },
+) {
+  return api.put<ApiResponse<null>>(
+    `/projects/${projectId}/members/${employeeId}`,
+    data,
+  );
+}
+
+export async function removeProjectMember(
+  projectId: number,
+  employeeId: number,
+) {
+  return api.delete<ApiResponse<null>>(
+    `/projects/${projectId}/members/${employeeId}`,
+  );
+}
+
+// ============================================================
+// Workload
+// ============================================================
+
+export function useWorkloadOverview(config?: SWRConfiguration) {
+  return useSWR<ApiResponse<WorkloadOverview>>(
+    "/workload/overview",
+    fetcher,
+    config,
+  );
+}
+
+export function useWorkloadMatrix(config?: SWRConfiguration) {
+  return useSWR<ApiResponse<ProjectAssignment[]>>(
+    "/workload/matrix",
+    fetcher,
+    config,
+  );
+}
+
+export function useEmployeeWorkload(
+  employeeId?: number,
+  config?: SWRConfiguration,
+) {
+  return useSWR<ApiResponse<ProjectAssignment[]>>(
+    employeeId ? `/workload/employee/${employeeId}` : null,
+    fetcher,
+    config,
+  );
 }
