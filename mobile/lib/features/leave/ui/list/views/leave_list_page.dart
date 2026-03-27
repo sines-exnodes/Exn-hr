@@ -26,12 +26,24 @@ class LeaveListPage extends StatelessWidget {
 class _LeaveListView extends StatelessWidget {
   const _LeaveListView();
 
+  static const _leaveTypeLabels = {
+    'annual': 'Phép năm',
+    'sick': 'Ốm đau',
+    'personal': 'Việc riêng',
+    'unpaid': 'Không lương',
+    'paid': 'Có lương',
+  };
+
+  String _leaveTypeLabel(String type) {
+    return _leaveTypeLabels[type.toLowerCase()] ?? type;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Leave Requests'),
+        title: const Text('Đơn nghỉ phép'),
         automaticallyImplyLeading: false,
       ),
       floatingActionButton: FloatingActionButton(
@@ -75,7 +87,7 @@ class _LeaveListView extends StatelessWidget {
                 children: [
                   Icon(Icons.beach_access_rounded, size: 48.sp, color: AppColors.textHint),
                   SizedBox(height: 12.w),
-                  Text('No leave requests yet', style: AppTextStyles.bodyMedium),
+                  Text('Chưa có đơn nghỉ phép', style: AppTextStyles.bodyMedium),
                 ],
               ),
             );
@@ -105,7 +117,7 @@ class _LeaveListView extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${request.type[0].toUpperCase()}${request.type.substring(1)} Leave',
+                            _leaveTypeLabel(request.type),
                             style: AppTextStyles.labelLarge,
                           ),
                           AppBadge(
@@ -121,7 +133,7 @@ class _LeaveListView extends StatelessWidget {
                       ),
                       SizedBox(height: 4.w),
                       Text(
-                        '${request.days} day(s) • ${request.reason}',
+                        '${request.days} ngày · ${request.reason}',
                         style: AppTextStyles.caption,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

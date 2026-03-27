@@ -26,9 +26,9 @@ class PayslipPage extends StatelessWidget {
 class _PayslipView extends StatelessWidget {
   const _PayslipView();
 
-  String _formatCurrency(double amount) {
+  String _fmt(double amount) {
     final formatter = NumberFormat('#,###', 'vi_VN');
-    return '${formatter.format(amount)} VND';
+    return '${formatter.format(amount)}đ';
   }
 
   @override
@@ -36,7 +36,7 @@ class _PayslipView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Payslip'),
+        title: const Text('Phiếu lương'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -54,12 +54,12 @@ class _PayslipView extends StatelessWidget {
                 children: [
                   Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
                   SizedBox(height: 12.w),
-                  Text(state.errorMessage ?? 'Failed to load',
+                  Text(state.errorMessage ?? 'Không tải được dữ liệu',
                       style: AppTextStyles.bodyMedium),
                   SizedBox(height: 16.w),
                   TextButton(
                     onPressed: () => context.read<PayslipCubit>().loadPayslips(),
-                    child: const Text('Retry'),
+                    child: const Text('Thử lại'),
                   ),
                 ],
               ),
@@ -76,10 +76,20 @@ class _PayslipView extends StatelessWidget {
                   ScaleFadeAnimation(
                     child: _buildNetSalaryCard(state.selectedPayslip!),
                   ),
-                  SizedBox(height: 20.w),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 100),
+                    child: _buildWorkDaysCard(state.selectedPayslip!),
+                  ),
+                  SizedBox(height: 16.w),
                   FadeSlideAnimation(
                     delay: const Duration(milliseconds: 200),
-                    child: _buildBreakdownCard(state.selectedPayslip!),
+                    child: _buildIncomeCard(state.selectedPayslip!),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 300),
+                    child: _buildDeductionsCard(state.selectedPayslip!),
                   ),
                 ] else
                   _buildEmptyState(),
@@ -101,7 +111,7 @@ class _PayslipView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Select Month', style: AppTextStyles.labelLarge),
+            Text('Chọn tháng', style: AppTextStyles.labelLarge),
             Text('$year', style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             )),
@@ -130,7 +140,7 @@ class _PayslipView extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    'T${month}',
+                    'T$month',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: isSelected ? Colors.white : AppColors.textSecondary,
                     ),
@@ -144,7 +154,7 @@ class _PayslipView extends StatelessWidget {
     );
   }
 
-  Widget _buildNetSalaryCard(Payslip payslip) {
+  Widget _buildNetSalaryCard(Payslip p) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
@@ -166,26 +176,80 @@ class _PayslipView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Net Salary',
-            style: AppTextStyles.labelMedium.copyWith(color: Colors.white70),
-          ),
+          Text('Lương thực nhận', style: AppTextStyles.labelMedium.copyWith(color: Colors.white70)),
           SizedBox(height: 8.w),
-          Text(
-            _formatCurrency(payslip.netSalary),
-            style: AppTextStyles.h2.copyWith(color: Colors.white),
-          ),
+          Text(_fmt(p.netSalary), style: AppTextStyles.h2.copyWith(color: Colors.white)),
           SizedBox(height: 4.w),
-          Text(
-            'Month ${payslip.month}/${payslip.year}',
-            style: AppTextStyles.caption.copyWith(color: Colors.white70),
-          ),
+          Text('Tháng ${p.month}/${p.year}', style: AppTextStyles.caption.copyWith(color: Colors.white70)),
         ],
       ),
     );
   }
 
-  Widget _buildBreakdownCard(Payslip payslip) {
+  Widget _buildWorkDaysCard(Payslip p) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _miniStat('Ngày chuẩn', '${p.standardWorkDays}')),
+          Container(width: 1, height: 36.w, color: AppColors.divider),
+          Expanded(child: _miniStat('Ngày thực tế', '${p.actualWorkDays}')),
+          Container(width: 1, height: 36.w, color: AppColors.divider),
+          Expanded(child: _miniStat('Lương theo ngày', _fmt(p.proratedSalary))),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniStat(String label, String value) {
+    return Column(
+      children: [
+        Text(value, style: AppTextStyles.labelMedium),
+        SizedBox(height: 2.w),
+        Text(label, style: AppTextStyles.caption),
+      ],
+    );
+  }
+
+  Widget _buildIncomeCard(Payslip p) {
+    return _buildSection('Thu nhập', [
+      _line('Lương theo ngày công', p.proratedSalary, true),
+      if (p.totalAllowances > 0) _line('Phụ cấp', p.totalAllowances, true),
+      if (p.otPayNormal > 0) _line('OT ngày thường (x1.5)', p.otPayNormal, true),
+      if (p.otPayWeekend > 0) _line('OT cuối tuần (x2.0)', p.otPayWeekend, true),
+      if (p.otPayHoliday > 0) _line('OT ngày lễ (x3.0)', p.otPayHoliday, true),
+      if (p.totalBonus > 0) _line('Thưởng', p.totalBonus, true),
+      Divider(height: 20.w, color: AppColors.divider),
+      _totalLine('Tổng thu nhập', p.totalIncome),
+    ]);
+  }
+
+  Widget _buildDeductionsCard(Payslip p) {
+    return _buildSection('Các khoản trừ', [
+      if (p.totalInsuranceEmployee > 0) _line('Bảo hiểm (BHXH+BHYT+BHTN)', p.totalInsuranceEmployee, false),
+      if (p.unionFeeEmployee > 0) _line('Phí công đoàn', p.unionFeeEmployee, false),
+      if (p.pitAmount > 0) _line('Thuế TNCN', p.pitAmount, false),
+      if (p.salaryAdvance > 0) _line('Tạm ứng', p.salaryAdvance, false),
+      if (p.parkingFee > 0) _line('Phí gửi xe', p.parkingFee, false),
+      Divider(height: 20.w, color: AppColors.divider),
+      _totalLine('Tổng khấu trừ', p.totalDeductions),
+      SizedBox(height: 8.w),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Thực nhận', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+          Text(_fmt(p.netSalary), style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 16.sp)),
+        ],
+      ),
+    ]);
+  }
+
+  Widget _buildSection(String title, List<Widget> children) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -196,56 +260,39 @@ class _PayslipView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Salary Breakdown', style: AppTextStyles.h4),
-          SizedBox(height: 16.w),
-          _buildLineItem('Basic Salary', payslip.basicSalary, isIncome: true),
-          if (payslip.totalOtPay > 0)
-            _buildLineItem('Overtime Pay (x1.5)', payslip.totalOtPay,
-                isIncome: true),
-          if (payslip.totalAllowances > 0)
-            _buildLineItem('Allowances', payslip.totalAllowances, isIncome: true),
-          if (payslip.totalBonus > 0)
-            _buildLineItem('Bonus', payslip.totalBonus, isIncome: true),
-          Divider(height: 24.w, color: AppColors.divider),
-          if (payslip.totalDeductions > 0)
-            _buildLineItem('Deductions', payslip.totalDeductions, isIncome: false),
-          if (payslip.salaryAdvance > 0)
-            _buildLineItem('Salary Advance', payslip.salaryAdvance,
-                isIncome: false),
-          Divider(height: 24.w, color: AppColors.divider),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Net Salary', style: AppTextStyles.labelLarge),
-              Text(
-                _formatCurrency(payslip.netSalary),
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 16.sp,
-                ),
-              ),
-            ],
-          ),
+          Text(title, style: AppTextStyles.h4),
+          SizedBox(height: 14.w),
+          ...children,
         ],
       ),
     );
   }
 
-  Widget _buildLineItem(String label, double amount, {required bool isIncome}) {
+  Widget _line(String label, double amount, bool isIncome) {
     return Padding(
       padding: EdgeInsets.only(bottom: 10.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyles.bodySmall),
+          Expanded(child: Text(label, style: AppTextStyles.bodySmall)),
           Text(
-            '${isIncome ? '+' : '-'} ${_formatCurrency(amount)}',
+            '${isIncome ? '+' : '-'} ${_fmt(amount)}',
             style: AppTextStyles.labelMedium.copyWith(
               color: isIncome ? AppColors.success : AppColors.error,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _totalLine(String label, double amount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTextStyles.labelMedium),
+        Text(_fmt(amount), style: AppTextStyles.labelMedium),
+      ],
     );
   }
 
@@ -257,7 +304,7 @@ class _PayslipView extends StatelessWidget {
           children: [
             Icon(Icons.receipt_long_rounded, size: 48.sp, color: AppColors.textHint),
             SizedBox(height: 12.w),
-            Text('No payslip for this month', style: AppTextStyles.bodyMedium),
+            Text('Chưa có phiếu lương tháng này', style: AppTextStyles.bodyMedium),
           ],
         ),
       ),

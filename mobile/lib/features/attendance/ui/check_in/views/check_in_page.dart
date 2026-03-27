@@ -28,7 +28,7 @@ class _CheckInView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Check In / Out'),
+        title: const Text('Chấm công'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -40,7 +40,7 @@ class _CheckInView extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  state.isCheckedIn ? 'Checked in successfully!' : 'Checked out successfully!',
+                  state.isCheckedIn ? 'Chấm vào thành công!' : 'Chấm ra thành công!',
                 ),
                 backgroundColor: AppColors.success,
               ),
@@ -49,7 +49,7 @@ class _CheckInView extends StatelessWidget {
           } else if (state.status == CheckInStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage ?? 'Failed'),
+                content: Text(state.errorMessage ?? 'Thất bại'),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -111,7 +111,7 @@ class _CheckInView extends StatelessWidget {
                     ),
                     SizedBox(height: 8.w),
                     Text(
-                      state.isCheckedIn ? 'Check Out' : 'Check In',
+                      state.isCheckedIn ? 'Chấm ra' : 'Chấm vào',
                       style: AppTextStyles.h4.copyWith(color: Colors.white),
                     ),
                   ],
@@ -134,7 +134,7 @@ class _CheckInView extends StatelessWidget {
         Expanded(child: _buildStatusCard(
           icon: Icons.wifi_outlined,
           label: 'WiFi',
-          status: state.wifiSsid ?? 'Not detected',
+          status: state.wifiSsid ?? 'Chưa phát hiện',
           isActive: state.wifiSsid != null,
         )),
       ],
@@ -144,13 +144,13 @@ class _CheckInView extends StatelessWidget {
   String _locationStatusText(LocationStatus status) {
     switch (status) {
       case LocationStatus.unknown:
-        return 'Unknown';
+        return 'Chưa xác định';
       case LocationStatus.detecting:
-        return 'Detecting...';
+        return 'Đang dò...';
       case LocationStatus.granted:
-        return 'Detected';
+        return 'Đã phát hiện';
       case LocationStatus.denied:
-        return 'Denied';
+        return 'Bị từ chối';
     }
   }
 

@@ -16,6 +16,7 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.width,
     this.height,
+    this.foregroundColor,
   });
 
   final String label;
@@ -26,6 +27,7 @@ class AppButton extends StatelessWidget {
   final Widget? icon;
   final double? width;
   final double? height;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -61,15 +63,16 @@ class AppButton extends StatelessWidget {
           child: _buildChild(AppColors.primary),
         );
       case AppButtonType.outlined:
+        final color = foregroundColor ?? AppColors.primary;
         return OutlinedButton(
           onPressed: isEnabled ? onPressed : null,
           style: OutlinedButton.styleFrom(
             side: BorderSide(
-              color: isEnabled ? AppColors.primary : AppColors.border,
+              color: isEnabled ? color : AppColors.border,
             ),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           ),
-          child: _buildChild(AppColors.primary),
+          child: _buildChild(color),
         );
       case AppButtonType.text:
         return TextButton(

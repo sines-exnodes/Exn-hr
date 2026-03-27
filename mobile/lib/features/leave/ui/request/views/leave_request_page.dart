@@ -39,6 +39,13 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
 
   final _leaveTypes = ['annual', 'sick', 'personal', 'unpaid'];
 
+  static const _leaveTypeLabels = {
+    'annual': 'Phép năm',
+    'sick': 'Ốm đau',
+    'personal': 'Việc riêng',
+    'unpaid': 'Không lương',
+  };
+
   @override
   void dispose() {
     _reasonController.dispose();
@@ -67,105 +74,108 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Request Leave'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Đơn nghỉ phép'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.pop(),
+          ),
         ),
-      ),
-      body: BlocConsumer<LeaveRequestCubit, LeaveRequestState>(
-        listener: (context, state) {
-          if (state.status == LeaveRequestStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Leave request submitted successfully!'),
-              backgroundColor: AppColors.success,
-            ));
-            context.pop();
-          } else if (state.status == LeaveRequestStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to submit'),
-              backgroundColor: AppColors.error,
-            ));
-          }
-        },
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(20.w),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FadeSlideAnimation(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Leave Type', style: AppTextStyles.labelMedium),
-                        SizedBox(height: 8.w),
-                        _buildLeaveTypeSelector(context, state),
-                      ],
+        body: BlocConsumer<LeaveRequestCubit, LeaveRequestState>(
+          listener: (context, state) {
+            if (state.status == LeaveRequestStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Gửi đơn nghỉ phép thành công!'),
+                backgroundColor: AppColors.success,
+              ));
+              context.pop();
+            } else if (state.status == LeaveRequestStatus.failure) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(state.errorMessage ?? 'Gửi thất bại'),
+                backgroundColor: AppColors.error,
+              ));
+            }
+          },
+          builder: (context, state) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(20.w),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FadeSlideAnimation(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Loại nghỉ phép', style: AppTextStyles.labelMedium),
+                          SizedBox(height: 8.w),
+                          _buildLeaveTypeSelector(context, state),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 100),
-                    child: AppInput(
-                      label: 'Start Date',
-                      hint: 'Select start date',
-                      controller: _startController,
-                      readOnly: true,
-                      onTap: () => _pickDate(context, true),
-                      suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    SizedBox(height: 16.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 100),
+                      child: AppInput(
+                        label: 'Ngày bắt đầu',
+                        hint: 'Chọn ngày bắt đầu',
+                        controller: _startController,
+                        readOnly: true,
+                        onTap: () => _pickDate(context, true),
+                        suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
+                        validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 200),
-                    child: AppInput(
-                      label: 'End Date',
-                      hint: 'Select end date',
-                      controller: _endController,
-                      readOnly: true,
-                      onTap: () => _pickDate(context, false),
-                      suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    SizedBox(height: 16.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 200),
+                      child: AppInput(
+                        label: 'Ngày kết thúc',
+                        hint: 'Chọn ngày kết thúc',
+                        controller: _endController,
+                        readOnly: true,
+                        onTap: () => _pickDate(context, false),
+                        suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
+                        validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 300),
-                    child: AppInput(
-                      label: 'Reason',
-                      hint: 'Describe the reason for your leave',
-                      controller: _reasonController,
-                      maxLines: 4,
-                      validator: (v) => v == null || v.isEmpty ? 'Reason is required' : null,
+                    SizedBox(height: 16.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 300),
+                      child: AppInput(
+                        label: 'Lý do',
+                        hint: 'Mô tả lý do nghỉ phép',
+                        controller: _reasonController,
+                        maxLines: 4,
+                        validator: (v) => v == null || v.isEmpty ? 'Lý do là bắt buộc' : null,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 32.w),
-                  ScaleFadeAnimation(
-                    delay: const Duration(milliseconds: 400),
-                    child: AppButton(
-                      label: 'Submit Request',
-                      isLoading: state.status == LeaveRequestStatus.loading,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          context.read<LeaveRequestCubit>().submit(
-                            reason: _reasonController.text.trim(),
-                          );
-                        }
-                      },
+                    SizedBox(height: 32.w),
+                    ScaleFadeAnimation(
+                      delay: const Duration(milliseconds: 400),
+                      child: AppButton(
+                        label: 'Gửi đơn nghỉ phép',
+                        isLoading: state.status == LeaveRequestStatus.loading,
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            context.read<LeaveRequestCubit>().submit(
+                              reason: _reasonController.text.trim(),
+                            );
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -176,7 +186,7 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
       children: _leaveTypes.map((type) {
         final isSelected = state.selectedType == type;
         return ChoiceChip(
-          label: Text(type[0].toUpperCase() + type.substring(1)),
+          label: Text(_leaveTypeLabels[type] ?? type),
           selected: isSelected,
           onSelected: (_) => context.read<LeaveRequestCubit>().setType(type),
           selectedColor: AppColors.primary.withOpacity(0.15),

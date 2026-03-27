@@ -45,61 +45,64 @@ class _SignInViewState extends State<_SignInView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: BlocListener<SignInCubit, SignInState>(
-        listener: (context, state) {
-          if (state.status == SignInStatus.success) {
-            context.go(AppRoutes.home);
-          } else if (state.status == SignInStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage ?? 'Sign in failed'),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
-        },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 60.w),
-                  ScaleFadeAnimation(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeOutBack,
-                    child: _buildLogoRow(),
-                  ),
-                  SizedBox(height: 28.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 150),
-                    child: _buildTitleSection(),
-                  ),
-                  SizedBox(height: 48.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 300),
-                    offset: const Offset(-20, 0),
-                    child: _buildEmailField(),
-                  ),
-                  SizedBox(height: 16.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 420),
-                    offset: const Offset(-20, 0),
-                    child: _buildPasswordField(),
-                  ),
-                  SizedBox(height: 32.w),
-                  ScaleFadeAnimation(
-                    delay: const Duration(milliseconds: 580),
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeOutCubic,
-                    beginScale: 0.92,
-                    child: _buildSignInButton(),
-                  ),
-                ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: BlocListener<SignInCubit, SignInState>(
+          listener: (context, state) {
+            if (state.status == SignInStatus.success) {
+              context.go(AppRoutes.home);
+            } else if (state.status == SignInStatus.failure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage ?? 'Đăng nhập thất bại'),
+                  backgroundColor: AppColors.error,
+                ),
+              );
+            }
+          },
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 60.w),
+                    ScaleFadeAnimation(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOutBack,
+                      child: _buildLogoRow(),
+                    ),
+                    SizedBox(height: 28.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 150),
+                      child: _buildTitleSection(),
+                    ),
+                    SizedBox(height: 48.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 300),
+                      offset: const Offset(-20, 0),
+                      child: _buildEmailField(),
+                    ),
+                    SizedBox(height: 16.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 420),
+                      offset: const Offset(-20, 0),
+                      child: _buildPasswordField(),
+                    ),
+                    SizedBox(height: 32.w),
+                    ScaleFadeAnimation(
+                      delay: const Duration(milliseconds: 580),
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      beginScale: 0.92,
+                      child: _buildSignInButton(),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -155,13 +158,13 @@ class _SignInViewState extends State<_SignInView> {
   Widget _buildEmailField() {
     return AppInput(
       label: 'Email',
-      hint: 'Enter your work email',
+      hint: 'Nhập email công ty',
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary, size: 20.sp),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Email is required';
-        if (!value.contains('@')) return 'Enter a valid email';
+        if (value == null || value.isEmpty) return 'Email là bắt buộc';
+        if (!value.contains('@')) return 'Email không hợp lệ';
         return null;
       },
     );
@@ -169,14 +172,14 @@ class _SignInViewState extends State<_SignInView> {
 
   Widget _buildPasswordField() {
     return AppInput(
-      label: 'Password',
-      hint: 'Enter your password',
+      label: 'Mật khẩu',
+      hint: 'Nhập mật khẩu',
       controller: _passwordController,
       obscureText: true,
       prefixIcon: Icon(Icons.lock_outline_rounded, color: AppColors.textSecondary, size: 20.sp),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Password is required';
-        if (value.length < 6) return 'Password must be at least 6 characters';
+        if (value == null || value.isEmpty) return 'Mật khẩu là bắt buộc';
+        if (value.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
         return null;
       },
     );
@@ -186,7 +189,7 @@ class _SignInViewState extends State<_SignInView> {
     return BlocBuilder<SignInCubit, SignInState>(
       builder: (context, state) {
         return AppButton(
-          label: 'Sign In',
+          label: 'Đăng nhập',
           isLoading: state.status == SignInStatus.loading,
           onPressed: () {
             if (_formKey.currentState?.validate() ?? false) {

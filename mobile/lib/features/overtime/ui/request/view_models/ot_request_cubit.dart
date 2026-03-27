@@ -12,6 +12,7 @@ class OtRequestCubit extends Cubit<OtRequestState> {
   void setDate(String date) => emit(state.copyWith(date: date));
   void setStartTime(String time) => emit(state.copyWith(startTime: time));
   void setEndTime(String time) => emit(state.copyWith(endTime: time));
+  void setOtType(String type) => emit(state.copyWith(otType: type));
 
   Future<void> submit({required String reason}) async {
     if (state.date == null || state.startTime == null || state.endTime == null) return;
@@ -35,6 +36,7 @@ class OtRequestCubit extends Cubit<OtRequestState> {
       startTime: state.startTime!,
       endTime: state.endTime!,
       hours: hours,
+      otType: state.otType,
       reason: reason,
     );
     if (isClosed) return;

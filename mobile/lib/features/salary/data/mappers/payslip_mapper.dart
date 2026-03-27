@@ -5,10 +5,16 @@ extension PayslipMapper on PayslipModel {
   Payslip toEntity() {
     return Payslip(
       id: id, employeeId: employeeId, month: month, year: year,
-      basicSalary: basicSalary, totalAllowances: totalAllowances,
-      totalOtPay: totalOtPay, totalBonus: totalBonus,
+      basicSalary: basicSalary, proratedSalary: proratedSalary,
+      standardWorkDays: standardWorkDays, actualWorkDays: actualWorkDays,
+      totalAllowances: totalAllowances,
+      otPayNormal: otPayNormal, otPayWeekend: otPayWeekend,
+      otPayHoliday: otPayHoliday, totalOtPay: totalOtPay,
+      totalBonus: totalBonus, totalIncome: totalIncome,
+      totalInsuranceEmployee: totalInsuranceEmployee,
+      unionFeeEmployee: unionFeeEmployee, pitAmount: pitAmount,
       totalDeductions: totalDeductions, salaryAdvance: salaryAdvance,
-      netSalary: netSalary, status: status,
+      parkingFee: parkingFee, netSalary: netSalary, status: status,
     );
   }
 }

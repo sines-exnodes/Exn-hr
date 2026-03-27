@@ -11,6 +11,7 @@ import {
   Timer,
   Wallet,
   BarChart3,
+  Briefcase,
   LayoutGrid,
   Moon,
   Sun,
@@ -55,6 +56,12 @@ const navItems: NavItem[] = [
     label: "Phân bổ NV",
     icon: LayoutGrid,
     roles: ["admin", "ceo", "hr"],
+  },
+  {
+    href: "/projects",
+    label: "Dự án",
+    icon: Briefcase,
+    roles: ["admin", "ceo", "hr", "leader"],
   },
   {
     href: "/reports",

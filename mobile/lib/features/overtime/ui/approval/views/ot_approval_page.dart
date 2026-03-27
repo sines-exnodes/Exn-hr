@@ -4,6 +4,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/overtime/domain/entities/ot_request.dart';
 import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_cubit.dart';
 import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_state.dart';
+import 'package:exn_hr/shared/ui/widgets/app_button.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -172,9 +173,28 @@ class _OtApprovalView extends StatelessWidget {
                               ],
                             ),
                             SizedBox(height: 6.w),
-                            Text(
-                              '${req.date} · ${req.startTime} — ${req.endTime} (${req.hours}h)',
-                              style: AppTextStyles.bodySmall,
+                            Row(
+                              children: [
+                                Text(
+                                  '${req.date} · ${req.startTime} — ${req.endTime} (${req.hours}h)',
+                                  style: AppTextStyles.bodySmall,
+                                ),
+                                SizedBox(width: 8.w),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.w),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.info.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    req.otTypeLabel,
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.info,
+                                      fontSize: 10.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             SizedBox(height: 4.w),
                             Text(
@@ -186,30 +206,24 @@ class _OtApprovalView extends StatelessWidget {
                             Row(
                               children: [
                                 Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: busy
-                                        ? null
-                                        : () => _confirmReject(context, req.id),
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(
-                                          color: AppColors.error),
-                                    ),
-                                    child: Text(
-                                      'Từ chối',
-                                      style: AppTextStyles.labelMedium
-                                          .copyWith(color: AppColors.error),
-                                    ),
+                                  child: AppButton(
+                                    label: 'Từ chối',
+                                    type: AppButtonType.outlined,
+                                    foregroundColor: AppColors.error,
+                                    height: 44.w,
+                                    isDisabled: busy,
+                                    onPressed: () => _confirmReject(context, req.id),
                                   ),
                                 ),
                                 SizedBox(width: 12.w),
                                 Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: busy
-                                        ? null
-                                        : () => context
-                                            .read<OtApprovalCubit>()
-                                            .approve(req.id),
-                                    child: const Text('Duyệt'),
+                                  child: AppButton(
+                                    label: 'Duyệt',
+                                    height: 44.w,
+                                    isDisabled: busy,
+                                    onPressed: () => context
+                                        .read<OtApprovalCubit>()
+                                        .approve(req.id),
                                   ),
                                 ),
                               ],

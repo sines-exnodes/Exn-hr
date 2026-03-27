@@ -12,7 +12,9 @@ import 'package:exn_hr/features/overtime/ui/approval/views/ot_approval_page.dart
 import 'package:exn_hr/features/overtime/ui/list/views/ot_list_page.dart';
 import 'package:exn_hr/features/salary/ui/payslip/views/payslip_page.dart';
 import 'package:exn_hr/features/profile/ui/view/views/profile_page.dart';
+import 'package:exn_hr/features/profile/ui/edit/views/edit_profile_page.dart';
 import 'package:exn_hr/features/profile/ui/change_password/views/change_password_page.dart';
+import 'package:exn_hr/features/profile/domain/entities/profile.dart';
 import 'package:exn_hr/features/notifications/ui/list/views/notifications_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -32,6 +34,7 @@ class AppRoutes {
   static const String otApproval = '/overtime/approval';
   static const String payslip = '/salary/payslip';
   static const String profile = '/profile';
+  static const String editProfile = '/profile/edit';
   static const String changePassword = '/profile/change-password';
   static const String notifications = '/notifications';
 }
@@ -162,6 +165,14 @@ class AppRouter {
         path: AppRoutes.profile,
         pageBuilder: (context, state) => _buildPageWithTransition(
           context: context, state: state, child: const ProfilePage(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context,
+          state: state,
+          child: EditProfilePage(profile: state.extra! as Profile),
         ),
       ),
       GoRoute(

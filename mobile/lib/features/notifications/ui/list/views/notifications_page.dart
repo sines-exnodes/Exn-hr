@@ -67,9 +67,9 @@ class _NotificationsView extends StatelessWidget {
       final dt = DateTime.parse(createdAt);
       final now = DateTime.now();
       final diff = now.difference(dt);
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      if (diff.inDays < 7) return '${diff.inDays}d ago';
+      if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
+      if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+      if (diff.inDays < 7) return '${diff.inDays} ngày trước';
       return '${dt.day}/${dt.month}/${dt.year}';
     } catch (_) {
       return createdAt;
@@ -81,7 +81,7 @@ class _NotificationsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: const Text('Thông báo'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),

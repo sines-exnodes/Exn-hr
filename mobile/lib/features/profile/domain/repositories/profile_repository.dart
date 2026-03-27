@@ -5,4 +5,5 @@ import 'package:exn_hr/shared/domain/entities/api_error.dart';
 abstract class ProfileRepository {
   Future<Either<ApiError, Profile>> getProfile();
   Future<Either<ApiError, void>> changePassword({required String oldPassword, required String newPassword});
+  Future<Either<ApiError, Profile>> updateMyProfile({required Map<String, dynamic> data});
 }

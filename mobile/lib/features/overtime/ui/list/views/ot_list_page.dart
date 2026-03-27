@@ -31,7 +31,7 @@ class _OtListView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Overtime Requests'),
+        title: const Text('Đơn làm thêm (OT)'),
         automaticallyImplyLeading: false,
       ),
       floatingActionButton: FloatingActionButton(
@@ -75,7 +75,7 @@ class _OtListView extends StatelessWidget {
                 children: [
                   Icon(Icons.more_time_rounded, size: 48.sp, color: AppColors.textHint),
                   SizedBox(height: 12.w),
-                  Text('No OT requests yet', style: AppTextStyles.bodyMedium),
+                  Text('Chưa có đơn làm thêm', style: AppTextStyles.bodyMedium),
                 ],
               ),
             );
@@ -112,9 +112,28 @@ class _OtListView extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 6.w),
-                      Text(
-                        '${req.startTime} — ${req.endTime}  (${req.hours}h)',
-                        style: AppTextStyles.bodySmall,
+                      Row(
+                        children: [
+                          Text(
+                            '${req.startTime} — ${req.endTime}  (${req.hours}h)',
+                            style: AppTextStyles.bodySmall,
+                          ),
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.w),
+                            decoration: BoxDecoration(
+                              color: AppColors.info.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                            child: Text(
+                              req.otTypeLabel,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.info,
+                                fontSize: 10.sp,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 4.w),
                       Text(req.reason, style: AppTextStyles.caption, maxLines: 2),

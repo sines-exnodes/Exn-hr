@@ -32,7 +32,7 @@ class _ProfileView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Cá nhân'),
         automaticallyImplyLeading: false,
       ),
       body: BlocBuilder<ProfileCubit, ProfileState>(
@@ -62,24 +62,29 @@ class _ProfileView extends StatelessWidget {
           if (profile == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              children: [
-                ScaleFadeAnimation(
-                  child: _buildAvatarSection(profile.fullName, profile.email, profile.role),
-                ),
-                SizedBox(height: 24.w),
-                FadeSlideAnimation(
-                  delay: const Duration(milliseconds: 150),
-                  child: _buildInfoSection(profile),
-                ),
-                SizedBox(height: 24.w),
-                FadeSlideAnimation(
-                  delay: const Duration(milliseconds: 300),
-                  child: _buildSettingsSection(context, profile),
-                ),
-              ],
+          return RefreshIndicator(
+            onRefresh: () => context.read<ProfileCubit>().loadProfile(),
+            color: AppColors.primary,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                children: [
+                  ScaleFadeAnimation(
+                    child: _buildAvatarSection(profile.fullName, profile.email, profile.role),
+                  ),
+                  SizedBox(height: 24.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 150),
+                    child: _buildInfoSection(context, profile),
+                  ),
+                  SizedBox(height: 24.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 300),
+                    child: _buildSettingsSection(context, profile),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -115,7 +120,7 @@ class _ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection(Profile profile) {
+  Widget _buildInfoSection(BuildContext context, Profile profile) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -126,22 +131,91 @@ class _ProfileView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Personal Information', style: AppTextStyles.h4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Thông tin cá nhân', style: AppTextStyles.h4),
+              GestureDetector(
+                onTap: () async {
+                  final result = await context.push<bool>(
+                    AppRoutes.editProfile,
+                    extra: profile,
+                  );
+                  if (result == true && context.mounted) {
+                    context.read<ProfileCubit>().loadProfile();
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.edit_outlined, size: 14.sp, color: AppColors.primary),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'Sửa',
+                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: 16.w),
-          _buildInfoRow(Icons.phone_outlined, 'Phone', profile.phone ?? 'N/A'),
-          _buildInfoRow(
-              Icons.groups_outlined, 'Team', profile.teamName ?? 'N/A'),
-          _buildInfoRow(
-              Icons.business_outlined, 'Department', profile.department ?? 'N/A'),
-          _buildInfoRow(
-              Icons.cake_outlined, 'Birthday', profile.dob ?? 'N/A'),
-          _buildInfoRow(Icons.calendar_month_outlined, 'Join Date',
-              profile.joinDate ?? 'N/A'),
-          _buildInfoRow(
-              Icons.location_on_outlined, 'Address', profile.address ?? 'N/A'),
+          _buildInfoRow(Icons.phone_outlined, 'Điện thoại', profile.phone ?? 'N/A'),
+          _buildInfoRow(Icons.person_outline, 'Giới tính', _genderLabel(profile.gender)),
+          _buildInfoRow(Icons.groups_outlined, 'Team', profile.teamName ?? 'N/A'),
+          _buildInfoRow(Icons.business_outlined, 'Phòng ban', profile.department ?? 'N/A'),
+          _buildInfoRow(Icons.cake_outlined, 'Ngày sinh', profile.dob ?? 'N/A'),
+          _buildInfoRow(Icons.calendar_month_outlined, 'Ngày vào', profile.joinDate ?? 'N/A'),
+          _buildInfoRow(Icons.work_outline, 'Loại HĐ', _contractLabel(profile.contractType)),
+          _buildInfoRow(Icons.location_on_outlined, 'Địa chỉ', profile.address ?? 'N/A'),
+          if (profile.bankAccount != null && profile.bankAccount!.isNotEmpty) ...[
+            SizedBox(height: 4.w),
+            Divider(color: AppColors.divider),
+            SizedBox(height: 4.w),
+            _buildInfoRow(Icons.account_balance_outlined, 'Ngân hàng', profile.bankName ?? 'N/A'),
+            _buildInfoRow(Icons.credit_card_outlined, 'Số TK', profile.bankAccount!),
+            _buildInfoRow(Icons.badge_outlined, 'Chủ TK', profile.bankHolderName ?? 'N/A'),
+          ],
         ],
       ),
     );
+  }
+
+  String _contractLabel(String? type) {
+    switch (type) {
+      case 'full_time':
+        return 'Toàn thời gian';
+      case 'expat':
+        return 'Chuyên gia nước ngoài';
+      case 'probation':
+        return 'Thử việc';
+      case 'intern':
+        return 'Thực tập';
+      case 'collaborator':
+        return 'Cộng tác viên';
+      case 'service_contract':
+        return 'Hợp đồng dịch vụ';
+      default:
+        return 'N/A';
+    }
+  }
+
+  String _genderLabel(String? gender) {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return 'Nam';
+      case 'female':
+        return 'Nữ';
+      default:
+        return 'N/A';
+    }
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
@@ -207,34 +281,34 @@ class _ProfileView extends StatelessWidget {
     children.addAll([
           _buildSettingsTile(
             icon: Icons.lock_outline_rounded,
-            label: 'Change Password',
+            label: 'Đổi mật khẩu',
             onTap: () => context.push(AppRoutes.changePassword),
           ),
           Divider(height: 1, color: AppColors.divider),
           _buildSettingsTile(
             icon: Icons.notifications_outlined,
-            label: 'Notifications',
+            label: 'Thông báo',
             onTap: () => context.push(AppRoutes.notifications),
           ),
           Divider(height: 1, color: AppColors.divider),
           _buildSettingsTile(
             icon: Icons.logout_rounded,
-            label: 'Logout',
+            label: 'Đăng xuất',
             isDestructive: true,
             onTap: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
+                  title: const Text('Đăng xuất'),
+                  content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Cancel'),
+                      child: const Text('Hủy'),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
-                      child: Text('Logout',
+                      child: Text('Đăng xuất',
                           style: TextStyle(color: AppColors.error)),
                     ),
                   ],

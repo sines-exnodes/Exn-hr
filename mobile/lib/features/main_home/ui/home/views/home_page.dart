@@ -32,22 +32,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   final _navItems = const [
     AppBottomNavItem(
-      label: 'Home',
+      label: 'Trang chủ',
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
     ),
     AppBottomNavItem(
-      label: 'Leave',
+      label: 'Nghỉ phép',
       icon: Icons.beach_access_outlined,
       activeIcon: Icons.beach_access_rounded,
     ),
     AppBottomNavItem(
-      label: 'Overtime',
+      label: 'Làm thêm',
       icon: Icons.more_time_outlined,
       activeIcon: Icons.more_time_rounded,
     ),
     AppBottomNavItem(
-      label: 'Profile',
+      label: 'Cá nhân',
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
     ),

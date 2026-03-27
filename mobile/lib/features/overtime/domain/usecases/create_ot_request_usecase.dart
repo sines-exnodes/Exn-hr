@@ -7,7 +7,7 @@ class CreateOtRequestUseCase {
   CreateOtRequestUseCase(this._repository);
   final OvertimeRepository _repository;
 
-  Future<Either<ApiError, OtRequest>> call({required String date, required String startTime, required String endTime, required double hours, required String reason}) {
-    return _repository.createRequest(date: date, startTime: startTime, endTime: endTime, hours: hours, reason: reason);
+  Future<Either<ApiError, OtRequest>> call({required String date, required String startTime, required String endTime, required double hours, required String otType, required String reason}) {
+    return _repository.createRequest(date: date, startTime: startTime, endTime: endTime, hours: hours, otType: otType, reason: reason);
   }
 }

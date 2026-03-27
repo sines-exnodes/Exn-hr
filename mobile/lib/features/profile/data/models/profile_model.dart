@@ -12,6 +12,12 @@ class ProfileModel {
     this.teamId,
     this.basicSalary,
     this.insuranceSalary,
+    this.contractType,
+    this.numberOfDependents,
+    this.bankAccount,
+    this.bankName,
+    this.bankHolderName,
+    this.paymentMethod,
     this.user,
     this.team,
   });
@@ -28,6 +34,12 @@ class ProfileModel {
   final int? teamId;
   final double? basicSalary;
   final double? insuranceSalary;
+  final String? contractType;
+  final int? numberOfDependents;
+  final String? bankAccount;
+  final String? bankName;
+  final String? bankHolderName;
+  final String? paymentMethod;
   final ProfileUserModel? user;
   final ProfileTeamModel? team;
 
@@ -48,6 +60,12 @@ class ProfileModel {
       teamId: json['team_id'] as int?,
       basicSalary: (json['basic_salary'] as num?)?.toDouble(),
       insuranceSalary: (json['insurance_salary'] as num?)?.toDouble(),
+      contractType: json['contract_type'] as String?,
+      numberOfDependents: json['number_of_dependents'] as int?,
+      bankAccount: json['bank_account'] as String?,
+      bankName: json['bank_name'] as String?,
+      bankHolderName: json['bank_holder_name'] as String?,
+      paymentMethod: json['payment_method'] as String?,
       user: json['user'] != null
           ? ProfileUserModel.fromJson(json['user'] as Map<String, dynamic>)
           : null,

@@ -10,6 +10,10 @@ extension ProfileMapper on ProfileModel {
       joinDate: joinDate, position: position,
       teamId: teamId, teamName: team?.name,
       basicSalary: basicSalary, insuranceSalary: insuranceSalary,
+      department: null,
+      contractType: contractType, numberOfDependents: numberOfDependents,
+      bankAccount: bankAccount, bankName: bankName,
+      bankHolderName: bankHolderName, paymentMethod: paymentMethod,
     );
   }
 }

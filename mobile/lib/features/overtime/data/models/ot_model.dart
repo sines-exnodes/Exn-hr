@@ -6,6 +6,7 @@ class OtModel {
     required this.startTime,
     required this.endTime,
     required this.hours,
+    required this.otType,
     required this.reason,
     required this.leaderStatus,
     required this.ceoStatus,
@@ -19,6 +20,7 @@ class OtModel {
   final String startTime;
   final String endTime;
   final double hours;
+  final String otType;
   final String reason;
   final String leaderStatus;
   final String ceoStatus;
@@ -38,6 +40,7 @@ class OtModel {
       startTime: json['start_time'] as String,
       endTime: json['end_time'] as String,
       hours: (json['hours'] as num).toDouble(),
+      otType: json['ot_type'] as String? ?? 'normal',
       reason: json['reason'] as String? ?? '',
       leaderStatus: json['leader_status'] as String? ?? 'pending',
       ceoStatus: json['ceo_status'] as String? ?? 'pending',

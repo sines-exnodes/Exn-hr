@@ -3,6 +3,7 @@ import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/leave/ui/approval/view_models/leave_approval_cubit.dart';
 import 'package:exn_hr/features/leave/ui/approval/view_models/leave_approval_state.dart';
+import 'package:exn_hr/shared/ui/widgets/app_button.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -142,29 +143,24 @@ class _LeaveApprovalView extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton(
-                              onPressed: busy
-                                  ? null
-                                  : () => _confirmReject(context, req.id),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.error),
-                              ),
-                              child: Text(
-                                'Từ chối',
-                                style: AppTextStyles.labelMedium
-                                    .copyWith(color: AppColors.error),
-                              ),
+                            child: AppButton(
+                              label: 'Từ chối',
+                              type: AppButtonType.outlined,
+                              foregroundColor: AppColors.error,
+                              height: 44.w,
+                              isDisabled: busy,
+                              onPressed: () => _confirmReject(context, req.id),
                             ),
                           ),
                           SizedBox(width: 12.w),
                           Expanded(
-                            child: ElevatedButton(
-                              onPressed: busy
-                                  ? null
-                                  : () => context
-                                      .read<LeaveApprovalCubit>()
-                                      .approve(req.id),
-                              child: const Text('Duyệt'),
+                            child: AppButton(
+                              label: 'Duyệt',
+                              height: 44.w,
+                              isDisabled: busy,
+                              onPressed: () => context
+                                  .read<LeaveApprovalCubit>()
+                                  .approve(req.id),
                             ),
                           ),
                         ],
