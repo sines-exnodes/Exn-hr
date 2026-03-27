@@ -48,6 +48,17 @@ type UpdateEmployeeReq struct {
 	PaymentMethod      string   `json:"payment_method"`
 }
 
+// UpdateMyProfileReq — fields an employee can update about themselves (no salary, role, team changes)
+type UpdateMyProfileReq struct {
+	Phone          string `json:"phone"`
+	Address        string `json:"address"`
+	DOB            string `json:"dob"`
+	Gender         string `json:"gender"`
+	BankAccount    string `json:"bank_account"`
+	BankName       string `json:"bank_name"`
+	BankHolderName string `json:"bank_holder_name"`
+}
+
 type EmployeeFilter struct {
 	TeamID       *uint   `form:"team_id"`
 	DepartmentID *uint   `form:"department_id"`

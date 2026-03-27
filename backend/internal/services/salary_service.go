@@ -339,6 +339,18 @@ func (s *SalaryService) GetSalaryRecord(employeeID uint, month, year int) (*mode
 	return record, nil
 }
 
+func (s *SalaryService) GetEmployeeByUserID(userID uint) (*models.Employee, error) {
+	emp, err := s.empRepo.FindByUserID(userID)
+	if err != nil {
+		return nil, errors.New("employee not found")
+	}
+	return emp, nil
+}
+
+func (s *SalaryService) GetSalaryRecordsByEmployee(employeeID uint) ([]models.SalaryRecord, error) {
+	return s.salaryRepo.ListSalaryRecordsByEmployee(employeeID)
+}
+
 func (s *SalaryService) ListSalaryRecords(month, year, page, size int) ([]models.SalaryRecord, int64, error) {
 	return s.salaryRepo.ListSalaryRecords(month, year, page, size)
 }

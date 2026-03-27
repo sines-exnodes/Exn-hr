@@ -125,6 +125,7 @@ func main() {
 
 			// --- Employees (self) ---
 			protected.GET("/employees/me", empHandler.GetMe)
+			protected.PUT("/employees/me", empHandler.UpdateMe)
 
 			// --- Departments — Admin/HR only ---
 			depts := protected.Group("/departments")
@@ -205,14 +206,16 @@ func main() {
 				overtime.POST("/:id/ceo-approve", middleware.RoleRequired(models.RoleCEO, models.RoleAdmin), otHandler.CEOApprove)
 			}
 
-			// --- Salary ---
+			// --- My Salary (all authenticated users) ---
+			protected.GET("/my-salary", salaryHandler.GetMySalary)
+
+			// --- Salary (Admin/HR/CEO only) ---
 			salary := protected.Group("/salary")
 			salary.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
 			{
 				salary.POST("/run-payroll", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.RunPayroll)
 				salary.GET("", salaryHandler.List)
 				salary.GET("/export", salaryHandler.ExportCSV)
-				salary.GET("/me", salaryHandler.GetMySalary)
 				salary.GET("/employee/:employee_id", salaryHandler.GetByEmployee)
 
 				// Allowance types

@@ -64,6 +64,22 @@ func (h *EmployeeHandler) GetMe(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.OK(emp, "OK"))
 }
 
+// PUT /api/v1/employees/me — user updates own profile
+func (h *EmployeeHandler) UpdateMe(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	var req dto.UpdateMyProfileReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	emp, err := h.svc.UpdateMyProfile(userID, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(emp, "Profile updated"))
+}
+
 // POST /api/v1/employees
 func (h *EmployeeHandler) Create(c *gin.Context) {
 	var req dto.CreateEmployeeReq
