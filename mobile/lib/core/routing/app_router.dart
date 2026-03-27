@@ -14,6 +14,7 @@ import 'package:exn_hr/features/salary/ui/payslip/views/payslip_page.dart';
 import 'package:exn_hr/features/profile/ui/view/views/profile_page.dart';
 import 'package:exn_hr/features/profile/ui/change_password/views/change_password_page.dart';
 import 'package:exn_hr/features/notifications/ui/list/views/notifications_page.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRoutes {
@@ -33,6 +34,37 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String changePassword = '/profile/change-password';
   static const String notifications = '/notifications';
+}
+
+/// Builds a [CustomTransitionPage] with a shared fade + slide-up transition
+/// for all routes. Duration 300ms, easeOutCubic curve.
+CustomTransitionPage<void> _buildPageWithTransition({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
 }
 
 class AppRouter {
@@ -62,59 +94,87 @@ class AppRouter {
     routes: [
       GoRoute(
         path: AppRoutes.signIn,
-        builder: (context, state) => const SignInPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const SignInPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const HomePage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const HomePage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.checkIn,
-        builder: (context, state) => const CheckInPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const CheckInPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.attendanceHistory,
-        builder: (context, state) => const AttendanceHistoryPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const AttendanceHistoryPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.leaveRequest,
-        builder: (context, state) => const LeaveRequestPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const LeaveRequestPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.leaveList,
-        builder: (context, state) => const LeaveListPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const LeaveListPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.leaveApproval,
-        builder: (context, state) => const LeaveApprovalPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const LeaveApprovalPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.otRequest,
-        builder: (context, state) => const OtRequestPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const OtRequestPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.otList,
-        builder: (context, state) => const OtListPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const OtListPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.otApproval,
-        builder: (context, state) => const OtApprovalPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const OtApprovalPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.payslip,
-        builder: (context, state) => const PayslipPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const PayslipPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.profile,
-        builder: (context, state) => const ProfilePage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const ProfilePage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.changePassword,
-        builder: (context, state) => const ChangePasswordPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const ChangePasswordPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.notifications,
-        builder: (context, state) => const NotificationsPage(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const NotificationsPage(),
+        ),
       ),
     ],
   );
