@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:intl/intl.dart';
 
 class OtRequestPage extends StatelessWidget {
@@ -61,9 +62,9 @@ class _OtRequestViewState extends State<_OtRequestView> {
       lastDate: DateTime.now().add(const Duration(days: 30)),
     );
     if (date == null) return;
-    final formatted = DateFormat('yyyy-MM-dd').format(date);
-    _dateController.text = formatted;
-    context.read<OtRequestCubit>().setDate(formatted);
+    final apiDate = DateFormat('yyyy-MM-dd').format(date);
+    _dateController.text = formatDateDisplay(apiDate);
+    context.read<OtRequestCubit>().setDate(apiDate);
   }
 
   Future<void> _pickTime(BuildContext context, bool isStart) async {
@@ -87,7 +88,7 @@ class _OtRequestViewState extends State<_OtRequestView> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgPage,
       appBar: AppBar(
         title: const Text('Yêu cầu làm thêm (OT)'),
         leading: IconButton(
@@ -102,7 +103,7 @@ class _OtRequestViewState extends State<_OtRequestView> {
               content: Text('Gửi yêu cầu OT thành công!'),
               backgroundColor: AppColors.success,
             ));
-            context.pop();
+            context.pop(true);
           } else if (state.status == OtRequestStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.errorMessage ?? 'Gửi thất bại'),
@@ -224,13 +225,22 @@ class _OtRequestViewState extends State<_OtRequestView> {
                     padding: EdgeInsets.symmetric(vertical: 12.w),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary.withOpacity(0.1)
-                          : AppColors.surface,
-                      borderRadius: BorderRadius.circular(10.r),
+                          ? AppColors.primaryLight
+                          : AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
                         color: isSelected ? AppColors.primary : AppColors.border,
                         width: isSelected ? 1.5 : 1,
                       ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Column(
                       children: [
@@ -238,6 +248,7 @@ class _OtRequestViewState extends State<_OtRequestView> {
                           type.$2,
                           style: AppTextStyles.labelSmall.copyWith(
                             color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           ),
                         ),
                         SizedBox(height: 2.w),
@@ -245,7 +256,7 @@ class _OtRequestViewState extends State<_OtRequestView> {
                           type.$3,
                           style: AppTextStyles.caption.copyWith(
                             color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -271,13 +282,20 @@ class _OtRequestViewState extends State<_OtRequestView> {
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: AppColors.infoBg,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: AppColors.info.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: AppColors.info, size: 18.sp),
-          SizedBox(width: 8.w),
+          Container(
+            width: 32.w,
+            height: 32.w,
+            decoration: BoxDecoration(
+              color: AppColors.info.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(Icons.info_outline, color: AppColors.info, size: 16.sp),
+          ),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               '$rateText Cần leader và CEO duyệt.',

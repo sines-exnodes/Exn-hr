@@ -1,38 +1,58 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens from Pencil Design System (pencil-new.pen)
+/// Design tokens — 2025 refreshed palette
 /// Supports 2 themes: Green (default) + Dark Blue
 class AppColors {
   const AppColors._();
 
   // ===== GREEN THEME (Default) =====
-  static const Color primary = Color(0xFF22C55E);
+  static const Color primary = Color(0xFF16A34A);
   static const Color primaryLight = Color(0xFFDCFCE7);
-  static const Color primaryDark = Color(0xFF16A34A);
+  static const Color primaryDark = Color(0xFF15803D);
+  static const Color primarySoft = Color(0xFFBBF7D0);
 
-  static const Color bgPage = Color(0xFFF9FAFB);
-  static const Color bgSurface = Color(0xFFF5F5F5);
+  static const Color bgPage = Color(0xFFF8FAFC);
+  static const Color bgSurface = Color(0xFFF1F5F9);
   static const Color bgCard = Color(0xFFFFFFFF);
   static const Color bgInput = Color(0xFFFFFFFF);
 
-  static const Color textPrimary = Color(0xFF0D0D0D);
-  static const Color textSecondary = Color(0xFF7A7A7A);
-  static const Color textMuted = Color(0xFFB0B0B0);
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textMuted = Color(0xFF94A3B8);
 
-  static const Color success = Color(0xFF22C55E);
-  static const Color successBg = Color(0xFFECFDF5);
+  static const Color success = Color(0xFF16A34A);
+  static const Color successBg = Color(0xFFDCFCE7);
   static const Color warning = Color(0xFFF59E0B);
   static const Color warningBg = Color(0xFFFEF3C7);
-  static const Color error = Color(0xFFEF4444);
+  static const Color error = Color(0xFFDC2626);
   static const Color errorBg = Color(0xFFFEE2E2);
-  static const Color info = Color(0xFF3B82F6);
-  static const Color infoBg = Color(0xFFEFF6FF);
+  static const Color info = Color(0xFF2563EB);
+  static const Color infoBg = Color(0xFFDBEAFE);
 
-  static const Color border = Color(0xFFE8E8E8);
-  static const Color divider = Color(0xFFF3F4F6);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color divider = Color(0xFFF1F5F9);
 
-  static const Color tabActiveBg = Color(0xFF22C55E);
-  static const Color navInactive = Color(0xFF9CA3AF);
+  static const Color tabActiveBg = Color(0xFF16A34A);
+  static const Color navInactive = Color(0xFF94A3B8);
+
+  // ===== GRADIENT PALETTE =====
+  static const Color gradientStart = Color(0xFF16A34A);
+  static const Color gradientEnd = Color(0xFF059669);
+  static const Color gradientAccent = Color(0xFF10B981);
+
+  // Quick action accent colors
+  static const Color accentPurple = Color(0xFF7C3AED);
+  static const Color accentPurpleBg = Color(0xFFF3E8FF);
+  static const Color accentAmber = Color(0xFFD97706);
+  static const Color accentAmberBg = Color(0xFFFEF3C7);
+  static const Color accentBlue = Color(0xFF2563EB);
+  static const Color accentBlueBg = Color(0xFFDBEAFE);
+  static const Color accentTeal = Color(0xFF0D9488);
+  static const Color accentTealBg = Color(0xFFCCFBF1);
+
+  // Glassmorphism
+  static const Color glassWhite = Color(0x33FFFFFF);
+  static const Color glassBorder = Color(0x22FFFFFF);
 
   // ===== DARK BLUE THEME =====
   static const Color darkPrimary = Color(0xFF2563EB);
@@ -56,7 +76,7 @@ class AppColors {
   static const Color darkBorder = Color(0xFF334155);
   static const Color darkTabActiveBg = Color(0xFF2563EB);
 
-  // ===== LEGACY ALIASES (for backward compatibility with existing UI) =====
+  // ===== LEGACY ALIASES =====
   static const Color background = bgSurface;
   static const Color surface = bgCard;
   static const Color cardBackground = bgCard;

@@ -58,6 +58,11 @@ func (r *ProjectRepository) UpdateAssignment(assignment *models.ProjectAssignmen
 
 func (r *ProjectRepository) RemoveAssignment(projectID, employeeID uint) error {
 	return r.db.Where("project_id = ? AND employee_id = ?", projectID, employeeID).
+		Delete(&models.ProjectAssignment{}).Error // removes all roles for this employee in this project
+}
+
+func (r *ProjectRepository) RemoveAssignmentByRole(projectID, employeeID uint, role string) error {
+	return r.db.Where("project_id = ? AND employee_id = ? AND role = ?", projectID, employeeID, role).
 		Delete(&models.ProjectAssignment{}).Error
 }
 

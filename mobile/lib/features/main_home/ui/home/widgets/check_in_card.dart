@@ -14,7 +14,7 @@ class CheckInCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state.status == HomeStatus.loading) {
-      return _buildSkeleton(context);
+      return _buildSkeleton();
     }
 
     return Column(
@@ -22,22 +22,30 @@ class CheckInCard extends StatelessWidget {
       children: [
         if (state.attendanceWarning != null) ...[
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
-            margin: EdgeInsets.only(bottom: 10.w),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.w),
+            margin: EdgeInsets.only(bottom: 12.w),
             decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: AppColors.warning.withOpacity(0.35)),
+              color: AppColors.warningBg,
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: AppColors.warning.withOpacity(0.25)),
             ),
             child: Row(
               children: [
-                Icon(Icons.warning_amber_rounded,
-                    color: AppColors.warning, size: 20.sp),
-                SizedBox(width: 8.w),
+                Container(
+                  width: 32.w,
+                  height: 32.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(Icons.warning_amber_rounded,
+                      color: AppColors.warning, size: 18.sp),
+                ),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     state.attendanceWarning!,
-                    style: AppTextStyles.caption
+                    style: AppTextStyles.bodySmall
                         .copyWith(color: AppColors.textPrimary),
                   ),
                 ),
@@ -51,13 +59,15 @@ class CheckInCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.primary, AppColors.primaryDark],
+              colors: state.isCheckedIn
+                  ? [const Color(0xFF059669), const Color(0xFF047857)]
+                  : [AppColors.gradientStart, AppColors.gradientEnd],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withOpacity(0.3),
-                blurRadius: 20,
+                blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -71,64 +81,104 @@ class CheckInCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        state.isCheckedIn ? 'Đã chấm vào' : 'Chưa chấm công',
-                        style:
-                            AppTextStyles.labelLarge.copyWith(color: Colors.white70),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 4.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Text(
+                          state.isCheckedIn ? 'Đã chấm vào' : 'Chưa chấm công',
+                          style: AppTextStyles.labelSmall
+                              .copyWith(color: Colors.white.withOpacity(0.9)),
+                        ),
                       ),
-                      SizedBox(height: 4.w),
+                      SizedBox(height: 10.w),
                       Text(
                         state.checkInTime ?? '--:--',
-                        style: AppTextStyles.h3.copyWith(color: Colors.white),
+                        style: AppTextStyles.h1.copyWith(
+                          color: Colors.white,
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
                   Container(
-                    width: 48.w,
-                    height: 48.w,
+                    width: 56.w,
+                    height: 56.w,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12.r),
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                      ),
                     ),
                     child: Icon(
                       state.isCheckedIn
-                          ? Icons.login_rounded
-                          : Icons.logout_rounded,
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.access_time_rounded,
                       color: Colors.white,
-                      size: 24.sp,
+                      size: 28.sp,
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 20.w),
+              // Stats row with glass containers
               Row(
                 children: [
-                  _buildStatItem(label: 'Giờ hôm nay', value: state.todayHours),
-                  SizedBox(width: 24.w),
-                  _buildStatItem(
+                  Expanded(child: _buildStatChip(
+                    icon: Icons.schedule_rounded,
+                    label: 'Giờ hôm nay',
+                    value: state.todayHours,
+                  )),
+                  SizedBox(width: 12.w),
+                  Expanded(child: _buildStatChip(
+                    icon: Icons.circle,
                     label: 'Trạng thái',
                     value: state.isCheckedIn ? 'Đang làm' : 'Nghỉ',
-                  ),
+                  )),
                 ],
               ),
               SizedBox(height: 20.w),
+              // CTA button
               Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => context.push(AppRoutes.checkIn),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(14.r),
                   child: Ink(
-                    padding: EdgeInsets.symmetric(vertical: 12.w),
+                    padding: EdgeInsets.symmetric(vertical: 14.w),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(14.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: Center(
-                      child: Text(
-                        state.isCheckedIn ? 'Chấm ra' : 'Chấm vào',
-                        style: AppTextStyles.labelLarge
-                            .copyWith(color: AppColors.primary),
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          state.isCheckedIn
+                              ? Icons.logout_rounded
+                              : Icons.login_rounded,
+                          color: AppColors.primary,
+                          size: 20.sp,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          state.isCheckedIn ? 'Chấm ra' : 'Chấm vào',
+                          style: AppTextStyles.labelLarge
+                              .copyWith(color: AppColors.primary),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -140,14 +190,39 @@ class CheckInCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSkeleton(BuildContext context) {
+  Widget _buildStatChip({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
     return Container(
-      height: 200.w,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: AppTextStyles.caption
+                  .copyWith(color: Colors.white.withOpacity(0.7), fontSize: 10.sp)),
+          SizedBox(height: 4.w),
+          Text(value,
+              style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return Container(
+      height: 220.w,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.bgSurface,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -164,17 +239,6 @@ class CheckInCard extends StatelessWidget {
           Text('Đang tải chấm công…', style: AppTextStyles.caption),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatItem({required String label, required String value}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.caption.copyWith(color: Colors.white70)),
-        SizedBox(height: 2.w),
-        Text(value, style: AppTextStyles.labelMedium.copyWith(color: Colors.white)),
-      ],
     );
   }
 }

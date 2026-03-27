@@ -33,6 +33,43 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isEnabled = !isDisabled && !isLoading && onPressed != null;
 
+    if (type == AppButtonType.primary) {
+      return SizedBox(
+        width: width ?? double.infinity,
+        height: height ?? 52.w,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: isEnabled
+                ? const LinearGradient(
+                    colors: [AppColors.gradientStart, AppColors.gradientEnd],
+                  )
+                : null,
+            color: isEnabled ? null : AppColors.border,
+            borderRadius: BorderRadius.circular(14.r),
+            boxShadow: isEnabled
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: ElevatedButton(
+            onPressed: isEnabled ? onPressed : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14.r)),
+            ),
+            child: _buildChild(AppColors.textWhite),
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       width: width ?? double.infinity,
       height: height ?? 52.w,
@@ -43,22 +80,16 @@ class AppButton extends StatelessWidget {
   Widget _buildButton(bool isEnabled) {
     switch (type) {
       case AppButtonType.primary:
-        return ElevatedButton(
-          onPressed: isEnabled ? onPressed : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isEnabled ? AppColors.primary : AppColors.border,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-          ),
-          child: _buildChild(AppColors.textWhite),
-        );
+        return const SizedBox.shrink(); // handled above
       case AppButtonType.secondary:
         return ElevatedButton(
           onPressed: isEnabled ? onPressed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary.withOpacity(0.1),
+            backgroundColor: AppColors.primaryLight,
             foregroundColor: AppColors.primary,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r)),
           ),
           child: _buildChild(AppColors.primary),
         );
@@ -70,7 +101,8 @@ class AppButton extends StatelessWidget {
             side: BorderSide(
               color: isEnabled ? color : AppColors.border,
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r)),
           ),
           child: _buildChild(color),
         );

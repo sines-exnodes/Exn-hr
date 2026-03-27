@@ -17,9 +17,9 @@ type Project struct {
 
 type ProjectAssignment struct {
 	ID                   uint   `gorm:"primaryKey" json:"id"`
-	ProjectID            uint   `gorm:"not null;uniqueIndex:idx_proj_emp" json:"project_id"`
-	EmployeeID           uint   `gorm:"not null;uniqueIndex:idx_proj_emp" json:"employee_id"`
-	Role                 string `gorm:"not null" json:"role"` // backend, frontend, mobile, qa, ba, designer, pm, devops
+	ProjectID            uint   `gorm:"not null;uniqueIndex:idx_proj_emp_role" json:"project_id"`
+	EmployeeID           uint   `gorm:"not null;uniqueIndex:idx_proj_emp_role" json:"employee_id"`
+	Role                 string `gorm:"not null;uniqueIndex:idx_proj_emp_role" json:"role"` // backend, frontend, fullstack, mobile, qa, qc, ba, designer, pm, devops
 	AllocationPercentage int    `gorm:"default:100" json:"allocation_percentage"` // 0-100
 	StartDate            string `json:"start_date,omitempty"`
 	EndDate              string `json:"end_date,omitempty"`

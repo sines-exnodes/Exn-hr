@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:intl/intl.dart';
 
 class LeaveRequestPage extends StatelessWidget {
@@ -37,14 +38,11 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
   final _startController = TextEditingController();
   final _endController = TextEditingController();
 
-  final _leaveTypes = ['annual', 'sick', 'personal', 'unpaid'];
-
-  static const _leaveTypeLabels = {
-    'annual': 'Phép năm',
-    'sick': 'Ốm đau',
-    'personal': 'Việc riêng',
-    'unpaid': 'Không lương',
-  };
+  // Backend only accepts 'paid' or 'unpaid'
+  static const _leaveTypes = [
+    ('paid', 'Có lương'),
+    ('unpaid', 'Không lương'),
+  ];
 
   @override
   void dispose() {
@@ -62,13 +60,14 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (date == null) return;
-    final formatted = DateFormat('yyyy-MM-dd').format(date);
+    final apiDate = DateFormat('yyyy-MM-dd').format(date);
+    final display = formatDateDisplay(apiDate);
     if (isStart) {
-      _startController.text = formatted;
-      context.read<LeaveRequestCubit>().setStartDate(formatted);
+      _startController.text = display;
+      context.read<LeaveRequestCubit>().setStartDate(apiDate);
     } else {
-      _endController.text = formatted;
-      context.read<LeaveRequestCubit>().setEndDate(formatted);
+      _endController.text = display;
+      context.read<LeaveRequestCubit>().setEndDate(apiDate);
     }
   }
 
@@ -77,7 +76,7 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.bgPage,
         appBar: AppBar(
           title: const Text('Đơn nghỉ phép'),
           leading: IconButton(
@@ -92,7 +91,7 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
                 content: Text('Gửi đơn nghỉ phép thành công!'),
                 backgroundColor: AppColors.success,
               ));
-              context.pop();
+              context.pop(true);
             } else if (state.status == LeaveRequestStatus.failure) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(state.errorMessage ?? 'Gửi thất bại'),
@@ -109,14 +108,7 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FadeSlideAnimation(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Loại nghỉ phép', style: AppTextStyles.labelMedium),
-                          SizedBox(height: 8.w),
-                          _buildLeaveTypeSelector(context, state),
-                        ],
-                      ),
+                      child: _buildLeaveTypePicker(context, state.selectedType),
                     ),
                     SizedBox(height: 16.w),
                     FadeSlideAnimation(
@@ -180,21 +172,60 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
     );
   }
 
-  Widget _buildLeaveTypeSelector(BuildContext context, LeaveRequestState state) {
-    return Wrap(
-      spacing: 8.w,
-      children: _leaveTypes.map((type) {
-        final isSelected = state.selectedType == type;
-        return ChoiceChip(
-          label: Text(_leaveTypeLabels[type] ?? type),
-          selected: isSelected,
-          onSelected: (_) => context.read<LeaveRequestCubit>().setType(type),
-          selectedColor: AppColors.primary.withOpacity(0.15),
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-          ),
-        );
-      }).toList(),
+  Widget _buildLeaveTypePicker(BuildContext context, String selected) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Loại nghỉ phép', style: AppTextStyles.labelMedium),
+        SizedBox(height: 8.w),
+        Row(
+          children: _leaveTypes.map((type) {
+            final isSelected = type.$1 == selected;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: type.$1 != _leaveTypes.last.$1 ? 8.w : 0,
+                ),
+                child: GestureDetector(
+                  onTap: () => context.read<LeaveRequestCubit>().setType(type.$1),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.symmetric(vertical: 14.w),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primaryLight
+                          : AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.border,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        type.$2,
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

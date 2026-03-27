@@ -54,7 +54,7 @@ class _AppInputState extends State<AppInput> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.label, style: AppTextStyles.labelMedium),
-        SizedBox(height: 6.w),
+        SizedBox(height: 8.w),
         TextFormField(
           controller: widget.controller,
           validator: widget.validator,
@@ -72,13 +72,38 @@ class _AppInputState extends State<AppInput> {
             suffixIcon: widget.obscureText
                 ? IconButton(
                     icon: Icon(
-                      _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscureText
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: AppColors.textSecondary,
                       size: 20.sp,
                     ),
-                    onPressed: () => setState(() => _obscureText = !_obscureText),
+                    onPressed: () =>
+                        setState(() => _obscureText = !_obscureText),
                   )
                 : widget.suffixIcon,
+            filled: true,
+            fillColor: AppColors.bgCard,
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.w),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.error),
+            ),
+            hintStyle: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textMuted),
           ),
         ),
       ],

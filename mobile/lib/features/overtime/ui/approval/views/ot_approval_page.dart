@@ -4,6 +4,7 @@ import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/overtime/domain/entities/ot_request.dart';
 import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_cubit.dart';
 import 'package:exn_hr/features/overtime/ui/approval/view_models/ot_approval_state.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:exn_hr/shared/ui/widgets/app_button.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
@@ -176,7 +177,7 @@ class _OtApprovalView extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  '${req.date} · ${req.startTime} — ${req.endTime} (${req.hours}h)',
+                                  '${formatDateDisplay(req.date)} · ${req.startTime} — ${req.endTime} (${req.hours}h)',
                                   style: AppTextStyles.bodySmall,
                                 ),
                                 SizedBox(width: 8.w),

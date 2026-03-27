@@ -379,8 +379,10 @@ export type ProjectStatus = "active" | "completed" | "on_hold";
 export type ProjectRole =
   | "backend"
   | "frontend"
+  | "fullstack"
   | "mobile"
   | "qa"
+  | "qc"
   | "ba"
   | "designer"
   | "pm"

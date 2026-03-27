@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:intl/intl.dart';
 
 class EditProfilePage extends StatelessWidget {
@@ -47,6 +48,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
   late final TextEditingController _bankNameController;
   late final TextEditingController _bankHolderController;
   String _selectedGender = '';
+  String _dobApiValue = '';
 
   static const _genderOptions = ['male', 'female'];
 
@@ -56,7 +58,10 @@ class _EditProfileViewState extends State<_EditProfileView> {
     final profile = context.read<EditProfileCubit>().state.profile!;
     _phoneController = TextEditingController(text: profile.phone ?? '');
     _addressController = TextEditingController(text: profile.address ?? '');
-    _dobController = TextEditingController(text: profile.dob ?? '');
+    _dobApiValue = profile.dob ?? '';
+    _dobController = TextEditingController(
+      text: _dobApiValue.isNotEmpty ? formatDateDisplay(_dobApiValue) : '',
+    );
     _bankAccountController = TextEditingController(text: profile.bankAccount ?? '');
     _bankNameController = TextEditingController(text: profile.bankName ?? '');
     _bankHolderController = TextEditingController(text: profile.bankHolderName ?? '');
@@ -76,9 +81,9 @@ class _EditProfileViewState extends State<_EditProfileView> {
 
   Future<void> _pickDob(BuildContext context) async {
     DateTime initial = DateTime.now().subtract(const Duration(days: 365 * 25));
-    if (_dobController.text.isNotEmpty) {
+    if (_dobApiValue.isNotEmpty) {
       try {
-        initial = DateFormat('yyyy-MM-dd').parse(_dobController.text);
+        initial = DateTime.parse(_dobApiValue);
       } catch (_) {}
     }
     final date = await showDatePicker(
@@ -88,7 +93,8 @@ class _EditProfileViewState extends State<_EditProfileView> {
       lastDate: DateTime.now(),
     );
     if (date == null) return;
-    _dobController.text = DateFormat('yyyy-MM-dd').format(date);
+    _dobApiValue = DateFormat('yyyy-MM-dd').format(date);
+    _dobController.text = formatDateDisplay(_dobApiValue);
   }
 
   @override
@@ -210,7 +216,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
                           context.read<EditProfileCubit>().save(
                             phone: _phoneController.text.trim(),
                             address: _addressController.text.trim(),
-                            dob: _dobController.text.trim(),
+                            dob: _dobApiValue,
                             gender: _selectedGender,
                             bankAccount: _bankAccountController.text.trim(),
                             bankName: _bankNameController.text.trim(),

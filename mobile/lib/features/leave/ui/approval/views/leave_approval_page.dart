@@ -3,6 +3,7 @@ import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/leave/ui/approval/view_models/leave_approval_cubit.dart';
 import 'package:exn_hr/features/leave/ui/approval/view_models/leave_approval_state.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:exn_hr/shared/ui/widgets/app_button.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
@@ -133,7 +134,7 @@ class _LeaveApprovalView extends StatelessWidget {
                         style: AppTextStyles.bodySmall,
                       ),
                       Text(
-                        '${req.startDate} — ${req.endDate}',
+                        '${formatDateDisplay(req.startDate)} — ${formatDateDisplay(req.endDate)}',
                         style: AppTextStyles.caption,
                       ),
                       SizedBox(height: 4.w),

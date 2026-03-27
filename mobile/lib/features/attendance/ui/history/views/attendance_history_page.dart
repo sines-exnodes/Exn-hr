@@ -3,6 +3,7 @@ import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/attendance/ui/history/view_models/attendance_history_cubit.dart';
 import 'package:exn_hr/features/attendance/ui/history/view_models/attendance_history_state.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -77,11 +78,7 @@ class _AttendanceHistoryView extends StatelessWidget {
               itemCount: state.records.length,
               itemBuilder: (context, index) {
                 final record = state.records[index];
-                final dateLabel = record.checkInTime != null
-                    ? record.checkInTime!.length >= 10
-                        ? record.checkInTime!.substring(0, 10)
-                        : record.checkInTime!
-                    : '--';
+                final dateLabel = formatDateDisplay(record.checkInTime);
                 String hoursLabel = '0h';
                 if (record.checkInTime != null && record.checkOutTime != null) {
                   try {
@@ -128,7 +125,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                             Text(dateLabel, style: AppTextStyles.labelMedium),
                             SizedBox(height: 4.w),
                             Text(
-                              'Vào: ${record.checkInTime ?? "--:--"}  Ra: ${record.checkOutTime ?? "--:--"}',
+                              'Vào: ${formatTimeDisplay(record.checkInTime)}  Ra: ${formatTimeDisplay(record.checkOutTime)}',
                               style: AppTextStyles.bodySmall,
                             ),
                           ],

@@ -32,8 +32,10 @@ import {
 const roleLabel: Record<ProjectRole, string> = {
   backend: "BE",
   frontend: "FE",
+  fullstack: "FS",
   mobile: "MB",
-  qa: "QC/BA",
+  qa: "QA",
+  qc: "QC",
   ba: "BA",
   designer: "Designer",
   pm: "PM",

@@ -18,11 +18,12 @@ class AppTheme {
         error: AppColors.error,
       ),
       fontFamily: 'Inter',
-      scaffoldBackgroundColor: AppColors.bgSurface,
+      scaffoldBackgroundColor: AppColors.bgPage,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.bgCard,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
           fontFamily: 'SpaceGrotesk',
@@ -31,29 +32,28 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
       ),
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: AppColors.bgCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          side: BorderSide(color: AppColors.border, width: 1),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.bgInput,
+        fillColor: AppColors.bgCard,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         hintStyle: const TextStyle(
           fontFamily: 'Inter',
@@ -67,7 +67,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           textStyle: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 16,
@@ -75,7 +75,7 @@ class AppTheme {
           ),
         ),
       ),
-      dividerColor: AppColors.border,
+      dividerColor: AppColors.divider,
     );
   }
 
