@@ -43,6 +43,12 @@ func main() {
 		&models.SalaryAdvance{},
 		&models.SalaryRecord{},
 		&models.Notification{},
+		&models.Project{},
+		&models.ProjectAssignment{},
+		&models.Announcement{},
+		&models.Poll{},
+		&models.PollOption{},
+		&models.PollVote{},
 	)
 
 	// Seed default admin
@@ -58,6 +64,8 @@ func main() {
 	otRepo := repositories.NewOvertimeRepository(db)
 	salaryRepo := repositories.NewSalaryRepository(db)
 	notifRepo := repositories.NewNotificationRepository(db)
+	projectRepo := repositories.NewProjectRepository(db)
+	announcementRepo := repositories.NewAnnouncementRepository(db)
 
 	// --- Services (notification first — others depend on it) ---
 	notifSvc := services.NewNotificationService(notifRepo)
@@ -70,6 +78,8 @@ func main() {
 	leaveSvc := services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo)
 	otSvc := services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo)
 	salarySvc := services.NewSalaryService(salaryRepo, empRepo, otRepo, notifSvc)
+	projectSvc := services.NewProjectService(projectRepo)
+	announcementSvc := services.NewAnnouncementService(announcementRepo, projectRepo, empRepo, userRepo, notifSvc)
 
 	// --- Handlers ---
 	authHandler := handlers.NewAuthHandler(authService)
@@ -81,6 +91,8 @@ func main() {
 	otHandler := handlers.NewOvertimeHandler(otSvc)
 	salaryHandler := handlers.NewSalaryHandler(salarySvc)
 	notifHandler := handlers.NewNotificationHandler(notifSvc)
+	projectHandler := handlers.NewProjectHandler(projectSvc)
+	announcementHandler := handlers.NewAnnouncementHandler(announcementSvc)
 
 	// Setup Gin
 	gin.SetMode(cfg.GinMode)
@@ -120,6 +132,7 @@ func main() {
 
 			// --- Employees (self) ---
 			protected.GET("/employees/me", empHandler.GetMe)
+			protected.PUT("/employees/me", empHandler.UpdateMe)
 
 			// --- Departments — Admin/HR only ---
 			depts := protected.Group("/departments")
@@ -200,14 +213,16 @@ func main() {
 				overtime.POST("/:id/ceo-approve", middleware.RoleRequired(models.RoleCEO, models.RoleAdmin), otHandler.CEOApprove)
 			}
 
-			// --- Salary ---
+			// --- My Salary (all authenticated users) ---
+			protected.GET("/my-salary", salaryHandler.GetMySalary)
+
+			// --- Salary (Admin/HR/CEO only) ---
 			salary := protected.Group("/salary")
 			salary.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
 			{
 				salary.POST("/run-payroll", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), salaryHandler.RunPayroll)
 				salary.GET("", salaryHandler.List)
 				salary.GET("/export", salaryHandler.ExportCSV)
-				salary.GET("/me", salaryHandler.GetMySalary)
 				salary.GET("/employee/:employee_id", salaryHandler.GetByEmployee)
 
 				// Allowance types
@@ -229,6 +244,48 @@ func main() {
 			{
 				salaryRecord.GET("/:id", salaryHandler.GetByID)
 				salaryRecord.POST("/:id/confirm", middleware.RoleRequired(models.RoleAdmin), salaryHandler.Confirm)
+			}
+
+			// --- Projects ---
+			projects := protected.Group("/projects")
+			{
+				projects.GET("", projectHandler.List)
+				projects.GET("/:id", projectHandler.GetByID)
+				projects.POST("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.Create)
+				projects.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.Update)
+				projects.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin), projectHandler.Delete)
+				projects.GET("/:id/members", projectHandler.ListMembers)
+				projects.POST("/:id/members", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.AddMember)
+				projects.PUT("/:id/members/:employee_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.UpdateMember)
+				projects.DELETE("/:id/members/:employee_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.RemoveMember)
+			}
+
+			// --- Announcements ---
+			// /me must be registered BEFORE /:id to avoid Gin routing conflict
+			protected.GET("/announcements/me", announcementHandler.ListForMe)
+			announcements := protected.Group("/announcements")
+			{
+				announcements.POST("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), announcementHandler.Create)
+				announcements.GET("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), announcementHandler.List)
+				announcements.GET("/:id", announcementHandler.GetByID)
+				announcements.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), announcementHandler.Update)
+				announcements.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), announcementHandler.Delete)
+			}
+
+			// --- Polls ---
+			polls := protected.Group("/polls")
+			{
+				polls.POST("/:id/vote", announcementHandler.Vote)
+				polls.GET("/:id/results", announcementHandler.GetPollResults)
+			}
+
+			// --- Workload ---
+			workload := protected.Group("/workload")
+			workload.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO))
+			{
+				workload.GET("/overview", projectHandler.WorkloadOverview)
+				workload.GET("/matrix", projectHandler.WorkloadMatrix)
+				workload.GET("/employee/:employee_id", projectHandler.EmployeeWorkload)
 			}
 
 			// --- Notifications — all authenticated users ---

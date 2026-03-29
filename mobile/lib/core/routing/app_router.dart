@@ -1,6 +1,7 @@
 import 'package:exn_hr/core/storage/secure_storage.dart';
 import 'package:exn_hr/config/di.dart';
 import 'package:exn_hr/features/authentication/ui/sign_in/views/sign_in_page.dart';
+import 'package:exn_hr/features/authentication/ui/forgot_password/views/forgot_password_page.dart';
 import 'package:exn_hr/features/main_home/ui/home/views/home_page.dart';
 import 'package:exn_hr/features/attendance/ui/check_in/views/check_in_page.dart';
 import 'package:exn_hr/features/attendance/ui/history/views/attendance_history_page.dart';
@@ -14,6 +15,9 @@ import 'package:exn_hr/features/salary/ui/payslip/views/payslip_page.dart';
 import 'package:exn_hr/features/profile/ui/view/views/profile_page.dart';
 import 'package:exn_hr/features/profile/ui/change_password/views/change_password_page.dart';
 import 'package:exn_hr/features/notifications/ui/list/views/notifications_page.dart';
+import 'package:exn_hr/features/projects/ui/list/views/my_projects_page.dart';
+import 'package:exn_hr/features/projects/ui/detail/views/project_detail_page.dart';
+import 'package:exn_hr/features/announcements/ui/list/views/announcements_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +25,7 @@ class AppRoutes {
   const AppRoutes._();
 
   static const String signIn = '/sign-in';
+  static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String checkIn = '/attendance/check-in';
   static const String attendanceHistory = '/attendance/history';
@@ -34,6 +39,9 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String changePassword = '/profile/change-password';
   static const String notifications = '/notifications';
+  static const String myProjects = '/projects';
+  static const String projectDetail = '/projects/detail';
+  static const String announcements = '/announcements';
 }
 
 /// Builds a [CustomTransitionPage] with a shared fade + slide-up transition
@@ -82,8 +90,10 @@ class AppRouter {
 
       final isAuthenticated = await _secureStorage.isAuthenticated();
       final isOnSignIn = state.matchedLocation == AppRoutes.signIn;
+      final isOnForgotPassword =
+          state.matchedLocation == AppRoutes.forgotPassword;
 
-      if (!isAuthenticated && !isOnSignIn) {
+      if (!isAuthenticated && !isOnSignIn && !isOnForgotPassword) {
         return AppRoutes.signIn;
       }
       if (isAuthenticated && isOnSignIn) {
@@ -96,6 +106,12 @@ class AppRouter {
         path: AppRoutes.signIn,
         pageBuilder: (context, state) => _buildPageWithTransition(
           context: context, state: state, child: const SignInPage(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const ForgotPasswordPage(),
         ),
       ),
       GoRoute(
@@ -174,6 +190,29 @@ class AppRouter {
         path: AppRoutes.notifications,
         pageBuilder: (context, state) => _buildPageWithTransition(
           context: context, state: state, child: const NotificationsPage(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.myProjects,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const MyProjectsPage(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.projectDetail,
+        pageBuilder: (context, state) {
+          final projectId = state.extra as int;
+          return _buildPageWithTransition(
+            context: context,
+            state: state,
+            child: ProjectDetailPage(projectId: projectId),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.announcements,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context: context, state: state, child: const AnnouncementsPage(),
         ),
       ),
     ],

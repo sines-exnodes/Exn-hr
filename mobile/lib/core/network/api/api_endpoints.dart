@@ -39,4 +39,20 @@ class ApiEndpoints {
   static const String notificationsUnreadCount = '/notifications/unread-count';
   static const String notificationsReadAll = '/notifications/read-all';
   static String notificationMarkRead(int id) => '/notifications/$id/read';
+
+  // Projects
+  static const String myProjects = '/projects/me';
+  static const String upcomingMilestones = '/milestones/upcoming';
+  static String projectById(int id) => '/projects/$id';
+  static String projectMembers(int id) => '/projects/$id/members';
+  static String projectMilestones(int id) => '/projects/$id/milestones';
+
+  // Announcements
+  static const String myAnnouncements = '/announcements/me';
+  static String announcementById(int id) => '/announcements/$id';
+  static String pollVote(int pollId) => '/polls/$pollId/vote';
+  static String pollResults(int pollId) => '/polls/$pollId/results';
+
+  // Auth — Forgot Password
+  static const String forgotPassword = '/auth/forgot-password';
 }
