@@ -15,6 +15,7 @@ import {
   ceoApproveOT,
   cancelOvertime,
 } from "@/hooks/useApi";
+import { useSSE } from "@/hooks/useSSE";
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -183,6 +184,17 @@ function OTTable({
 
 export default function OvertimePage() {
   const { data: response, mutate, isLoading } = useOvertimeRequests();
+
+  // Real-time updates via SSE
+  useSSE({
+    overtime_created: () => {
+      mutate();
+    },
+    overtime_approved: () => {
+      mutate();
+    },
+  });
+
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectStage, setRejectStage] = useState<"leader" | "ceo">("leader");
