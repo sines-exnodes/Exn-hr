@@ -76,6 +76,38 @@ func (s *EmployeeService) GetByUserID(userID uint) (*models.Employee, error) {
 	return emp, nil
 }
 
+func (s *EmployeeService) UpdateMyProfile(userID uint, req dto.UpdateMyProfileReq) (*models.Employee, error) {
+	emp, err := s.empRepo.FindByUserID(userID)
+	if err != nil {
+		return nil, errors.New("employee profile not found")
+	}
+	if req.Phone != "" {
+		emp.Phone = req.Phone
+	}
+	if req.Address != "" {
+		emp.Address = req.Address
+	}
+	if req.DOB != "" {
+		emp.DOB = req.DOB
+	}
+	if req.Gender != "" {
+		emp.Gender = req.Gender
+	}
+	if req.BankAccount != "" {
+		emp.BankAccount = req.BankAccount
+	}
+	if req.BankName != "" {
+		emp.BankName = req.BankName
+	}
+	if req.BankHolderName != "" {
+		emp.BankHolderName = req.BankHolderName
+	}
+	if err := s.empRepo.UpdateEmployee(emp); err != nil {
+		return nil, errors.New("failed to update profile")
+	}
+	return emp, nil
+}
+
 func (s *EmployeeService) Update(id uint, req dto.UpdateEmployeeReq) (*models.Employee, error) {
 	emp, err := s.empRepo.FindByID(id)
 	if err != nil {

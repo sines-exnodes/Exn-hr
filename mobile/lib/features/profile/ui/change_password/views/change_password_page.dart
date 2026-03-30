@@ -45,106 +45,109 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Change Password'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Đổi mật khẩu'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.pop(),
+          ),
         ),
-      ),
-      body: BlocConsumer<ChangePasswordCubit, ChangePasswordState>(
-        listener: (context, state) {
-          if (state.status == ChangePasswordStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Password changed successfully!'),
-              backgroundColor: AppColors.success,
-            ));
-            context.pop();
-          } else if (state.status == ChangePasswordStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to change password'),
-              backgroundColor: AppColors.error,
-            ));
-          }
-        },
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(20.w),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  FadeSlideAnimation(
-                    child: AppInput(
-                      label: 'Current Password',
-                      hint: 'Enter your current password',
-                      controller: _currentPasswordController,
-                      obscureText: true,
-                      prefixIcon: Icon(Icons.lock_outline_rounded,
-                          color: AppColors.textSecondary, size: 20.sp),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Current password is required' : null,
+        body: BlocConsumer<ChangePasswordCubit, ChangePasswordState>(
+          listener: (context, state) {
+            if (state.status == ChangePasswordStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Đổi mật khẩu thành công!'),
+                backgroundColor: AppColors.success,
+              ));
+              context.pop();
+            } else if (state.status == ChangePasswordStatus.failure) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(state.errorMessage ?? 'Đổi mật khẩu thất bại'),
+                backgroundColor: AppColors.error,
+              ));
+            }
+          },
+          builder: (context, state) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(20.w),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    FadeSlideAnimation(
+                      child: AppInput(
+                        label: 'Mật khẩu hiện tại',
+                        hint: 'Nhập mật khẩu hiện tại',
+                        controller: _currentPasswordController,
+                        obscureText: true,
+                        prefixIcon: Icon(Icons.lock_outline_rounded,
+                            color: AppColors.textSecondary, size: 20.sp),
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Mật khẩu hiện tại là bắt buộc' : null,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 100),
-                    child: AppInput(
-                      label: 'New Password',
-                      hint: 'Enter your new password',
-                      controller: _newPasswordController,
-                      obscureText: true,
-                      prefixIcon: Icon(Icons.lock_rounded,
-                          color: AppColors.textSecondary, size: 20.sp),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'New password is required';
-                        if (v.length < 6) return 'Password must be at least 6 characters';
-                        return null;
-                      },
+                    SizedBox(height: 16.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 100),
+                      child: AppInput(
+                        label: 'Mật khẩu mới',
+                        hint: 'Nhập mật khẩu mới',
+                        controller: _newPasswordController,
+                        obscureText: true,
+                        prefixIcon: Icon(Icons.lock_rounded,
+                            color: AppColors.textSecondary, size: 20.sp),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Mật khẩu mới là bắt buộc';
+                          if (v.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.w),
-                  FadeSlideAnimation(
-                    delay: const Duration(milliseconds: 200),
-                    child: AppInput(
-                      label: 'Confirm New Password',
-                      hint: 'Confirm your new password',
-                      controller: _confirmPasswordController,
-                      obscureText: true,
-                      prefixIcon: Icon(Icons.lock_rounded,
-                          color: AppColors.textSecondary, size: 20.sp),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Please confirm your password';
-                        if (v != _newPasswordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
+                    SizedBox(height: 16.w),
+                    FadeSlideAnimation(
+                      delay: const Duration(milliseconds: 200),
+                      child: AppInput(
+                        label: 'Xác nhận mật khẩu mới',
+                        hint: 'Nhập lại mật khẩu mới',
+                        controller: _confirmPasswordController,
+                        obscureText: true,
+                        prefixIcon: Icon(Icons.lock_rounded,
+                            color: AppColors.textSecondary, size: 20.sp),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Vui lòng xác nhận mật khẩu';
+                          if (v != _newPasswordController.text) {
+                            return 'Mật khẩu không khớp';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 32.w),
-                  ScaleFadeAnimation(
-                    delay: const Duration(milliseconds: 300),
-                    child: AppButton(
-                      label: 'Change Password',
-                      isLoading: state.status == ChangePasswordStatus.loading,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          context.read<ChangePasswordCubit>().changePassword(
-                                currentPassword: _currentPasswordController.text,
-                                newPassword: _newPasswordController.text,
-                              );
-                        }
-                      },
+                    SizedBox(height: 32.w),
+                    ScaleFadeAnimation(
+                      delay: const Duration(milliseconds: 300),
+                      child: AppButton(
+                        label: 'Đổi mật khẩu',
+                        isLoading: state.status == ChangePasswordStatus.loading,
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            context.read<ChangePasswordCubit>().changePassword(
+                                  currentPassword: _currentPasswordController.text,
+                                  newPassword: _newPasswordController.text,
+                                );
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import (
 	"github.com/exn-hr/backend/internal/dto"
 	"github.com/exn-hr/backend/internal/models"
 	"github.com/exn-hr/backend/internal/repositories"
+	"github.com/exn-hr/backend/internal/sse"
 )
 
 type OvertimeService struct {
@@ -14,6 +15,7 @@ type OvertimeService struct {
 	empRepo  *repositories.EmployeeRepository
 	notifSvc *NotificationService
 	userRepo *repositories.UserRepository
+	sseHub   *sse.Hub
 }
 
 func NewOvertimeService(
@@ -21,8 +23,9 @@ func NewOvertimeService(
 	empRepo *repositories.EmployeeRepository,
 	notifSvc *NotificationService,
 	userRepo *repositories.UserRepository,
+	sseHub *sse.Hub,
 ) *OvertimeService {
-	return &OvertimeService{otRepo: otRepo, empRepo: empRepo, notifSvc: notifSvc, userRepo: userRepo}
+	return &OvertimeService{otRepo: otRepo, empRepo: empRepo, notifSvc: notifSvc, userRepo: userRepo, sseHub: sseHub}
 }
 
 func (s *OvertimeService) Create(userID uint, req dto.CreateOTReq) (*models.OvertimeRequest, error) {
@@ -62,6 +65,14 @@ func (s *OvertimeService) Create(userID uint, req dto.CreateOTReq) (*models.Over
 				"overtime_request",
 			)
 		}
+	}
+
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "overtime_created",
+			Data: map[string]interface{}{"ot_id": otReq.ID, "employee_name": emp.FullName, "hours": otReq.Hours},
+		})
 	}
 
 	return otReq, nil
@@ -120,10 +131,18 @@ func (s *OvertimeService) ApproveByLeader(leaderUserID uint, otID uint, req dto.
 		}
 	}
 
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "overtime_approved",
+			Data: map[string]interface{}{"ot_id": otReq.ID, "status": otReq.OverallStatus},
+		})
+	}
+
 	return otReq, nil
 }
 
-// ApproveByC E O handles second-stage approval
+// ApproveByCEO handles second-stage approval
 func (s *OvertimeService) ApproveByCEO(ceoUserID uint, otID uint, req dto.ApproveOTReq) (*models.OvertimeRequest, error) {
 	otReq, err := s.otRepo.FindByID(otID)
 	if err != nil {
@@ -155,6 +174,14 @@ func (s *OvertimeService) ApproveByCEO(ceoUserID uint, otID uint, req dto.Approv
 			&otID,
 			"overtime_request",
 		)
+	}
+
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "overtime_approved",
+			Data: map[string]interface{}{"ot_id": otReq.ID, "status": otReq.OverallStatus},
+		})
 	}
 
 	return otReq, nil

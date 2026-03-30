@@ -10,6 +10,8 @@ class ApiEndpoints {
 
   // Employee / Profile
   static const String myProfile = '/employees/me';
+  static const String updateMyProfile = '/employees/me';
+  static String updateEmployee(int id) => '/employees/$id';
 
   // Attendance
   static const String checkIn = '/attendance/check-in';
@@ -32,7 +34,7 @@ class ApiEndpoints {
   static String overtimeCeoApprove(int id) => '/overtime/$id/ceo-approve';
 
   // Salary
-  static const String salaryMe = '/salary/me';
+  static const String salaryMe = '/my-salary';
 
   // Notifications
   static const String notifications = '/notifications';

@@ -17,15 +17,27 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      height: 72.w,
+      margin: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        bottom: bottomPadding > 0 ? bottomPadding : 12.w,
+      ),
+      height: 64.w,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            blurRadius: 24,
+            offset: const Offset(0, -2),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -37,22 +49,9 @@ class AppBottomNav extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onTap(index),
               behavior: HitTestBehavior.opaque,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildPillIndicator(isSelected, item),
-                    SizedBox(height: 4.w),
-                    Text(
-                      item.label,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: isSelected ? AppColors.navActive : AppColors.navInactive,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
+              child: _NavItem(
+                item: item,
+                isSelected: isSelected,
               ),
             ),
           );
@@ -60,19 +59,52 @@ class AppBottomNav extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildPillIndicator(bool isSelected, AppBottomNavItem item) {
+class _NavItem extends StatelessWidget {
+  const _NavItem({required this.item, required this.isSelected});
+
+  final AppBottomNavItem item;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: EdgeInsets.symmetric(horizontal: isSelected ? 16.w : 0, vertical: 6.w),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Icon(
-        isSelected ? item.activeIcon : item.icon,
-        size: 22.sp,
-        color: isSelected ? AppColors.navActive : AppColors.navInactive,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            width: isSelected ? 48.w : 40.w,
+            height: 32.w,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withOpacity(0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Center(
+              child: Icon(
+                isSelected ? item.activeIcon : item.icon,
+                size: 22.sp,
+                color: isSelected ? AppColors.primary : AppColors.navInactive,
+              ),
+            ),
+          ),
+          SizedBox(height: 4.w),
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 10.sp,
+              color: isSelected ? AppColors.primary : AppColors.navInactive,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            ),
+            child: Text(item.label),
+          ),
+        ],
       ),
     );
   }

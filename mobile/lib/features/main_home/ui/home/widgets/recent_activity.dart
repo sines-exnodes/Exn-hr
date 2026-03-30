@@ -14,7 +14,18 @@ class RecentActivity extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hoạt động gần đây', style: AppTextStyles.h4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Hoạt động gần đây', style: AppTextStyles.h4),
+            if (items.isNotEmpty)
+              Text(
+                'Xem tất cả',
+                style: AppTextStyles.labelSmall
+                    .copyWith(color: AppColors.primary),
+              ),
+          ],
+        ),
         SizedBox(height: 12.w),
         if (items.isEmpty)
           _buildEmpty()
@@ -32,7 +43,7 @@ class RecentActivity extends StatelessWidget {
                     ),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 8.w),
+                    padding: EdgeInsets.only(bottom: 10.w),
                     child: _ActivityTile(preview: e.value),
                   ),
                 ),
@@ -43,18 +54,37 @@ class RecentActivity extends StatelessWidget {
 
   Widget _buildEmpty() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 24.w),
+      padding: EdgeInsets.symmetric(vertical: 32.w),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Center(
         child: Column(
           children: [
-            Icon(Icons.inbox_rounded, size: 40.sp, color: AppColors.textHint),
-            SizedBox(height: 8.w),
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: AppColors.bgSurface,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Icon(Icons.inbox_rounded, size: 28.sp, color: AppColors.textMuted),
+            ),
+            SizedBox(height: 12.w),
             Text('Chưa có hoạt động', style: AppTextStyles.bodySmall),
+            SizedBox(height: 4.w),
+            Text(
+              'Các hoạt động sẽ hiển thị tại đây',
+              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            ),
           ],
         ),
       ),
@@ -72,18 +102,24 @@ class _ActivityTile extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 40.w,
-            height: 40.w,
+            width: 42.w,
+            height: 42.w,
             decoration: BoxDecoration(
-              color: preview.color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10.r),
+              color: preview.color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(preview.icon, color: preview.color, size: 20.sp),
           ),
@@ -92,13 +128,23 @@ class _ActivityTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(preview.title, style: AppTextStyles.labelMedium),
+                Text(preview.title,
+                    style: AppTextStyles.labelMedium
+                        .copyWith(fontWeight: FontWeight.w600)),
                 SizedBox(height: 2.w),
                 Text(preview.subtitle, style: AppTextStyles.caption),
               ],
             ),
           ),
-          Text(preview.timeLabel, style: AppTextStyles.caption),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.w),
+            decoration: BoxDecoration(
+              color: AppColors.bgSurface,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Text(preview.timeLabel,
+                style: AppTextStyles.caption.copyWith(fontSize: 10.sp)),
+          ),
         ],
       ),
     );

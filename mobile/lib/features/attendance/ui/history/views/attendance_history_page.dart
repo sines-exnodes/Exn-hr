@@ -3,6 +3,7 @@ import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/attendance/ui/history/view_models/attendance_history_cubit.dart';
 import 'package:exn_hr/features/attendance/ui/history/view_models/attendance_history_state.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,7 +30,7 @@ class _AttendanceHistoryView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Attendance History'),
+        title: const Text('Lịch sử chấm công'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -47,11 +48,11 @@ class _AttendanceHistoryView extends StatelessWidget {
                 children: [
                   Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
                   SizedBox(height: 12.w),
-                  Text(state.errorMessage ?? 'Failed to load', style: AppTextStyles.bodyMedium),
+                  Text(state.errorMessage ?? 'Không tải được dữ liệu', style: AppTextStyles.bodyMedium),
                   SizedBox(height: 16.w),
                   TextButton(
                     onPressed: () => context.read<AttendanceHistoryCubit>().loadHistory(),
-                    child: const Text('Retry'),
+                    child: const Text('Thử lại'),
                   ),
                 ],
               ),
@@ -64,7 +65,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                 children: [
                   Icon(Icons.history_rounded, size: 48.sp, color: AppColors.textHint),
                   SizedBox(height: 12.w),
-                  Text('No attendance records', style: AppTextStyles.bodyMedium),
+                  Text('Chưa có lịch sử chấm công', style: AppTextStyles.bodyMedium),
                 ],
               ),
             );
@@ -77,13 +78,7 @@ class _AttendanceHistoryView extends StatelessWidget {
               itemCount: state.records.length,
               itemBuilder: (context, index) {
                 final record = state.records[index];
-                // Derive date from checkInTime ISO string
-                final dateLabel = record.checkInTime != null
-                    ? record.checkInTime!.length >= 10
-                        ? record.checkInTime!.substring(0, 10)
-                        : record.checkInTime!
-                    : '--';
-                // Calculate hours from checkInTime/checkOutTime difference
+                final dateLabel = formatDateDisplay(record.checkInTime);
                 String hoursLabel = '0h';
                 if (record.checkInTime != null && record.checkOutTime != null) {
                   try {
@@ -130,7 +125,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                             Text(dateLabel, style: AppTextStyles.labelMedium),
                             SizedBox(height: 4.w),
                             Text(
-                              'In: ${record.checkInTime ?? "--:--"}  Out: ${record.checkOutTime ?? "--:--"}',
+                              'Vào: ${formatTimeDisplay(record.checkInTime)}  Ra: ${formatTimeDisplay(record.checkOutTime)}',
                               style: AppTextStyles.bodySmall,
                             ),
                           ],
@@ -140,7 +135,7 @@ class _AttendanceHistoryView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(hoursLabel, style: AppTextStyles.labelMedium),
-                          Text('Total', style: AppTextStyles.caption),
+                          Text('Tổng', style: AppTextStyles.caption),
                         ],
                       ),
                     ],

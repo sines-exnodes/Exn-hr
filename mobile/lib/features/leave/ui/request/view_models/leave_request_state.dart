@@ -8,7 +8,7 @@ class LeaveRequestState extends Equatable {
     this.status = LeaveRequestStatus.initial,
     this.request,
     this.errorMessage,
-    this.selectedType = 'annual',
+    this.selectedType = 'paid',
     this.startDate,
     this.endDate,
   });

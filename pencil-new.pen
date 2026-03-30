@@ -3395,7 +3395,7 @@
       "clip": true,
       "width": 393,
       "height": 852,
-      "fill": "$bg-surface",
+      "fill": "$bg-page",
       "layout": "vertical",
       "children": [
         {
@@ -3403,7 +3403,31 @@
           "id": "QZIq8",
           "name": "mHero",
           "width": "fill_container",
-          "fill": "$primary",
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 135,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "$gradient-start",
+                "position": 0
+              },
+              {
+                "color": "$gradient-end",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": [
+            0,
+            0,
+            28,
+            28
+          ],
           "layout": "vertical",
           "gap": 20,
           "padding": [
@@ -3455,11 +3479,14 @@
                   "type": "frame",
                   "id": "rH2LJ",
                   "name": "mGAv",
-                  "opacity": 0.3,
                   "width": 48,
                   "height": 48,
-                  "fill": "$white",
-                  "cornerRadius": 24
+                  "fill": "$glass-white",
+                  "cornerRadius": 26,
+                  "stroke": {
+                    "thickness": 2,
+                    "fill": "$glass-border"
+                  }
                 }
               ]
             },
@@ -3469,16 +3496,16 @@
               "name": "mCheckin",
               "width": "fill_container",
               "fill": "$bg-card",
-              "cornerRadius": 16,
+              "cornerRadius": 20,
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#16A34A4D",
                 "offset": {
                   "x": 0,
-                  "y": 2
+                  "y": 8
                 },
-                "blur": 8
+                "blur": 24
               },
               "layout": "vertical",
               "gap": 16,
@@ -3594,17 +3621,17 @@
                   "name": "mCBtn",
                   "width": "fill_container",
                   "height": 48,
-                  "fill": "$danger",
-                  "cornerRadius": 12,
+                  "fill": "$bg-card",
+                  "cornerRadius": 14,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#EF444440",
+                    "color": "#0000001A",
                     "offset": {
                       "x": 0,
-                      "y": 4
+                      "y": 2
                     },
-                    "blur": 12
+                    "blur": 8
                   },
                   "gap": 8,
                   "justifyContent": "center",
@@ -3616,16 +3643,16 @@
                       "name": "mCBIc",
                       "width": 18,
                       "height": 18,
-                      "iconFontName": "log-out",
+                      "iconFontName": "log-in",
                       "iconFontFamily": "lucide",
-                      "fill": "$white"
+                      "fill": "$primary"
                     },
                     {
                       "type": "text",
                       "id": "3aBTg",
                       "name": "mCBTx",
-                      "fill": "$white",
-                      "content": "Check-out",
+                      "fill": "$primary",
+                      "content": "Chấm ra",
                       "fontFamily": "Inter",
                       "fontSize": 15,
                       "fontWeight": "600"
@@ -3642,6 +3669,7 @@
           "name": "mContent",
           "width": "fill_container",
           "height": "fill_container",
+          "fill": "#00000000",
           "layout": "vertical",
           "gap": 20,
           "padding": [
@@ -3672,16 +3700,16 @@
                   "name": "qa1",
                   "width": "fill_container",
                   "fill": "$bg-card",
-                  "cornerRadius": 14,
+                  "cornerRadius": 16,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#0000001A",
+                    "color": "#7C3AED14",
                     "offset": {
                       "x": 0,
-                      "y": 2
+                      "y": 4
                     },
-                    "blur": 8
+                    "blur": 12
                   },
                   "layout": "vertical",
                   "gap": 10,
@@ -3692,10 +3720,10 @@
                       "type": "frame",
                       "id": "zHSgd",
                       "name": "qa1w",
-                      "width": 40,
-                      "height": 40,
-                      "fill": "$primary-light",
-                      "cornerRadius": 10,
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$accent-purple-bg",
+                      "cornerRadius": 14,
                       "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
@@ -3703,11 +3731,11 @@
                           "type": "icon_font",
                           "id": "iQV3r",
                           "name": "qa1i",
-                          "width": 20,
-                          "height": 20,
-                          "iconFontName": "calendar",
+                          "width": 24,
+                          "height": 24,
+                          "iconFontName": "umbrella",
                           "iconFontFamily": "lucide",
-                          "fill": "$primary"
+                          "fill": "$accent-purple"
                         }
                       ]
                     },
@@ -3719,7 +3747,7 @@
                       "content": "Xin phép",
                       "fontFamily": "Inter",
                       "fontSize": 12,
-                      "fontWeight": "500"
+                      "fontWeight": "600"
                     }
                   ]
                 },
@@ -3729,16 +3757,16 @@
                   "name": "qa2",
                   "width": "fill_container",
                   "fill": "$bg-card",
-                  "cornerRadius": 14,
+                  "cornerRadius": 16,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#0000001A",
+                    "color": "#D9770614",
                     "offset": {
                       "x": 0,
-                      "y": 2
+                      "y": 4
                     },
-                    "blur": 8
+                    "blur": 12
                   },
                   "layout": "vertical",
                   "gap": 10,
@@ -3749,10 +3777,10 @@
                       "type": "frame",
                       "id": "LrZBc",
                       "name": "qa2w",
-                      "width": 40,
-                      "height": 40,
-                      "fill": "$info-bg",
-                      "cornerRadius": 10,
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$accent-amber-bg",
+                      "cornerRadius": 14,
                       "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
@@ -3760,11 +3788,11 @@
                           "type": "icon_font",
                           "id": "mKb7j",
                           "name": "qa2i",
-                          "width": 20,
-                          "height": 20,
+                          "width": 24,
+                          "height": 24,
                           "iconFontName": "timer",
                           "iconFontFamily": "lucide",
-                          "fill": "$info"
+                          "fill": "$accent-amber"
                         }
                       ]
                     },
@@ -3776,7 +3804,7 @@
                       "content": "Xin OT",
                       "fontFamily": "Inter",
                       "fontSize": 12,
-                      "fontWeight": "500"
+                      "fontWeight": "600"
                     }
                   ]
                 },
@@ -3786,16 +3814,16 @@
                   "name": "qa3",
                   "width": "fill_container",
                   "fill": "$bg-card",
-                  "cornerRadius": 14,
+                  "cornerRadius": 16,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#0000001A",
+                    "color": "#2563EB14",
                     "offset": {
                       "x": 0,
-                      "y": 2
+                      "y": 4
                     },
-                    "blur": 8
+                    "blur": 12
                   },
                   "layout": "vertical",
                   "gap": 10,
@@ -3806,10 +3834,10 @@
                       "type": "frame",
                       "id": "7eJNT",
                       "name": "qa3w",
-                      "width": 40,
-                      "height": 40,
-                      "fill": "$success-bg",
-                      "cornerRadius": 10,
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$accent-teal-bg",
+                      "cornerRadius": 14,
                       "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
@@ -3817,11 +3845,11 @@
                           "type": "icon_font",
                           "id": "ri5Y7",
                           "name": "qa3i",
-                          "width": 20,
-                          "height": 20,
+                          "width": 24,
+                          "height": 24,
                           "iconFontName": "wallet",
                           "iconFontFamily": "lucide",
-                          "fill": "$success"
+                          "fill": "$accent-teal"
                         }
                       ]
                     },
@@ -3833,7 +3861,7 @@
                       "content": "Phiếu lương",
                       "fontFamily": "Inter",
                       "fontSize": 12,
-                      "fontWeight": "500"
+                      "fontWeight": "600"
                     }
                   ]
                 }
@@ -3859,7 +3887,7 @@
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#0000000A",
                 "offset": {
                   "x": 0,
                   "y": 2
@@ -3935,7 +3963,7 @@
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#0000000A",
                 "offset": {
                   "x": 0,
                   "y": 2
@@ -4008,10 +4036,12 @@
           "id": "6xJEq",
           "name": "tabBar",
           "width": "fill_container",
-          "fill": "$bg-card",
+          "fill": "#00000000",
           "padding": [
+            0,
+            16,
             12,
-            21
+            16
           ],
           "children": [
             {
@@ -4019,23 +4049,35 @@
               "id": "qOzdv",
               "name": "pill",
               "width": "fill_container",
-              "height": 62,
+              "height": 64,
               "fill": "$bg-card",
-              "cornerRadius": 36,
+              "cornerRadius": 20,
               "stroke": {
-                "thickness": 1,
-                "fill": "$border"
+                "thickness": 0,
+                "fill": "#00000000"
               },
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#0000000D",
-                "offset": {
-                  "x": 0,
-                  "y": -2
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#00000014",
+                  "offset": {
+                    "x": 0,
+                    "y": -2
+                  },
+                  "blur": 24
                 },
-                "blur": 8
-              },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#0000000A",
+                  "offset": {
+                    "x": 0,
+                    "y": 2
+                  },
+                  "blur": 8
+                }
+              ],
               "padding": 4,
               "alignItems": "center",
               "children": [
@@ -4045,8 +4087,8 @@
                   "name": "tb1",
                   "width": "fill_container",
                   "height": "fill_container",
-                  "fill": "$tab-active-bg",
-                  "cornerRadius": 26,
+                  "fill": "$primary-light",
+                  "cornerRadius": 12,
                   "layout": "vertical",
                   "gap": 4,
                   "justifyContent": "center",
@@ -4060,13 +4102,13 @@
                       "height": 18,
                       "iconFontName": "house",
                       "iconFontFamily": "lucide",
-                      "fill": "$white"
+                      "fill": "$primary"
                     },
                     {
                       "type": "text",
                       "id": "nEXtH",
                       "name": "tb1t",
-                      "fill": "$white",
+                      "fill": "$primary",
                       "content": "HOME",
                       "fontFamily": "Inter",
                       "fontSize": 10,
@@ -5602,7 +5644,7 @@
       "clip": true,
       "width": 393,
       "height": 852,
-      "fill": "$bg-surface",
+      "fill": "$bg-page",
       "layout": "vertical",
       "children": [
         {
@@ -5610,12 +5652,34 @@
           "id": "GASJQ",
           "name": "profTop",
           "width": "fill_container",
-          "fill": "$bg-card",
-          "stroke": {
-            "thickness": {
-              "bottom": 1
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 135,
+            "size": {
+              "height": 1
             },
-            "fill": "$border"
+            "colors": [
+              {
+                "color": "$gradient-start",
+                "position": 0
+              },
+              {
+                "color": "$gradient-end",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": [
+            0,
+            0,
+            28,
+            28
+          ],
+          "stroke": {
+            "thickness": 0,
+            "fill": "#00000000"
           },
           "layout": "vertical",
           "gap": 16,
@@ -5633,17 +5697,16 @@
               "name": "profAv",
               "width": 80,
               "height": 80,
-              "fill": "$primary",
+              "fill": "$glass-white",
               "cornerRadius": 40,
+              "stroke": {
+                "thickness": 3,
+                "fill": "$glass-border"
+              },
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#16A34A30",
-                "offset": {
-                  "x": 0,
-                  "y": 4
-                },
-                "blur": 12
+                "color": "#00000000"
               },
               "justifyContent": "center",
               "alignItems": "center",
@@ -5664,7 +5727,7 @@
               "type": "text",
               "id": "1FGk1",
               "name": "profName",
-              "fill": "$text-primary",
+              "fill": "$white",
               "content": "Nguyễn Văn A",
               "fontFamily": "Space Grotesk",
               "fontSize": 22,
@@ -5674,7 +5737,7 @@
               "type": "text",
               "id": "C5xEd",
               "name": "profRole",
-              "fill": "$text-secondary",
+              "fill": "#FFFFFFCC",
               "content": "Employee · Team BE",
               "fontFamily": "Inter",
               "fontSize": 14,
@@ -5698,16 +5761,16 @@
               "name": "mi1",
               "width": "fill_container",
               "fill": "$bg-card",
-              "cornerRadius": 14,
+              "cornerRadius": 16,
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#0000000A",
                 "offset": {
                   "x": 0,
                   "y": 2
                 },
-                "blur": 8
+                "blur": 10
               },
               "padding": 16,
               "justifyContent": "space_between",
@@ -5760,16 +5823,16 @@
               "name": "mi2",
               "width": "fill_container",
               "fill": "$bg-card",
-              "cornerRadius": 14,
+              "cornerRadius": 16,
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#0000000A",
                 "offset": {
                   "x": 0,
                   "y": 2
                 },
-                "blur": 8
+                "blur": 10
               },
               "padding": 16,
               "justifyContent": "space_between",
@@ -5822,16 +5885,16 @@
               "name": "mi3",
               "width": "fill_container",
               "fill": "$bg-card",
-              "cornerRadius": 14,
+              "cornerRadius": 16,
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#0000000A",
                 "offset": {
                   "x": 0,
                   "y": 2
                 },
-                "blur": 8
+                "blur": 10
               },
               "padding": 16,
               "justifyContent": "space_between",
@@ -5884,16 +5947,16 @@
               "name": "mi4",
               "width": "fill_container",
               "fill": "$bg-card",
-              "cornerRadius": 14,
+              "cornerRadius": 16,
               "effect": {
                 "type": "shadow",
                 "shadowType": "outer",
-                "color": "#0000001A",
+                "color": "#0000000A",
                 "offset": {
                   "x": 0,
                   "y": 2
                 },
-                "blur": 8
+                "blur": 10
               },
               "padding": 16,
               "justifyContent": "space_between",
@@ -5991,10 +6054,12 @@
           "id": "7irls",
           "name": "profTab",
           "width": "fill_container",
-          "fill": "$bg-card",
+          "fill": "#00000000",
           "padding": [
+            0,
+            16,
             12,
-            21
+            16
           ],
           "children": [
             {
@@ -6002,23 +6067,35 @@
               "id": "7zsBm",
               "name": "profPill",
               "width": "fill_container",
-              "height": 62,
+              "height": 64,
               "fill": "$bg-card",
-              "cornerRadius": 36,
+              "cornerRadius": 20,
               "stroke": {
-                "thickness": 1,
-                "fill": "$border"
+                "thickness": 0,
+                "fill": "#00000000"
               },
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#0000000D",
-                "offset": {
-                  "x": 0,
-                  "y": -2
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#00000014",
+                  "offset": {
+                    "x": 0,
+                    "y": -2
+                  },
+                  "blur": 24
                 },
-                "blur": 8
-              },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#0000000A",
+                  "offset": {
+                    "x": 0,
+                    "y": 2
+                  },
+                  "blur": 8
+                }
+              ],
               "padding": 4,
               "alignItems": "center",
               "children": [
@@ -27909,7 +27986,7 @@
           }
         },
         {
-          "value": "#1A1A1A",
+          "value": "#334155",
           "theme": {
             "mode": "dark-blue"
           }
@@ -27937,13 +28014,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#FFFFFF",
+          "value": "#F8FAFC",
           "theme": {
             "mode": "green"
           }
         },
         {
-          "value": "#0A0A0A",
+          "value": "#0F172A",
           "theme": {
             "mode": "dark-blue"
           }
@@ -27971,13 +28048,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#F8FAF8",
+          "value": "#F1F5F9",
           "theme": {
             "mode": "green"
           }
         },
         {
-          "value": "#111111",
+          "value": "#1E293B",
           "theme": {
             "mode": "dark-blue"
           }
@@ -27988,13 +28065,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#E5E7EB",
+          "value": "#E2E8F0",
           "theme": {
             "mode": "green"
           }
         },
         {
-          "value": "#2A2A2A",
+          "value": "#334155",
           "theme": {
             "mode": "dark-blue"
           }
@@ -28020,7 +28097,7 @@
     },
     "danger": {
       "type": "color",
-      "value": "#EF4444"
+      "value": "#DC2626"
     },
     "danger-bg": {
       "type": "color",
@@ -28043,7 +28120,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#3B82F6",
+          "value": "#2563EB",
           "theme": {
             "mode": "green"
           }
@@ -28083,7 +28160,7 @@
           }
         },
         {
-          "value": "#1E3A5F",
+          "value": "#2563EB",
           "theme": {
             "mode": "dark-blue"
           }
@@ -28100,7 +28177,7 @@
           }
         },
         {
-          "value": "#2A4A6F",
+          "value": "#1D4ED8",
           "theme": {
             "mode": "dark-blue"
           }
@@ -28117,7 +28194,7 @@
           }
         },
         {
-          "value": "#1A2F4A",
+          "value": "#DBEAFE",
           "theme": {
             "mode": "dark-blue"
           }
@@ -28177,7 +28254,7 @@
     },
     "success": {
       "type": "color",
-      "value": "#22C55E"
+      "value": "#16A34A"
     },
     "success-bg": {
       "type": "color",
@@ -28217,7 +28294,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#9CA3AF",
+          "value": "#94A3B8",
           "theme": {
             "mode": "green"
           }
@@ -28251,7 +28328,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#111827",
+          "value": "#0F172A",
           "theme": {
             "mode": "green"
           }
@@ -28268,7 +28345,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#6B7280",
+          "value": "#64748B",
           "theme": {
             "mode": "green"
           }
@@ -28295,7 +28372,7 @@
           }
         },
         {
-          "value": "#422006",
+          "value": "#451A03",
           "theme": {
             "mode": "dark-blue"
           }
@@ -28305,6 +28382,166 @@
     "white": {
       "type": "color",
       "value": "#FFFFFF"
+    },
+    "accent-amber": {
+      "type": "color",
+      "value": "#D97706"
+    },
+    "accent-amber-bg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#FEF3C7",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#451A03",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "accent-blue": {
+      "type": "color",
+      "value": "#2563EB"
+    },
+    "accent-blue-bg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#DBEAFE",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#172554",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "accent-purple": {
+      "type": "color",
+      "value": "#7C3AED"
+    },
+    "accent-purple-bg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F3E8FF",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#2E1065",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "accent-teal": {
+      "type": "color",
+      "value": "#0D9488"
+    },
+    "accent-teal-bg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#CCFBF1",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#042F2E",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "divider": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F1F5F9",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#1E293B",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "glass-border": {
+      "type": "color",
+      "value": "#FFFFFF22"
+    },
+    "glass-white": {
+      "type": "color",
+      "value": "#FFFFFF33"
+    },
+    "gradient-end": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#059669",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#1D4ED8",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "gradient-start": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#16A34A",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#2563EB",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#BBF7D0",
+          "theme": {
+            "mode": "green"
+          }
+        },
+        {
+          "value": "#93C5FD",
+          "theme": {
+            "mode": "dark-blue"
+          }
+        }
+      ]
     }
   }
 }

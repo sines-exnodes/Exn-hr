@@ -127,7 +127,7 @@ func (h *SalaryHandler) ExportCSV(c *gin.Context) {
 	}
 }
 
-// GET /api/v1/salary/me  — employee views own salary for a month
+// GET /api/v1/my-salary — employee views own salary records
 func (h *SalaryHandler) GetMySalary(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	monthStr := c.Query("month")
@@ -135,9 +135,29 @@ func (h *SalaryHandler) GetMySalary(c *gin.Context) {
 	month, _ := strconv.Atoi(monthStr)
 	year, _ := strconv.Atoi(yearStr)
 
-	// This endpoint is a convenience wrapper; use /salary/employee/:employee_id instead
-	_, _, _ = userID, month, year
-	c.JSON(http.StatusBadRequest, dto.Err("use /salary/employee/:employee_id?month=X&year=Y"))
+	emp, err := h.svc.GetEmployeeByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.Err("employee profile not found"))
+		return
+	}
+
+	if month > 0 && year > 0 {
+		record, err := h.svc.GetSalaryRecord(emp.ID, month, year)
+		if err != nil {
+			c.JSON(http.StatusNotFound, dto.Err("salary record not found"))
+			return
+		}
+		c.JSON(http.StatusOK, dto.OK(record, "OK"))
+		return
+	}
+
+	// Return all salary records for this employee
+	records, err := h.svc.GetSalaryRecordsByEmployee(emp.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(records, "OK"))
 }
 
 // GET /api/v1/salary/employee/:employee_id

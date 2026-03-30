@@ -28,26 +28,28 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late final AnimationController _entranceCtrl;
   late final Animation<double> _entranceFade;
   late final Animation<Offset> _entranceSlide;
-  late final Animation<double> _logoScale;
+
+  int _leaveListKey = 0;
+  int _otListKey = 0;
 
   final _navItems = const [
     AppBottomNavItem(
-      label: 'Home',
+      label: 'Trang chủ',
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
     ),
     AppBottomNavItem(
-      label: 'Leave',
+      label: 'Nghỉ phép',
       icon: Icons.beach_access_outlined,
       activeIcon: Icons.beach_access_rounded,
     ),
     AppBottomNavItem(
-      label: 'Overtime',
+      label: 'Làm thêm',
       icon: Icons.more_time_outlined,
       activeIcon: Icons.more_time_rounded,
     ),
     AppBottomNavItem(
-      label: 'Profile',
+      label: 'Cá nhân',
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
     ),
@@ -65,9 +67,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       begin: const Offset(0, 0.028),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutCubic));
-    _logoScale = Tween<double>(begin: 0.9, end: 1).animate(
-      CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutBack),
-    );
     _entranceCtrl.forward();
   }
 
@@ -81,26 +80,35 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     setState(() => _currentNavIndex = index);
   }
 
+  Future<void> _pushAndRefresh(String route) async {
+    final result = await context.push<bool>(route);
+    if (result == true && mounted) {
+      context.read<HomeCubit>().loadHomeData();
+      setState(() {
+        if (route == AppRoutes.leaveRequest) _leaveListKey++;
+        if (route == AppRoutes.otRequest) _otListKey++;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<HomeCubit>()..loadHomeData(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.bgPage,
         body: IndexedStack(
           index: _currentNavIndex,
           children: [
-            SafeArea(
-              child: FadeTransition(
-                opacity: _entranceFade,
-                child: SlideTransition(
-                  position: _entranceSlide,
-                  child: _buildHomeContent(),
-                ),
+            FadeTransition(
+              opacity: _entranceFade,
+              child: SlideTransition(
+                position: _entranceSlide,
+                child: _buildHomeContent(),
               ),
             ),
-            const LeaveListPage(),
-            const OtListPage(),
+            LeaveListPage(key: ValueKey('leave_$_leaveListKey')),
+            OtListPage(key: ValueKey('ot_$_otListKey')),
             const ProfilePage(),
           ],
         ),
@@ -119,64 +127,34 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         return RefreshIndicator(
           onRefresh: () => context.read<HomeCubit>().loadHomeData(),
           color: AppColors.primary,
-          child: SingleChildScrollView(
+          child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 16.w),
-                ScaleTransition(
-                  scale: _logoScale,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/exn.png',
-                        height: 48.w,
-                        fit: BoxFit.contain,
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'EXN HRM',
-                              style: AppTextStyles.h4.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                            Text(
-                              'Quản lý nhân sự',
-                              style: AppTextStyles.caption
-                                  .copyWith(color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+            slivers: [
+              // Gradient header
+              SliverToBoxAdapter(child: _buildGradientHeader(state)),
+              // Content
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    SizedBox(height: 20.w),
+                    CheckInCard(state: state),
+                    SizedBox(height: 24.w),
+                    QuickActions(onActionPush: _pushAndRefresh),
+                    SizedBox(height: 24.w),
+                    RecentActivity(items: state.activities),
+                    SizedBox(height: 24.w),
+                  ]),
                 ),
-                SizedBox(height: 20.w),
-                _buildGreeting(state),
-                SizedBox(height: 24.w),
-                CheckInCard(state: state),
-                SizedBox(height: 28.w),
-                const QuickActions(),
-                SizedBox(height: 28.w),
-                RecentActivity(items: state.activities),
-                SizedBox(height: 24.w),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildGreeting(HomeState state) {
+  Widget _buildGradientHeader(HomeState state) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
         ? 'Chào buổi sáng'
@@ -184,36 +162,133 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ? 'Chào buổi chiều'
             : 'Chào buổi tối';
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16.w,
+        left: 20.w,
+        right: 20.w,
+        bottom: 24.w,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.gradientStart,
+            AppColors.gradientEnd,
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28.r),
+          bottomRight: Radius.circular(28.r),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top row: logo + notification
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                greeting,
-                style:
-                    AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              Row(
+                children: [
+                  Container(
+                    width: 36.w,
+                    height: 36.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassWhite,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: Image.asset(
+                        'assets/images/exn.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'EXN HRM',
+                    style: AppTextStyles.h4.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                state.userName.isEmpty ? 'Nhân viên' : state.userName,
-                style: AppTextStyles.h3,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              GestureDetector(
+                onTap: () => context.push(AppRoutes.notifications),
+                child: Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassWhite,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 22.sp,
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-        IconButton(
-          onPressed: () => context.push(AppRoutes.notifications),
-          icon: Icon(
-            Icons.notifications_outlined,
-            color: AppColors.textPrimary,
-            size: 24.sp,
+          SizedBox(height: 20.w),
+          // Greeting + avatar
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      greeting,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    SizedBox(height: 4.w),
+                    Text(
+                      state.userName.isEmpty ? 'Nhân viên' : state.userName,
+                      style: AppTextStyles.h2.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: AppColors.glassWhite,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.glassBorder, width: 2),
+                ),
+                child: Icon(
+                  Icons.person_rounded,
+                  color: Colors.white,
+                  size: 28.sp,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

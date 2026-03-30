@@ -18,40 +18,84 @@ class AppBadge extends StatelessWidget {
   Color get _backgroundColor {
     switch (status) {
       case AppBadgeStatus.pending:
-        return AppColors.pending.withOpacity(0.12);
+        return AppColors.warningBg;
       case AppBadgeStatus.approved:
-        return AppColors.approved.withOpacity(0.12);
+        return AppColors.successBg;
       case AppBadgeStatus.rejected:
-        return AppColors.rejected.withOpacity(0.12);
+        return AppColors.errorBg;
       case AppBadgeStatus.info:
-        return AppColors.info.withOpacity(0.12);
+        return AppColors.infoBg;
+    }
+  }
+
+  Color get _dotColor {
+    switch (status) {
+      case AppBadgeStatus.pending:
+        return AppColors.warning;
+      case AppBadgeStatus.approved:
+        return AppColors.success;
+      case AppBadgeStatus.rejected:
+        return AppColors.error;
+      case AppBadgeStatus.info:
+        return AppColors.info;
     }
   }
 
   Color get _textColor {
     switch (status) {
       case AppBadgeStatus.pending:
-        return AppColors.pending;
+        return AppColors.accentAmber;
       case AppBadgeStatus.approved:
-        return AppColors.approved;
+        return AppColors.primary;
       case AppBadgeStatus.rejected:
-        return AppColors.rejected;
+        return AppColors.error;
       case AppBadgeStatus.info:
         return AppColors.info;
+    }
+  }
+
+  String get _displayLabel {
+    switch (label.toLowerCase()) {
+      case 'approved':
+        return 'Đã duyệt';
+      case 'rejected':
+        return 'Từ chối';
+      case 'pending':
+        return 'Chờ duyệt';
+      default:
+        return label;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.w),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.w),
       decoration: BoxDecoration(
         color: _backgroundColor,
         borderRadius: BorderRadius.circular(20.r),
       ),
-      child: Text(
-        label,
-        style: AppTextStyles.labelSmall.copyWith(color: _textColor),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6.w,
+            height: 6.w,
+            decoration: BoxDecoration(
+              color: _dotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            _displayLabel,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: _textColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 11.sp,
+            ),
+          ),
+        ],
       ),
     );
   }

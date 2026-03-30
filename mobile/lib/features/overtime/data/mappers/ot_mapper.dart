@@ -6,7 +6,7 @@ extension OtMapper on OtModel {
     return OtRequest(
       id: id, employeeId: employeeId, date: date,
       startTime: startTime, endTime: endTime, hours: hours,
-      reason: reason, leaderStatus: leaderStatus,
+      otType: otType, reason: reason, leaderStatus: leaderStatus,
       ceoStatus: ceoStatus, overallStatus: overallStatus,
       employeeName: employeeName,
     );

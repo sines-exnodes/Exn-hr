@@ -13,9 +13,9 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<Either<ApiError, OtRequest>> createRequest({required String date, required String startTime, required String endTime, required double hours, required String reason}) async {
+  Future<Either<ApiError, OtRequest>> createRequest({required String date, required String startTime, required String endTime, required double hours, required String otType, required String reason}) async {
     try {
-      final response = await _apiClient.post(ApiEndpoints.overtime, data: {'date': date, 'start_time': startTime, 'end_time': endTime, 'hours': hours, 'reason': reason});
+      final response = await _apiClient.post(ApiEndpoints.overtime, data: {'date': date, 'start_time': startTime, 'end_time': endTime, 'hours': hours, 'ot_type': otType, 'reason': reason});
       final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
       return Right(OtModel.fromJson(data).toEntity());
     } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }

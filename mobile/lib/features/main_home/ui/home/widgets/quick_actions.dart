@@ -6,34 +6,44 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 class QuickActions extends StatelessWidget {
-  const QuickActions({super.key});
+  const QuickActions({super.key, this.onActionPush});
+
+  final Future<void> Function(String route)? onActionPush;
 
   @override
   Widget build(BuildContext context) {
     final actions = [
       _QuickAction(
-        label: 'Đơn\nnghỉ phép',
+        label: 'Nghỉ phép',
         icon: Icons.beach_access_rounded,
-        color: const Color(0xFF8B5CF6),
+        color: AppColors.accentPurple,
+        bgColor: AppColors.accentPurpleBg,
         route: AppRoutes.leaveRequest,
+        needsRefresh: true,
       ),
       _QuickAction(
-        label: 'Đơn\nlàm thêm',
+        label: 'Làm thêm',
         icon: Icons.more_time_rounded,
-        color: const Color(0xFFF59E0B),
+        color: AppColors.accentAmber,
+        bgColor: AppColors.accentAmberBg,
         route: AppRoutes.otRequest,
+        needsRefresh: true,
       ),
       _QuickAction(
-        label: 'Phiếu\nlương',
+        label: 'Phiếu lương',
         icon: Icons.receipt_long_rounded,
-        color: const Color(0xFF3B82F6),
+        color: AppColors.accentBlue,
+        bgColor: AppColors.accentBlueBg,
         route: AppRoutes.payslip,
+        needsRefresh: false,
       ),
       _QuickAction(
-        label: 'Lịch sử\nchấm công',
+        label: 'Chấm công',
         icon: Icons.history_rounded,
-        color: const Color(0xFF22C55E),
+        color: AppColors.accentTeal,
+        bgColor: AppColors.accentTealBg,
         route: AppRoutes.attendanceHistory,
+        needsRefresh: false,
       ),
     ];
 
@@ -41,7 +51,7 @@ class QuickActions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Thao tác nhanh', style: AppTextStyles.h4),
-        SizedBox(height: 16.w),
+        SizedBox(height: 14.w),
         Row(
           children: actions
               .asMap()
@@ -49,11 +59,12 @@ class QuickActions extends StatelessWidget {
               .map((e) => Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(
-                        right: e.key < actions.length - 1 ? 12.w : 0,
+                        right: e.key < actions.length - 1 ? 10.w : 0,
                       ),
                       child: _QuickActionCard(
                         action: e.value,
                         index: e.key,
+                        onActionPush: onActionPush,
                       ),
                     ),
                   ))
@@ -65,57 +76,74 @@ class QuickActions extends StatelessWidget {
 }
 
 class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard({required this.action, required this.index});
+  const _QuickActionCard({
+    required this.action,
+    required this.index,
+    this.onActionPush,
+  });
 
   final _QuickAction action;
   final int index;
+  final Future<void> Function(String route)? onActionPush;
 
   @override
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 400 + index * 55),
+      duration: Duration(milliseconds: 400 + index * 60),
       curve: Curves.easeOutCubic,
       builder: (context, t, child) => Opacity(
         opacity: t,
         child: Transform.translate(
-          offset: Offset(0, 10 * (1 - t)),
+          offset: Offset(0, 12 * (1 - t)),
           child: child,
         ),
       ),
-      child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14.r),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => context.push(action.route),
-          splashColor: action.color.withOpacity(0.14),
-          highlightColor: action.color.withOpacity(0.06),
-          child: Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: action.color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(action.icon, color: action.color, size: 22.sp),
+      child: GestureDetector(
+        onTap: () {
+          if (action.needsRefresh && onActionPush != null) {
+            onActionPush!(action.route);
+          } else {
+            context.push(action.route);
+          }
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 16.w),
+          decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: action.color.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: action.bgColor,
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
-                SizedBox(height: 8.w),
-                Text(
-                  action.label,
-                  style: AppTextStyles.caption,
-                  textAlign: TextAlign.center,
+                child: Icon(action.icon, color: action.color, size: 24.sp),
+              ),
+              SizedBox(height: 10.w),
+              Text(
+                action.label,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ),
@@ -128,11 +156,15 @@ class _QuickAction {
     required this.label,
     required this.icon,
     required this.color,
+    required this.bgColor,
     required this.route,
+    required this.needsRefresh,
   });
 
   final String label;
   final IconData icon;
   final Color color;
+  final Color bgColor;
   final String route;
+  final bool needsRefresh;
 }

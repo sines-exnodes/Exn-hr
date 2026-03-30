@@ -9,23 +9,27 @@ import (
 	"github.com/exn-hr/backend/internal/dto"
 	"github.com/exn-hr/backend/internal/models"
 	"github.com/exn-hr/backend/internal/repositories"
+	"github.com/exn-hr/backend/internal/sse"
 )
 
 type AttendanceService struct {
 	attendanceRepo *repositories.AttendanceRepository
 	empRepo        *repositories.EmployeeRepository
 	notifSvc       *NotificationService
+	sseHub         *sse.Hub
 }
 
 func NewAttendanceService(
 	attendanceRepo *repositories.AttendanceRepository,
 	empRepo *repositories.EmployeeRepository,
 	notifSvc *NotificationService,
+	sseHub *sse.Hub,
 ) *AttendanceService {
 	return &AttendanceService{
 		attendanceRepo: attendanceRepo,
 		empRepo:        empRepo,
 		notifSvc:       notifSvc,
+		sseHub:         sseHub,
 	}
 }
 
@@ -110,6 +114,14 @@ func (s *AttendanceService) CheckIn(userID uint, req dto.CheckInReq) (*models.At
 		return nil, errors.New("failed to record check-in")
 	}
 
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "attendance_updated",
+			Data: map[string]interface{}{"employee_id": emp.ID, "employee_name": emp.FullName, "action": "check_in"},
+		})
+	}
+
 	return record, nil
 }
 
@@ -141,6 +153,14 @@ func (s *AttendanceService) CheckOut(userID uint, req dto.CheckOutReq) (*models.
 
 	if err := s.attendanceRepo.Update(record); err != nil {
 		return nil, errors.New("failed to record check-out")
+	}
+
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "attendance_updated",
+			Data: map[string]interface{}{"employee_id": emp.ID, "employee_name": emp.FullName, "action": "check_out"},
+		})
 	}
 
 	return record, nil

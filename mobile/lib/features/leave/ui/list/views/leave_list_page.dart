@@ -2,6 +2,7 @@ import 'package:exn_hr/config/di.dart';
 import 'package:exn_hr/core/routing/app_router.dart';
 import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
+import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
 import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_cubit.dart';
 import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_state.dart';
@@ -26,59 +27,61 @@ class LeaveListPage extends StatelessWidget {
 class _LeaveListView extends StatelessWidget {
   const _LeaveListView();
 
+  static const _leaveTypeLabels = {
+    'annual': 'Phép năm',
+    'sick': 'Ốm đau',
+    'personal': 'Việc riêng',
+    'unpaid': 'Không lương',
+    'paid': 'Có lương',
+  };
+
+  String _leaveTypeLabel(String type) {
+    return _leaveTypeLabels[type.toLowerCase()] ?? type;
+  }
+
+  Color _statusAccentColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return AppColors.success;
+      case 'rejected':
+        return AppColors.error;
+      default:
+        return AppColors.warning;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgPage,
       appBar: AppBar(
-        title: const Text('My Leave Requests'),
+        title: const Text('Đơn nghỉ phép'),
         automaticallyImplyLeading: false,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push(AppRoutes.leaveRequest),
+        onPressed: () async {
+          final created = await context.push<bool>(AppRoutes.leaveRequest);
+          if (created == true && context.mounted) {
+            context.read<LeaveListCubit>().loadList();
+          }
+        },
         backgroundColor: AppColors.primary,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: BlocBuilder<LeaveListCubit, LeaveListState>(
         builder: (context, state) {
           if (state.status == LeaveListStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
           }
           if (state.status == LeaveListStatus.failure) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.all(24.w),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
-                    SizedBox(height: 12.w),
-                    Text(
-                      state.errorMessage ?? 'Không tải được danh sách',
-                      style: AppTextStyles.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 16.w),
-                    TextButton(
-                      onPressed: () => context.read<LeaveListCubit>().loadList(),
-                      child: const Text('Thử lại'),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return _buildError(context, state.errorMessage);
           }
           if (state.requests.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.beach_access_rounded, size: 48.sp, color: AppColors.textHint),
-                  SizedBox(height: 12.w),
-                  Text('No leave requests yet', style: AppTextStyles.bodyMedium),
-                ],
-              ),
-            );
+            return _buildEmpty();
           }
           return RefreshIndicator(
             onRefresh: () => context.read<LeaveListCubit>().loadList(),
@@ -91,49 +94,179 @@ class _LeaveListView extends StatelessWidget {
                 return AnimatedListItem(
                   index: index,
                   child: Container(
-                  margin: EdgeInsets.only(bottom: 10.w),
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.border),
+                    margin: EdgeInsets.only(bottom: 12.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Container(
+                              width: 4.w,
+                              color: _statusAccentColor(request.overallStatus),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.w),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 32.w,
+                                              height: 32.w,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.accentPurpleBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(8.r),
+                                              ),
+                                              child: Icon(
+                                                Icons.beach_access_rounded,
+                                                color: AppColors.accentPurple,
+                                                size: 16.sp,
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.w),
+                                            Text(
+                                              _leaveTypeLabel(request.type),
+                                              style: AppTextStyles.labelLarge,
+                                            ),
+                                          ],
+                                        ),
+                                        AppBadge(
+                                          label: request.overallStatus,
+                                          status: _badgeStatus(
+                                              request.overallStatus),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 12.w),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.calendar_today_rounded,
+                                            size: 14.sp,
+                                            color: AppColors.textSecondary),
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          '${formatDateDisplay(request.startDate)} — ${formatDateDisplay(request.endDate)}',
+                                          style: AppTextStyles.bodySmall,
+                                        ),
+                                        SizedBox(width: 12.w),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8.w, vertical: 2.w),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.bgSurface,
+                                            borderRadius:
+                                                BorderRadius.circular(6.r),
+                                          ),
+                                          child: Text(
+                                            '${request.days} ngày',
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                                    fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 6.w),
+                                    Text(
+                                      request.reason,
+                                      style: AppTextStyles.caption,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${request.type[0].toUpperCase()}${request.type.substring(1)} Leave',
-                            style: AppTextStyles.labelLarge,
-                          ),
-                          AppBadge(
-                            label: request.overallStatus,
-                            status: _badgeStatus(request.overallStatus),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8.w),
-                      Text(
-                        '${request.startDate} — ${request.endDate}',
-                        style: AppTextStyles.bodySmall,
-                      ),
-                      SizedBox(height: 4.w),
-                      Text(
-                        '${request.days} day(s) • ${request.reason}',
-                        style: AppTextStyles.caption,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
                 );
               },
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 64.w,
+            height: 64.w,
+            decoration: BoxDecoration(
+              color: AppColors.accentPurpleBg,
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Icon(Icons.beach_access_rounded,
+                size: 32.sp, color: AppColors.accentPurple),
+          ),
+          SizedBox(height: 16.w),
+          Text('Chưa có đơn nghỉ phép',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(fontWeight: FontWeight.w600)),
+          SizedBox(height: 4.w),
+          Text('Nhấn + để tạo đơn mới', style: AppTextStyles.caption),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context, String? message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 64.w,
+              height: 64.w,
+              decoration: BoxDecoration(
+                color: AppColors.errorBg,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child:
+                  Icon(Icons.error_outline, size: 32.sp, color: AppColors.error),
+            ),
+            SizedBox(height: 16.w),
+            Text(
+              message ?? 'Không tải được danh sách',
+              style: AppTextStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.w),
+            TextButton.icon(
+              onPressed: () => context.read<LeaveListCubit>().loadList(),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Thử lại'),
+            ),
+          ],
+        ),
       ),
     );
   }

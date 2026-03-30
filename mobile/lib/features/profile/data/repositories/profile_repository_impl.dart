@@ -28,4 +28,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const Right(null);
     } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
   }
+
+  @override
+  Future<Either<ApiError, Profile>> updateMyProfile({required Map<String, dynamic> data}) async {
+    try {
+      final response = await _apiClient.put(ApiEndpoints.updateMyProfile, data: data);
+      final respData = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      return Right(ProfileModel.fromJson(respData).toEntity());
+    } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
+  }
 }

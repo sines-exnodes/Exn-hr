@@ -34,6 +34,7 @@ import 'package:exn_hr/features/profile/data/repositories/profile_repository_imp
 import 'package:exn_hr/features/profile/domain/repositories/profile_repository.dart';
 import 'package:exn_hr/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:exn_hr/features/profile/domain/usecases/change_password_usecase.dart';
+import 'package:exn_hr/features/profile/domain/usecases/update_profile_usecase.dart';
 import 'package:exn_hr/features/profile/ui/view/view_models/profile_cubit.dart';
 import 'package:exn_hr/features/profile/ui/change_password/view_models/change_password_cubit.dart';
 import 'package:exn_hr/features/notifications/data/repositories/notifications_repository_impl.dart';
@@ -109,6 +110,7 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(apiClient: getIt<ApiClient>()));
   getIt.registerLazySingleton<GetProfileUseCase>(() => GetProfileUseCase(getIt<ProfileRepository>()));
   getIt.registerLazySingleton<ChangePasswordUseCase>(() => ChangePasswordUseCase(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<UpdateProfileUseCase>(() => UpdateProfileUseCase(getIt<ProfileRepository>()));
   getIt.registerFactory<ProfileCubit>(() => ProfileCubit(getProfileUseCase: getIt<GetProfileUseCase>()));
   getIt.registerFactory<ChangePasswordCubit>(() => ChangePasswordCubit(changePasswordUseCase: getIt<ChangePasswordUseCase>()));
 

@@ -11,6 +11,7 @@ import (
 	"github.com/exn-hr/backend/internal/models"
 	"github.com/exn-hr/backend/internal/repositories"
 	"github.com/exn-hr/backend/internal/services"
+	"github.com/exn-hr/backend/internal/sse"
 	"github.com/exn-hr/backend/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -74,9 +75,9 @@ func main() {
 	deptSvc := services.NewDepartmentService(deptRepo)
 	teamSvc := services.NewTeamService(teamRepo, deptRepo)
 	empSvc := services.NewEmployeeService(empRepo, userRepo, notifSvc)
-	attendanceSvc := services.NewAttendanceService(attendanceRepo, empRepo, notifSvc)
-	leaveSvc := services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo)
-	otSvc := services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo)
+	attendanceSvc := services.NewAttendanceService(attendanceRepo, empRepo, notifSvc, sseHub)
+	leaveSvc := services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo, sseHub)
+	otSvc := services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo, sseHub)
 	salarySvc := services.NewSalaryService(salaryRepo, empRepo, otRepo, notifSvc)
 	projectSvc := services.NewProjectService(projectRepo)
 	announcementSvc := services.NewAnnouncementService(announcementRepo, projectRepo, empRepo, userRepo, notifSvc)
@@ -126,6 +127,9 @@ func main() {
 		protected := api.Group("")
 		protected.Use(middleware.AuthRequired(cfg.JWTSecret))
 		{
+			// SSE — real-time event stream
+			protected.GET("/events", sseHandler.Stream)
+
 			// Auth
 			protected.GET("/auth/me", authHandler.Me)
 			protected.POST("/auth/change-password", empHandler.ChangePassword)

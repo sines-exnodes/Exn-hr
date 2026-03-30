@@ -134,9 +134,9 @@ func setupTestDB() {
 	deptSvc = services.NewDepartmentService(deptRepo)
 	teamSvc = services.NewTeamService(teamRepo, deptRepo)
 	empSvc = services.NewEmployeeService(empRepo, userRepo, notifSvc)
-	attendanceSvc = services.NewAttendanceService(attendanceRepo, empRepo, notifSvc)
-	leaveSvc = services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo)
-	otSvc = services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo)
+	attendanceSvc = services.NewAttendanceService(attendanceRepo, empRepo, notifSvc, nil)
+	leaveSvc = services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo, nil)
+	otSvc = services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo, nil)
 	salarySvc = services.NewSalaryService(salaryRepo, empRepo, otRepo, notifSvc)
 }
 

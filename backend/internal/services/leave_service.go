@@ -8,6 +8,7 @@ import (
 	"github.com/exn-hr/backend/internal/dto"
 	"github.com/exn-hr/backend/internal/models"
 	"github.com/exn-hr/backend/internal/repositories"
+	"github.com/exn-hr/backend/internal/sse"
 )
 
 const annualLeavedays = 12
@@ -17,6 +18,7 @@ type LeaveService struct {
 	empRepo   *repositories.EmployeeRepository
 	notifSvc  *NotificationService
 	userRepo  *repositories.UserRepository
+	sseHub    *sse.Hub
 }
 
 func NewLeaveService(
@@ -24,8 +26,9 @@ func NewLeaveService(
 	empRepo *repositories.EmployeeRepository,
 	notifSvc *NotificationService,
 	userRepo *repositories.UserRepository,
+	sseHub *sse.Hub,
 ) *LeaveService {
-	return &LeaveService{leaveRepo: leaveRepo, empRepo: empRepo, notifSvc: notifSvc, userRepo: userRepo}
+	return &LeaveService{leaveRepo: leaveRepo, empRepo: empRepo, notifSvc: notifSvc, userRepo: userRepo, sseHub: sseHub}
 }
 
 func (s *LeaveService) ensureBalance(employeeID uint, year int) (*models.LeaveBalance, error) {
@@ -99,6 +102,14 @@ func (s *LeaveService) Create(userID uint, req dto.CreateLeaveReq) (*models.Leav
 		}
 	}
 
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "leave_created",
+			Data: map[string]interface{}{"leave_id": leaveReq.ID, "employee_name": emp.FullName, "days": leaveReq.Days},
+		})
+	}
+
 	return leaveReq, nil
 }
 
@@ -165,6 +176,14 @@ func (s *LeaveService) ApproveByLeader(leaderUserID uint, leaveID uint, req dto.
 		}
 	}
 
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "leave_approved",
+			Data: map[string]interface{}{"leave_id": leaveReq.ID, "status": leaveReq.OverallStatus},
+		})
+	}
+
 	return leaveReq, nil
 }
 
@@ -215,6 +234,14 @@ func (s *LeaveService) ApproveByHR(hrUserID uint, leaveID uint, req dto.ApproveL
 			&leaveID,
 			"leave_request",
 		)
+	}
+
+	// Broadcast SSE event
+	if s.sseHub != nil {
+		s.sseHub.Broadcast(sse.Event{
+			Type: "leave_approved",
+			Data: map[string]interface{}{"leave_id": leaveReq.ID, "status": leaveReq.OverallStatus},
+		})
 	}
 
 	return leaveReq, nil

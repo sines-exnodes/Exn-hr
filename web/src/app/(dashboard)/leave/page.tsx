@@ -8,14 +8,30 @@ import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
 import type { LeaveRequest } from "@/types";
-import { useLeaveRequests, leaderApproveLeave, hrApproveLeave, cancelLeave } from "@/hooks/useApi";
+import {
+  useLeaveRequests,
+  leaderApproveLeave,
+  hrApproveLeave,
+  cancelLeave,
+} from "@/hooks/useApi";
+import { useSSE } from "@/hooks/useSSE";
 
 const leaveTypeLabel: Record<string, string> = {
   paid: "Phép năm",
   unpaid: "Không lương",
 };
 
-function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction?: (id: number, action: "approve" | "reject", req: LeaveRequest) => void }) {
+function LeaveTable({
+  requests,
+  onAction,
+}: {
+  requests: LeaveRequest[];
+  onAction?: (
+    id: number,
+    action: "approve" | "reject",
+    req: LeaveRequest,
+  ) => void;
+}) {
   if (requests.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-slate-400">
@@ -29,31 +45,63 @@ function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction
       <table className="min-w-full">
         <thead className="bg-slate-50">
           <tr>
-            {["Nhân viên", "Loại", "Từ ngày", "Đến ngày", "Số ngày", "Lý do", "Leader", "HR", "Trạng thái", ""].map((h) => (
-              <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">{h}</th>
+            {[
+              "Nhân viên",
+              "Loại",
+              "Từ ngày",
+              "Đến ngày",
+              "Số ngày",
+              "Lý do",
+              "Leader",
+              "HR",
+              "Trạng thái",
+              "",
+            ].map((h) => (
+              <th
+                key={h}
+                className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400"
+              >
+                {h}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {requests.map((req) => {
-            const employeeName = req.employee?.full_name ?? `NV #${req.employee_id}`;
+            const employeeName =
+              req.employee?.full_name ?? `NV #${req.employee_id}`;
             return (
-              <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+              <tr
+                key={req.id}
+                className="hover:bg-slate-50/50 transition-colors"
+              >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E]/10 text-xs font-semibold text-[#22C55E]">
                       {employeeName.charAt(0)}
                     </div>
-                    <span className="text-sm font-medium text-slate-700">{employeeName}</span>
+                    <span className="text-sm font-medium text-slate-700">
+                      {employeeName}
+                    </span>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant="blue">{leaveTypeLabel[req.type] ?? req.type}</Badge>
+                  <Badge variant="blue">
+                    {leaveTypeLabel[req.type] ?? req.type}
+                  </Badge>
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-600">{req.start_date}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{req.end_date}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-slate-700">{req.days}</td>
-                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{req.reason}</td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {req.start_date}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {req.end_date}
+                </td>
+                <td className="px-4 py-3 text-sm font-semibold text-slate-700">
+                  {req.days}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">
+                  {req.reason}
+                </td>
                 <td className="px-4 py-3">{statusBadge(req.leader_status)}</td>
                 <td className="px-4 py-3">{statusBadge(req.hr_status)}</td>
                 <td className="px-4 py-3">{statusBadge(req.overall_status)}</td>
@@ -88,7 +136,21 @@ function LeaveTable({ requests, onAction }: { requests: LeaveRequest[]; onAction
 
 export default function LeavePage() {
   const { data: response, mutate, isLoading } = useLeaveRequests();
-  const [rejectModal, setRejectModal] = useState<{ id: number; req: LeaveRequest } | null>(null);
+
+  // Real-time updates via SSE
+  useSSE({
+    leave_created: () => {
+      mutate();
+    },
+    leave_approved: () => {
+      mutate();
+    },
+  });
+
+  const [rejectModal, setRejectModal] = useState<{
+    id: number;
+    req: LeaveRequest;
+  } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -99,7 +161,11 @@ export default function LeavePage() {
   const rejected = leaveData.filter((l) => l.overall_status === "rejected");
   const all = leaveData;
 
-  const handleAction = async (id: number, action: "approve" | "reject", req: LeaveRequest) => {
+  const handleAction = async (
+    id: number,
+    action: "approve" | "reject",
+    req: LeaveRequest,
+  ) => {
     if (action === "reject") {
       setRejectModal({ id, req });
       return;
@@ -126,7 +192,10 @@ export default function LeavePage() {
     try {
       const { id, req } = rejectModal;
       if (req.leader_status === "pending") {
-        await leaderApproveLeave(id, { status: "rejected", comment: rejectReason });
+        await leaderApproveLeave(id, {
+          status: "rejected",
+          comment: rejectReason,
+        });
       } else {
         await hrApproveLeave(id, { status: "rejected", comment: rejectReason });
       }
@@ -144,21 +213,46 @@ export default function LeavePage() {
     <>
       <Header
         title="Nghỉ phép"
-        breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Nghỉ phép" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Nghỉ phép" },
+        ]}
       />
       <div className="p-6 space-y-5">
         {/* Loading indicator */}
         {isLoading && (
-          <div className="text-center text-sm text-slate-400 py-2">Đang tải dữ liệu...</div>
+          <div className="text-center text-sm text-slate-400 py-2">
+            Đang tải dữ liệu...
+          </div>
         )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { label: "Chờ duyệt", value: pending.length, color: "text-yellow-600", bg: "bg-yellow-50" },
-            { label: "Đã duyệt", value: approved.length, color: "text-green-600", bg: "bg-green-50" },
-            { label: "Từ chối", value: rejected.length, color: "text-red-600", bg: "bg-red-50" },
-            { label: "Tổng cộng", value: all.length, color: "text-blue-600", bg: "bg-blue-50" },
+            {
+              label: "Chờ duyệt",
+              value: pending.length,
+              color: "text-yellow-600",
+              bg: "bg-yellow-50",
+            },
+            {
+              label: "Đã duyệt",
+              value: approved.length,
+              color: "text-green-600",
+              bg: "bg-green-50",
+            },
+            {
+              label: "Từ chối",
+              value: rejected.length,
+              color: "text-red-600",
+              bg: "bg-red-50",
+            },
+            {
+              label: "Tổng cộng",
+              value: all.length,
+              color: "text-blue-600",
+              bg: "bg-blue-50",
+            },
           ].map(({ label, value, color, bg }) => (
             <Card key={label} className={bg}>
               <p className="text-xs text-slate-500">{label}</p>
@@ -177,8 +271,20 @@ export default function LeavePage() {
             ]}
           >
             {(active) => {
-              const data = active === "pending" ? pending : active === "approved" ? approved : active === "rejected" ? rejected : all;
-              return <LeaveTable requests={data} onAction={active === "pending" ? handleAction : undefined} />;
+              const data =
+                active === "pending"
+                  ? pending
+                  : active === "approved"
+                    ? approved
+                    : active === "rejected"
+                      ? rejected
+                      : all;
+              return (
+                <LeaveTable
+                  requests={data}
+                  onAction={active === "pending" ? handleAction : undefined}
+                />
+              );
             }}
           </Tabs>
         </Card>
@@ -190,7 +296,9 @@ export default function LeavePage() {
           title="Từ chối đơn nghỉ phép"
           footer={
             <>
-              <Button variant="outline" onClick={() => setRejectModal(null)}>Huỷ</Button>
+              <Button variant="outline" onClick={() => setRejectModal(null)}>
+                Huỷ
+              </Button>
               <Button
                 variant="danger"
                 disabled={actionLoading}
@@ -202,9 +310,13 @@ export default function LeavePage() {
           }
         >
           <div className="space-y-3">
-            <p className="text-sm text-slate-600">Vui lòng nhập lý do từ chối để nhân viên được biết.</p>
+            <p className="text-sm text-slate-600">
+              Vui lòng nhập lý do từ chối để nhân viên được biết.
+            </p>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700">Lý do từ chối <span className="text-red-500">*</span></label>
+              <label className="text-sm font-medium text-slate-700">
+                Lý do từ chối <span className="text-red-500">*</span>
+              </label>
               <textarea
                 rows={3}
                 placeholder="Nhập lý do từ chối..."

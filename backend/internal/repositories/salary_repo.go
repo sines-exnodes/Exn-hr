@@ -102,6 +102,15 @@ func (r *SalaryRepository) FindSalaryRecord(employeeID uint, month, year int) (*
 	return &record, err
 }
 
+func (r *SalaryRepository) ListSalaryRecordsByEmployee(employeeID uint) ([]models.SalaryRecord, error) {
+	var records []models.SalaryRecord
+	err := r.db.Preload("Employee.User").
+		Where("employee_id = ?", employeeID).
+		Order("year DESC, month DESC").
+		Find(&records).Error
+	return records, err
+}
+
 func (r *SalaryRepository) ListSalaryRecords(month, year int, page, size int) ([]models.SalaryRecord, int64, error) {
 	var records []models.SalaryRecord
 	var total int64

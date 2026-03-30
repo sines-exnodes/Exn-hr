@@ -11,6 +11,7 @@ class OtRequestState extends Equatable {
     this.date,
     this.startTime,
     this.endTime,
+    this.otType = 'normal',
   });
 
   final OtRequestStatus status;
@@ -19,6 +20,7 @@ class OtRequestState extends Equatable {
   final String? date;
   final String? startTime;
   final String? endTime;
+  final String otType;
 
   OtRequestState copyWith({
     OtRequestStatus? status,
@@ -27,6 +29,7 @@ class OtRequestState extends Equatable {
     String? date,
     String? startTime,
     String? endTime,
+    String? otType,
   }) {
     return OtRequestState(
       status: status ?? this.status,
@@ -35,9 +38,10 @@ class OtRequestState extends Equatable {
       date: date ?? this.date,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
+      otType: otType ?? this.otType,
     );
   }
 
   @override
-  List<Object?> get props => [status, request, errorMessage, date, startTime, endTime];
+  List<Object?> get props => [status, request, errorMessage, date, startTime, endTime, otType];
 }
