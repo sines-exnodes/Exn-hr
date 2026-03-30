@@ -445,3 +445,142 @@ export interface WorkloadOverview {
     project_count: number;
   }>;
 }
+
+// ---- Project Members (REQ-002 spec) ----
+// Note: ProjectAssignment above uses the old role schema (frontend/backend/…).
+// ProjectMember below matches the REQ-002 API contract (pm/ba/dev/…).
+
+export type ProjectMemberRole = "pm" | "ba" | "dev" | "tester" | "designer" | "other";
+
+export interface ProjectMember {
+  id: number;
+  project_id: number;
+  employee_id: number;
+  project_role: ProjectMemberRole;
+  joined_at?: string;
+  employee?: Employee;
+}
+
+export interface AddProjectMemberRequest {
+  employee_id: number;
+  project_role: ProjectMemberRole;
+}
+
+// ---- Milestones ----
+
+export type MilestoneStatus = "upcoming" | "in_progress" | "completed" | "overdue";
+
+export interface MilestoneItem {
+  id?: number;
+  milestone_id?: number;
+  content: string;
+  is_completed: boolean;
+  display_order?: number;
+}
+
+export interface Milestone {
+  id: number;
+  project_id: number;
+  title: string;
+  description?: string;
+  deadline?: string;
+  status: MilestoneStatus;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+  items?: MilestoneItem[];
+}
+
+export interface CreateMilestoneRequest {
+  title: string;
+  description?: string;
+  deadline?: string;
+  items?: Array<{ content: string; display_order?: number }>;
+}
+
+export interface UpdateMilestoneRequest {
+  title?: string;
+  description?: string;
+  deadline?: string;
+  status?: MilestoneStatus;
+  items?: Array<{
+    id?: number;
+    content: string;
+    is_completed?: boolean;
+    display_order?: number;
+  }>;
+}
+
+// ---- Announcements ----
+
+export type AnnouncementTargetType = "all" | "team" | "project";
+
+export interface PollOption {
+  id: number;
+  poll_id?: number;
+  text: string;
+  vote_count: number;
+  percentage?: number;
+  display_order?: number;
+}
+
+export interface Poll {
+  id: number;
+  announcement_id?: number;
+  question: string;
+  is_multiple_choice: boolean;
+  is_anonymous: boolean;
+  deadline?: string;
+  status: "active" | "closed";
+  options?: PollOption[];
+  created_at?: string;
+}
+
+export interface Announcement {
+  id: number;
+  title: string;
+  content: string;
+  target_type: AnnouncementTargetType;
+  target_id?: number | null;
+  is_pinned: boolean;
+  expires_at?: string | null;
+  created_by?: number;
+  created_at: string;
+  updated_at?: string;
+  poll?: Poll;
+}
+
+export interface CreateAnnouncementRequest {
+  title: string;
+  content: string;
+  target_type: AnnouncementTargetType;
+  target_id?: number | null;
+  is_pinned?: boolean;
+  expires_at?: string | null;
+  poll?: {
+    question: string;
+    is_multiple_choice: boolean;
+    is_anonymous: boolean;
+    deadline?: string;
+    options: Array<{ text: string; display_order?: number }>;
+  };
+}
+
+export interface PollResults {
+  poll_id: number;
+  question: string;
+  total_votes: number;
+  is_anonymous: boolean;
+  is_closed: boolean;
+  my_votes: number[];
+  options: Array<{
+    id: number;
+    text: string;
+    vote_count: number;
+    percentage: number;
+  }>;
+  voters?: Array<{
+    option_id: number;
+    employee: Employee;
+  }> | null;
+}

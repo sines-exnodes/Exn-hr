@@ -42,6 +42,19 @@ import 'package:exn_hr/features/notifications/domain/repositories/notifications_
 import 'package:exn_hr/features/notifications/domain/usecases/get_notifications_usecase.dart';
 import 'package:exn_hr/features/notifications/domain/usecases/mark_notification_read_usecase.dart';
 import 'package:exn_hr/features/notifications/ui/list/view_models/notifications_cubit.dart';
+import 'package:exn_hr/features/projects/data/repositories/project_repository_impl.dart';
+import 'package:exn_hr/features/projects/domain/repositories/project_repository.dart';
+import 'package:exn_hr/features/projects/domain/usecases/get_my_projects_usecase.dart';
+import 'package:exn_hr/features/projects/domain/usecases/get_project_detail_usecase.dart';
+import 'package:exn_hr/features/projects/domain/usecases/get_upcoming_milestones_usecase.dart';
+import 'package:exn_hr/features/projects/ui/list/view_models/projects_cubit.dart';
+import 'package:exn_hr/features/projects/ui/detail/view_models/project_detail_cubit.dart';
+import 'package:exn_hr/features/announcements/data/repositories/announcements_repository_impl.dart';
+import 'package:exn_hr/features/announcements/domain/repositories/announcements_repository.dart';
+import 'package:exn_hr/features/announcements/domain/usecases/get_my_announcements_usecase.dart';
+import 'package:exn_hr/features/announcements/domain/usecases/vote_poll_usecase.dart';
+import 'package:exn_hr/features/announcements/domain/usecases/get_poll_results_usecase.dart';
+import 'package:exn_hr/features/announcements/ui/list/view_models/announcements_cubit.dart';
 import 'package:exn_hr/features/main_home/ui/home/view_models/home_cubit.dart';
 import 'package:get_it/get_it.dart';
 
@@ -108,6 +121,25 @@ Future<void> configureDependencies() async {
   getIt.registerFactory<NotificationsCubit>(() => NotificationsCubit(
         getNotificationsUseCase: getIt<GetNotificationsUseCase>(),
         markNotificationReadUseCase: getIt<MarkNotificationReadUseCase>(),
+      ));
+
+  // Projects
+  getIt.registerLazySingleton<ProjectRepository>(() => ProjectRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<GetMyProjectsUseCase>(() => GetMyProjectsUseCase(getIt<ProjectRepository>()));
+  getIt.registerLazySingleton<GetProjectDetailUseCase>(() => GetProjectDetailUseCase(getIt<ProjectRepository>()));
+  getIt.registerLazySingleton<GetUpcomingMilestonesUseCase>(() => GetUpcomingMilestonesUseCase(getIt<ProjectRepository>()));
+  getIt.registerFactory<ProjectsCubit>(() => ProjectsCubit(getMyProjectsUseCase: getIt<GetMyProjectsUseCase>()));
+  getIt.registerFactory<ProjectDetailCubit>(() => ProjectDetailCubit(getProjectDetailUseCase: getIt<GetProjectDetailUseCase>()));
+
+  // Announcements
+  getIt.registerLazySingleton<AnnouncementsRepository>(() => AnnouncementsRepositoryImpl(apiClient: getIt<ApiClient>()));
+  getIt.registerLazySingleton<GetMyAnnouncementsUseCase>(() => GetMyAnnouncementsUseCase(getIt<AnnouncementsRepository>()));
+  getIt.registerLazySingleton<VotePollUseCase>(() => VotePollUseCase(getIt<AnnouncementsRepository>()));
+  getIt.registerLazySingleton<GetPollResultsUseCase>(() => GetPollResultsUseCase(getIt<AnnouncementsRepository>()));
+  getIt.registerFactory<AnnouncementsCubit>(() => AnnouncementsCubit(
+        getMyAnnouncementsUseCase: getIt<GetMyAnnouncementsUseCase>(),
+        votePollUseCase: getIt<VotePollUseCase>(),
+        getPollResultsUseCase: getIt<GetPollResultsUseCase>(),
       ));
 
   // Home

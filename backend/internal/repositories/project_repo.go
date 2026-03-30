@@ -134,3 +134,19 @@ func (r *ProjectRepository) CountEmployees() (int64, error) {
 	err := r.db.Model(&models.Employee{}).Count(&count).Error
 	return count, err
 }
+
+// FindMember returns the assignment for a specific employee in a project (used for access checks)
+func (r *ProjectRepository) FindMember(projectID, employeeID uint) (*models.ProjectAssignment, error) {
+	var assignment models.ProjectAssignment
+	err := r.db.Where("project_id = ? AND employee_id = ?", projectID, employeeID).First(&assignment).Error
+	return &assignment, err
+}
+
+// GetProjectIDsForEmployee returns all project IDs the employee is a member of
+func (r *ProjectRepository) GetProjectIDsForEmployee(employeeID uint) ([]uint, error) {
+	var projectIDs []uint
+	err := r.db.Model(&models.ProjectAssignment{}).
+		Where("employee_id = ?", employeeID).
+		Pluck("project_id", &projectIDs).Error
+	return projectIDs, err
+}
