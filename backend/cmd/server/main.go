@@ -55,6 +55,9 @@ func main() {
 	// Seed default admin
 	seedAdmin(db)
 
+	// --- SSE Hub ---
+	sseHub := sse.NewHub()
+
 	// --- Repositories ---
 	userRepo := repositories.NewUserRepository(db)
 	deptRepo := repositories.NewDepartmentRepository(db)
@@ -94,6 +97,7 @@ func main() {
 	notifHandler := handlers.NewNotificationHandler(notifSvc)
 	projectHandler := handlers.NewProjectHandler(projectSvc)
 	announcementHandler := handlers.NewAnnouncementHandler(announcementSvc)
+	sseHandler := handlers.NewSSEHandler(sseHub)
 
 	// Setup Gin
 	gin.SetMode(cfg.GinMode)
