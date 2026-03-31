@@ -398,6 +398,10 @@ export interface Project {
   created_at: string;
   updated_at: string;
   assignments?: ProjectAssignment[];
+  members?: ProjectMember[];
+  milestones?: Milestone[];
+  member_count?: number;
+  milestone_count?: number;
 }
 
 export interface ProjectAssignment {
@@ -450,7 +454,13 @@ export interface WorkloadOverview {
 // Note: ProjectAssignment above uses the old role schema (frontend/backend/…).
 // ProjectMember below matches the REQ-002 API contract (pm/ba/dev/…).
 
-export type ProjectMemberRole = "pm" | "ba" | "dev" | "tester" | "designer" | "other";
+export type ProjectMemberRole =
+  | "pm"
+  | "ba"
+  | "dev"
+  | "tester"
+  | "designer"
+  | "other";
 
 export interface ProjectMember {
   id: number;
@@ -468,7 +478,11 @@ export interface AddProjectMemberRequest {
 
 // ---- Milestones ----
 
-export type MilestoneStatus = "upcoming" | "in_progress" | "completed" | "overdue";
+export type MilestoneStatus =
+  | "upcoming"
+  | "in_progress"
+  | "completed"
+  | "overdue";
 
 export interface MilestoneItem {
   id?: number;
