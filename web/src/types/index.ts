@@ -450,9 +450,7 @@ export interface WorkloadOverview {
   }>;
 }
 
-// ---- Project Members (REQ-002 spec) ----
-// Note: ProjectAssignment above uses the old role schema (frontend/backend/…).
-// ProjectMember below matches the REQ-002 API contract (pm/ba/dev/…).
+// ---- Project Members ----
 
 export type ProjectMemberRole =
   | "pm"
@@ -460,20 +458,30 @@ export type ProjectMemberRole =
   | "dev"
   | "tester"
   | "designer"
+  | "backend"
+  | "frontend"
+  | "fullstack"
+  | "mobile"
+  | "qa"
+  | "qc"
+  | "devops"
   | "other";
 
 export interface ProjectMember {
   id: number;
   project_id: number;
   employee_id: number;
-  project_role: ProjectMemberRole;
-  joined_at?: string;
+  role: ProjectMemberRole;
+  allocation_percentage?: number;
+  start_date?: string;
+  end_date?: string;
   employee?: Employee;
 }
 
 export interface AddProjectMemberRequest {
   employee_id: number;
-  project_role: ProjectMemberRole;
+  role: ProjectMemberRole;
+  allocation_percentage?: number;
 }
 
 // ---- Milestones ----

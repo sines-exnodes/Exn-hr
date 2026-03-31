@@ -203,3 +203,74 @@ func (h *ProjectHandler) EmployeeWorkload(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.OK(workload, "OK"))
 }
+
+// ---- Milestone handlers ----
+
+// GET /api/v1/projects/:id/milestones
+func (h *ProjectHandler) ListMilestones(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	milestones, err := h.svc.ListMilestones(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(milestones, "OK"))
+}
+
+// POST /api/v1/projects/:id/milestones
+func (h *ProjectHandler) CreateMilestone(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	var req dto.CreateMilestoneReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	milestone, err := h.svc.CreateMilestone(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusCreated, dto.OK(milestone, "Milestone created"))
+}
+
+// PUT /api/v1/milestones/:id
+func (h *ProjectHandler) UpdateMilestone(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	var req dto.UpdateMilestoneReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	milestone, err := h.svc.UpdateMilestone(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(milestone, "Milestone updated"))
+}
+
+// DELETE /api/v1/milestones/:id
+func (h *ProjectHandler) DeleteMilestone(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	if err := h.svc.DeleteMilestone(uint(id)); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(nil, "Milestone deleted"))
+}

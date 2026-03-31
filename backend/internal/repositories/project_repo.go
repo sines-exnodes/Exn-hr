@@ -150,3 +150,54 @@ func (r *ProjectRepository) GetProjectIDsForEmployee(employeeID uint) ([]uint, e
 		Pluck("project_id", &projectIDs).Error
 	return projectIDs, err
 }
+
+// ---- Milestone methods ----
+
+func (r *ProjectRepository) ListMilestones(projectID uint) ([]models.Milestone, error) {
+	var milestones []models.Milestone
+	err := r.db.
+		Where("project_id = ?", projectID).
+		Preload("Items", func(db *gorm.DB) *gorm.DB {
+			return db.Order("display_order ASC")
+		}).
+		Find(&milestones).Error
+	return milestones, err
+}
+
+func (r *ProjectRepository) GetMilestone(id uint) (*models.Milestone, error) {
+	var milestone models.Milestone
+	err := r.db.
+		Preload("Items", func(db *gorm.DB) *gorm.DB {
+			return db.Order("display_order ASC")
+		}).
+		First(&milestone, id).Error
+	return &milestone, err
+}
+
+func (r *ProjectRepository) CreateMilestone(m *models.Milestone) error {
+	return r.db.Create(m).Error
+}
+
+func (r *ProjectRepository) UpdateMilestone(m *models.Milestone) error {
+	return r.db.Save(m).Error
+}
+
+func (r *ProjectRepository) DeleteMilestone(id uint) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("milestone_id = ?", id).Delete(&models.MilestoneItem{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(&models.Milestone{}, id).Error
+	})
+}
+
+func (r *ProjectRepository) DeleteMilestoneItems(milestoneID uint) error {
+	return r.db.Where("milestone_id = ?", milestoneID).Delete(&models.MilestoneItem{}).Error
+}
+
+func (r *ProjectRepository) CreateMilestoneItems(items []models.MilestoneItem) error {
+	if len(items) == 0 {
+		return nil
+	}
+	return r.db.Create(&items).Error
+}

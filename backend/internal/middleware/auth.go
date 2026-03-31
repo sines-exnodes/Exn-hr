@@ -12,13 +12,17 @@ import (
 func AuthRequired(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
-		if header == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+		var token string
+		if header != "" {
+			token = strings.TrimPrefix(header, "Bearer ")
+		} else if t := c.Query("token"); t != "" {
+			// Fallback: accept token as query param (needed for SSE EventSource)
+			token = t
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
 			c.Abort()
 			return
 		}
-
-		token := strings.TrimPrefix(header, "Bearer ")
 		claims, err := utils.ValidateJWT(token, jwtSecret)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})

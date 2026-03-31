@@ -50,6 +50,8 @@ func main() {
 		&models.Poll{},
 		&models.PollOption{},
 		&models.PollVote{},
+		&models.Milestone{},
+		&models.MilestoneItem{},
 	)
 
 	// Seed default admin
@@ -266,6 +268,15 @@ func main() {
 				projects.POST("/:id/members", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.AddMember)
 				projects.PUT("/:id/members/:employee_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.UpdateMember)
 				projects.DELETE("/:id/members/:employee_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO), projectHandler.RemoveMember)
+				projects.GET("/:id/milestones", projectHandler.ListMilestones)
+				projects.POST("/:id/milestones", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.CreateMilestone)
+			}
+
+			// --- Milestones (separate group to avoid Gin wildcard conflicts) ---
+			milestones := protected.Group("/milestones")
+			{
+				milestones.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.UpdateMilestone)
+				milestones.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.DeleteMilestone)
 			}
 
 			// --- Announcements ---

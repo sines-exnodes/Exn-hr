@@ -13,16 +13,20 @@ import type {
   ProjectAssignment,
   ProjectRole,
   ProjectStatus,
+  Milestone,
 } from "@/types";
 import {
   useProjects,
   useProjectMembers,
+  useProjectMilestones,
   useEmployees,
   createProject,
   updateProject,
   deleteProject,
   addProjectMember,
   removeProjectMember,
+  createMilestone,
+  deleteMilestone,
 } from "@/hooks/useApi";
 
 const STATUS_CONFIG: Record<
@@ -113,6 +117,10 @@ export default function ProjectsPage() {
   );
   const members: ProjectAssignment[] = membersRes?.data ?? [];
 
+  const { data: milestonesRes, mutate: mutateMilestones } =
+    useProjectMilestones(selectedId ?? undefined);
+  const milestones: Milestone[] = milestonesRes?.data ?? [];
+
   const { data: employeesRes } = useEmployees({ page: 1, size: 200 });
   const allEmployees = employeesRes?.data ?? [];
 
@@ -142,6 +150,14 @@ export default function ProjectsPage() {
   const [memberEmployeeId, setMemberEmployeeId] = useState("");
   const [memberRole, setMemberRole] = useState<string>("backend");
   const [memberAllocation, setMemberAllocation] = useState("100");
+
+  // Milestone state
+  const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
+  const [msTitle, setMsTitle] = useState("");
+  const [msDesc, setMsDesc] = useState("");
+  const [msDeadline, setMsDeadline] = useState("");
+  const [msItems, setMsItems] = useState<string[]>([""]);
+  const [deleteMsId, setDeleteMsId] = useState<number | null>(null);
 
   const resetForm = () => {
     setFormName("");
@@ -247,6 +263,45 @@ export default function ProjectsPage() {
       await removeProjectMember(selectedProject.id, employeeId);
       await mutateMembers();
       await mutateProjects();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAddMilestone = async () => {
+    if (!selectedProject || !msTitle.trim()) return;
+    setActionLoading(true);
+    try {
+      await createMilestone(selectedProject.id, {
+        title: msTitle,
+        description: msDesc || undefined,
+        deadline: msDeadline || undefined,
+        items: msItems
+          .filter((t) => t.trim())
+          .map((t, i) => ({ content: t, display_order: i + 1 })),
+      });
+      await mutateMilestones();
+      setAddMilestoneOpen(false);
+      setMsTitle("");
+      setMsDesc("");
+      setMsDeadline("");
+      setMsItems([""]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteMilestone = async () => {
+    if (!deleteMsId) return;
+    setActionLoading(true);
+    try {
+      await deleteMilestone(deleteMsId);
+      await mutateMilestones();
+      setDeleteMsId(null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -474,6 +529,136 @@ export default function ProjectsPage() {
                   </div>
                 )}
               </Card>
+
+              {/* Milestones */}
+              <Card padding="none">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                  <h3 className="text-base font-semibold text-slate-800">
+                    Cột mốc ({milestones.length})
+                  </h3>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setMsTitle("");
+                      setMsDesc("");
+                      setMsDeadline("");
+                      setMsItems([""]);
+                      setAddMilestoneOpen(true);
+                    }}
+                  >
+                    + Thêm cột mốc
+                  </Button>
+                </div>
+                {milestones.length === 0 ? (
+                  <p className="px-6 py-8 text-center text-sm text-slate-400">
+                    Chưa có cột mốc nào.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {milestones.map((ms) => {
+                      const totalItems = ms.items?.length ?? 0;
+                      const doneItems =
+                        ms.items?.filter((i) => i.is_completed).length ?? 0;
+                      const statusColor =
+                        ms.status === "completed"
+                          ? "green"
+                          : ms.status === "overdue"
+                            ? "red"
+                            : ms.status === "in_progress"
+                              ? "blue"
+                              : "yellow";
+                      const statusLabel =
+                        ms.status === "completed"
+                          ? "Hoàn thành"
+                          : ms.status === "overdue"
+                            ? "Quá hạn"
+                            : ms.status === "in_progress"
+                              ? "Đang thực hiện"
+                              : "Sắp tới";
+                      return (
+                        <div
+                          key={ms.id}
+                          className="px-6 py-4 hover:bg-slate-50/50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-medium text-slate-800 text-sm">
+                                  {ms.title}
+                                </h4>
+                                <Badge variant={statusColor as any}>
+                                  {statusLabel}
+                                </Badge>
+                              </div>
+                              {ms.description && (
+                                <p className="text-xs text-slate-500 mb-2">
+                                  {ms.description}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-4 text-xs text-slate-400">
+                                {ms.deadline && (
+                                  <span>Hạn: {formatDate(ms.deadline)}</span>
+                                )}
+                                {totalItems > 0 && (
+                                  <span>
+                                    {doneItems}/{totalItems} hoàn thành
+                                  </span>
+                                )}
+                              </div>
+                              {totalItems > 0 && (
+                                <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full bg-[#22C55E] transition-all"
+                                    style={{
+                                      width: `${totalItems > 0 ? (doneItems / totalItems) * 100 : 0}%`,
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              {(ms.items?.length ?? 0) > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {ms.items!.map((item) => (
+                                    <li
+                                      key={item.id}
+                                      className="flex items-center gap-2 text-xs text-slate-600"
+                                    >
+                                      <span
+                                        className={
+                                          item.is_completed
+                                            ? "text-green-500"
+                                            : "text-slate-300"
+                                        }
+                                      >
+                                        {item.is_completed ? "✓" : "○"}
+                                      </span>
+                                      <span
+                                        className={
+                                          item.is_completed
+                                            ? "line-through text-slate-400"
+                                            : ""
+                                        }
+                                      >
+                                        {item.content}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+                              onClick={() => setDeleteMsId(ms.id)}
+                            >
+                              Xoá
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
             </div>
           )}
         </div>
@@ -615,6 +800,114 @@ export default function ProjectsPage() {
           Bạn có chắc chắn muốn xoá dự án{" "}
           <strong>{selectedProject?.name}</strong>? Hành động này không thể hoàn
           tác.
+        </p>
+      </Modal>
+
+      {/* Add Milestone Modal */}
+      <Modal
+        isOpen={addMilestoneOpen}
+        onClose={() => setAddMilestoneOpen(false)}
+        title="Thêm cột mốc"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setAddMilestoneOpen(false)}
+            >
+              Huỷ
+            </Button>
+            <Button loading={actionLoading} onClick={handleAddMilestone}>
+              Tạo cột mốc
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Tiêu đề"
+            placeholder="VD: Release v1.0"
+            value={msTitle}
+            onChange={(e) => setMsTitle(e.target.value)}
+            required
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-700">Mô tả</label>
+            <textarea
+              rows={2}
+              placeholder="Mô tả ngắn..."
+              value={msDesc}
+              onChange={(e) => setMsDesc(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
+            />
+          </div>
+          <Input
+            label="Hạn hoàn thành"
+            type="date"
+            value={msDeadline}
+            onChange={(e) => setMsDeadline(e.target.value)}
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-700">
+              Checklist items
+            </label>
+            {msItems.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <Input
+                  placeholder={`Item ${idx + 1}`}
+                  value={item}
+                  onChange={(e) => {
+                    const next = [...msItems];
+                    next[idx] = e.target.value;
+                    setMsItems(next);
+                  }}
+                />
+                {msItems.length > 1 && (
+                  <button
+                    type="button"
+                    className="text-red-400 hover:text-red-600 text-sm"
+                    onClick={() =>
+                      setMsItems(msItems.filter((_, i) => i !== idx))
+                    }
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              className="text-sm text-[#22C55E] hover:underline self-start mt-1"
+              onClick={() => setMsItems([...msItems, ""])}
+            >
+              + Thêm item
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Milestone Modal */}
+      <Modal
+        isOpen={deleteMsId !== null}
+        onClose={() => setDeleteMsId(null)}
+        title="Xoá cột mốc"
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setDeleteMsId(null)}>
+              Huỷ
+            </Button>
+            <Button
+              variant="danger"
+              loading={actionLoading}
+              onClick={handleDeleteMilestone}
+            >
+              Xoá
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600">
+          Bạn có chắc muốn xoá cột mốc này? Hành động không thể hoàn tác.
         </p>
       </Modal>
 

@@ -200,3 +200,90 @@ func (s *ProjectService) GetWorkloadOverview() (map[string]interface{}, error) {
 func (s *ProjectService) GetWorkloadMatrix() ([]models.ProjectAssignment, error) {
 	return s.projectRepo.GetWorkloadMatrix()
 }
+
+// ---- Milestone methods ----
+
+func (s *ProjectService) ListMilestones(projectID uint) ([]models.Milestone, error) {
+	return s.projectRepo.ListMilestones(projectID)
+}
+
+func (s *ProjectService) CreateMilestone(projectID uint, req dto.CreateMilestoneReq) (*models.Milestone, error) {
+	if _, err := s.projectRepo.GetProjectByID(projectID); err != nil {
+		return nil, errors.New("project not found")
+	}
+
+	milestone := &models.Milestone{
+		ProjectID:   projectID,
+		Title:       req.Title,
+		Description: req.Description,
+		Deadline:    req.Deadline,
+		Status:      "upcoming",
+	}
+
+	// Convert items
+	for _, item := range req.Items {
+		milestone.Items = append(milestone.Items, models.MilestoneItem{
+			Content:      item.Content,
+			DisplayOrder: item.DisplayOrder,
+		})
+	}
+
+	if err := s.projectRepo.CreateMilestone(milestone); err != nil {
+		return nil, errors.New("failed to create milestone")
+	}
+
+	// Re-fetch with preloaded items
+	return s.projectRepo.GetMilestone(milestone.ID)
+}
+
+func (s *ProjectService) UpdateMilestone(id uint, req dto.UpdateMilestoneReq) (*models.Milestone, error) {
+	milestone, err := s.projectRepo.GetMilestone(id)
+	if err != nil {
+		return nil, errors.New("milestone not found")
+	}
+
+	if req.Title != nil {
+		milestone.Title = *req.Title
+	}
+	if req.Description != nil {
+		milestone.Description = *req.Description
+	}
+	if req.Deadline != nil {
+		milestone.Deadline = *req.Deadline
+	}
+	if req.Status != nil {
+		milestone.Status = *req.Status
+	}
+
+	if err := s.projectRepo.UpdateMilestone(milestone); err != nil {
+		return nil, errors.New("failed to update milestone")
+	}
+
+	// Replace items if provided
+	if req.Items != nil {
+		if err := s.projectRepo.DeleteMilestoneItems(id); err != nil {
+			return nil, errors.New("failed to update milestone items")
+		}
+		var newItems []models.MilestoneItem
+		for _, item := range req.Items {
+			newItems = append(newItems, models.MilestoneItem{
+				MilestoneID:  id,
+				Content:      item.Content,
+				IsCompleted:  item.IsCompleted,
+				DisplayOrder: item.DisplayOrder,
+			})
+		}
+		if err := s.projectRepo.CreateMilestoneItems(newItems); err != nil {
+			return nil, errors.New("failed to create milestone items")
+		}
+	}
+
+	return s.projectRepo.GetMilestone(id)
+}
+
+func (s *ProjectService) DeleteMilestone(id uint) error {
+	if _, err := s.projectRepo.GetMilestone(id); err != nil {
+		return errors.New("milestone not found")
+	}
+	return s.projectRepo.DeleteMilestone(id)
+}
