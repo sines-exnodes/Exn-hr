@@ -30,6 +30,14 @@ dev_dependencies:
   freezed: ^2.4.5
   json_serializable: ^6.7.1
   flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/exn.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/images/exn.png"
 flutter:
   uses-material-design: true
   assets:

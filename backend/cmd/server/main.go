@@ -5,6 +5,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/exn-hr/backend/internal/config"
 	"github.com/exn-hr/backend/internal/handlers"
 	"github.com/exn-hr/backend/internal/middleware"
@@ -26,33 +29,8 @@ func main() {
 		log.Fatal("Database connection failed:", err)
 	}
 
-	// Auto-migrate all models
-	db.AutoMigrate(
-		&models.User{},
-		&models.Department{},
-		&models.Employee{},
-		&models.Dependent{},
-		&models.AttendanceRecord{},
-		&models.OfficeLocation{},
-		&models.ApprovedWiFi{},
-		&models.LeaveRequest{},
-		&models.LeaveBalance{},
-		&models.OvertimeRequest{},
-		&models.Allowance{},
-		&models.EmployeeAllowance{},
-		&models.Bonus{},
-		&models.SalaryAdvance{},
-		&models.SalaryRecord{},
-		&models.Notification{},
-		&models.Project{},
-		&models.ProjectAssignment{},
-		&models.Announcement{},
-		&models.Poll{},
-		&models.PollOption{},
-		&models.PollVote{},
-		&models.Milestone{},
-		&models.MilestoneItem{},
-	)
+	// Run database migrations
+	runMigrations(cfg)
 
 	// Seed default admin
 	seedAdmin(db)
@@ -353,4 +331,23 @@ func seedAdmin(db *gorm.DB) {
 	}
 	db.Create(&empProfile)
 	log.Println("Default admin created: admin@exn.vn / admin123")
+}
+
+// runMigrations applies all pending migrations from the migrations/ directory
+func runMigrations(cfg *config.Config) {
+	dbURL := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode,
+	)
+
+	m, err := migrate.New("file://migrations", dbURL)
+	if err != nil {
+		log.Fatal("Failed to create migrate instance:", err)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal("Migration failed:", err)
+	}
+
+	log.Println("Database migrations applied successfully")
 }
