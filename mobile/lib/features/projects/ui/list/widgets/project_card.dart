@@ -169,10 +169,14 @@ class MilestoneItemWidget extends StatelessWidget {
     super.key,
     required this.milestone,
     this.compact = false,
+    this.onItemToggle,
   });
 
   final Milestone milestone;
   final bool compact;
+
+  /// Called when a checklist item is tapped. Provides [milestoneId] and [itemId].
+  final void Function(int milestoneId, int itemId)? onItemToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -250,14 +254,21 @@ class MilestoneItemWidget extends StatelessWidget {
           ],
           if (!compact && sortedItems.isNotEmpty) ...[
             SizedBox(height: 8.w),
-            ...sortedItems.map((item) => _ChecklistItem(item: item)),
+            ...sortedItems.map(
+              (item) => _ChecklistItem(
+                item: item,
+                onTap: onItemToggle != null
+                    ? () => onItemToggle!(milestone.id, item.id)
+                    : null,
+              ),
+            ),
           ],
-          if (compact && sortedItems.isNotEmpty) ...[
-            SizedBox(height: 4.w),
-            Text(
-              '${sortedItems.where((i) => i.isCompleted).length}/${sortedItems.length} việc hoàn thành',
-              style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textSecondary, fontSize: 10),
+          if (sortedItems.isNotEmpty) ...[
+            SizedBox(height: compact ? 6.w : 10.w),
+            _MilestoneProgressBar(
+              items: sortedItems,
+              statusColor: statusColor,
+              compact: compact,
             ),
           ],
         ],
@@ -303,44 +314,98 @@ class MilestoneItemWidget extends StatelessWidget {
 }
 
 class _ChecklistItem extends StatelessWidget {
-  const _ChecklistItem({required this.item});
+  const _ChecklistItem({required this.item, this.onTap});
   final MilestoneItem item;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 4.w, left: 18.w),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: 2.w),
-            child: Icon(
-              item.isCompleted
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked_rounded,
-              size: 14.sp,
-              color: item.isCompleted
-                  ? const Color(0xFF22C55E)
-                  : AppColors.textHint,
-            ),
-          ),
-          SizedBox(width: 6.w),
-          Expanded(
-            child: Text(
-              item.content,
-              style: AppTextStyles.caption.copyWith(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6.r),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 4.w, left: 18.w),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 2.w),
+              child: Icon(
+                item.isCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 14.sp,
                 color: item.isCompleted
-                    ? AppColors.textSecondary
-                    : AppColors.textPrimary,
-                decoration:
-                    item.isCompleted ? TextDecoration.lineThrough : null,
-                decorationColor: AppColors.textSecondary,
+                    ? const Color(0xFF22C55E)
+                    : AppColors.textHint,
               ),
             ),
-          ),
-        ],
+            SizedBox(width: 6.w),
+            Expanded(
+              child: Text(
+                item.content,
+                style: AppTextStyles.caption.copyWith(
+                  color: item.isCompleted
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
+                  decoration:
+                      item.isCompleted ? TextDecoration.lineThrough : null,
+                  decorationColor: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _MilestoneProgressBar extends StatelessWidget {
+  const _MilestoneProgressBar({
+    required this.items,
+    required this.statusColor,
+    required this.compact,
+  });
+
+  final List<MilestoneItem> items;
+  final Color statusColor;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final completed = items.where((i) => i.isCompleted).length;
+    final total = items.length;
+    final progress = total > 0 ? completed / total : 0.0;
+    final percentage = (progress * 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4.r),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: compact ? 4.w : 6.w,
+                  backgroundColor: AppColors.border,
+                  valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              '$completed/$total ($percentage%)',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: compact ? 10 : 11,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

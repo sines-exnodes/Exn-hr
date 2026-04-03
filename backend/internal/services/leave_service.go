@@ -85,9 +85,9 @@ func (s *LeaveService) Create(userID uint, req dto.CreateLeaveReq) (*models.Leav
 		return nil, errors.New("failed to create leave request")
 	}
 
-	// Notify the team leader
-	if emp.Team != nil && emp.Team.LeaderID != nil {
-		leaderEmp, err := s.empRepo.FindByID(*emp.Team.LeaderID)
+	// Notify the line manager
+	if emp.ManagerID != nil {
+		leaderEmp, err := s.empRepo.FindByID(*emp.ManagerID)
 		if err == nil && leaderEmp.User != nil {
 			refID := leaveReq.ID
 			s.notifSvc.Send(

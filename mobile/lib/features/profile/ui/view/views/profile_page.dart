@@ -253,16 +253,16 @@ class _ProfileView extends StatelessWidget {
           _buildInfoRow(
               Icons.person_outline, 'Giới tính', _genderLabel(profile.gender)),
           _buildInfoRow(
-              Icons.groups_outlined, 'Team', profile.teamName ?? 'N/A'),
-          _buildInfoRow(
-              Icons.business_outlined, 'Phòng ban', profile.department ?? 'N/A'),
+              Icons.business_outlined, 'Phòng ban', profile.departmentName ?? 'N/A'),
           _buildInfoRow(Icons.cake_outlined, 'Ngày sinh', profile.dob ?? 'N/A'),
           _buildInfoRow(Icons.calendar_month_outlined, 'Ngày vào',
               profile.joinDate ?? 'N/A'),
           _buildInfoRow(Icons.work_outline, 'Loại HĐ',
               _contractLabel(profile.contractType)),
-          _buildInfoRow(Icons.location_on_outlined, 'Địa chỉ',
-              profile.address ?? 'N/A'),
+          _buildInfoRow(Icons.location_on_outlined, 'Địa chỉ thường trú',
+              profile.permanentAddress ?? 'N/A'),
+          _buildInfoRow(Icons.home_outlined, 'Địa chỉ hiện tại',
+              profile.currentAddress ?? 'N/A'),
           if (profile.bankAccount != null &&
               profile.bankAccount!.isNotEmpty) ...[
             SizedBox(height: 4.w),
@@ -282,18 +282,10 @@ class _ProfileView extends StatelessWidget {
 
   String _contractLabel(String? type) {
     switch (type) {
-      case 'full_time':
-        return 'Toàn thời gian';
-      case 'expat':
-        return 'Chuyên gia nước ngoài';
       case 'probation':
         return 'Thử việc';
-      case 'intern':
-        return 'Thực tập';
-      case 'collaborator':
-        return 'Cộng tác viên';
-      case 'service_contract':
-        return 'Hợp đồng dịch vụ';
+      case 'official':
+        return 'Chính thức';
       default:
         return 'N/A';
     }
@@ -305,6 +297,8 @@ class _ProfileView extends StatelessWidget {
         return 'Nam';
       case 'female':
         return 'Nữ';
+      case 'other':
+        return 'Khác';
       default:
         return 'N/A';
     }
@@ -377,6 +371,13 @@ class _ProfileView extends StatelessWidget {
     }
 
     tiles.addAll([
+      _SettingsTileData(
+        icon: Icons.folder_open_rounded,
+        label: 'Dự án của tôi',
+        color: const Color(0xFF059669),
+        bgColor: const Color(0xFFD1FAE5),
+        onTap: () => context.push(AppRoutes.myProjects),
+      ),
       _SettingsTileData(
         icon: Icons.lock_outline_rounded,
         label: 'Đổi mật khẩu',

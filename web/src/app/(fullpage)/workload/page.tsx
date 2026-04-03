@@ -194,9 +194,9 @@ function OverviewTab({
                     <Td className="font-medium text-slate-800">
                       {e.full_name}
                     </Td>
-                    <Td className="text-slate-500">{e.position}</Td>
+                    <Td className="text-slate-500">{e.user?.role ?? "—"}</Td>
                     <Td className="text-slate-500">
-                      {e.team?.department?.name ?? e.team?.name ?? "—"}
+                      {e.department?.name ?? "—"}
                     </Td>
                     <Td className="text-center font-bold text-red-600">
                       {employeeProjectCount[e.id] || 0}
@@ -242,9 +242,9 @@ function OverviewTab({
                     <Td className="font-medium text-slate-800">
                       {e.full_name}
                     </Td>
-                    <Td className="text-slate-500">{e.position}</Td>
+                    <Td className="text-slate-500">{e.user?.role ?? "—"}</Td>
                     <Td className="text-slate-500">
-                      {e.team?.department?.name ?? e.team?.name ?? "—"}
+                      {e.department?.name ?? "—"}
                     </Td>
                     <Td>
                       <Badge variant="yellow" dot>
@@ -293,7 +293,7 @@ function MatrixTab({
   const grouped = useMemo(() => {
     const map: Record<string, Employee[]> = {};
     employees.forEach((e) => {
-      const dept = e.team?.department?.name ?? e.team?.name ?? "Chưa phân bổ";
+      const dept = e.department?.name ?? "Chưa phân bổ";
       if (!map[dept]) map[dept] = [];
       map[dept].push(e);
     });
@@ -347,7 +347,7 @@ function MatrixTab({
                       {e.full_name}
                     </Td>
                     <Td className="text-slate-500 sticky left-[180px] z-[5] bg-white min-w-[100px]">
-                      {e.position}
+                      {e.user?.role ?? "—"}
                     </Td>
                     {activeProjects.map((p) => {
                       const assigned = assignmentMap[e.id]?.has(p.id);
@@ -683,11 +683,9 @@ function EmployeeDetailModal({
     >
       <div className="space-y-3">
         <div className="flex items-center gap-3 text-xs text-slate-500">
-          <span>{employee.position}</span>
+          <span>{employee.user?.role ?? "—"}</span>
           <span>|</span>
-          <span>
-            {employee.team?.department?.name ?? employee.team?.name ?? "—"}
-          </span>
+          <span>{employee.department?.name ?? "—"}</span>
         </div>
         <p className="text-xs text-slate-500">{workloads.length} dự án</p>
         <div className="overflow-x-auto">
@@ -796,9 +794,9 @@ function ByEmployeeTab({
                   <Td className="text-slate-400">{idx + 1}</Td>
                   <Td className="font-medium text-slate-800">{e.full_name}</Td>
                   <Td className="text-slate-500">
-                    {e.team?.department?.name ?? e.team?.name ?? "—"}
+                    {e.department?.name ?? "—"}
                   </Td>
-                  <Td className="text-slate-500">{e.position}</Td>
+                  <Td className="text-slate-500">{e.user?.role ?? "—"}</Td>
                   <Td
                     className="max-w-[250px] truncate text-slate-600"
                     title={info.projectNames.join(", ")}

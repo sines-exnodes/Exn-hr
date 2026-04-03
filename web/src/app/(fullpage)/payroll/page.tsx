@@ -343,10 +343,7 @@ function SalaryDetailTab({ data }: { data: SalaryRecord[] }) {
               r.total_allowances +
               r.total_ot_pay +
               r.total_bonus;
-            const dept =
-              r.employee?.team?.department?.name ??
-              r.employee?.team?.name ??
-              "—";
+            const dept = r.employee?.department?.name ?? "—";
             return (
               <tr key={r.id} className="hover:bg-blue-50/30">
                 <Td className="text-slate-400">{idx + 1}</Td>
@@ -499,7 +496,7 @@ function AllowanceTab({ data }: { data: SalaryRecord[] }) {
         </thead>
         <tbody>
           {data.map((r, idx) => {
-            const dept = r.employee?.team?.department?.name ?? "—";
+            const dept = r.employee?.department?.name ?? "—";
             const ct = r.employee?.contract_type
               ? contractTypeLabel[r.employee.contract_type]
               : null;
@@ -716,7 +713,7 @@ function PITTab({ data }: { data: SalaryRecord[] }) {
             const empIns = (r.bhxh ?? 0) + (r.bhyt ?? 0) + (r.bhtn ?? 0);
             const totalDeductionPIT =
               (r.personal_deduction ?? 0) + (r.dependent_deduction ?? 0);
-            const npt = r.employee?.number_of_dependents ?? 0;
+            const npt = r.employee?.dependents?.length ?? 0;
             return (
               <tr key={r.id} className="hover:bg-blue-50/30">
                 <Td className="text-slate-400">{idx + 1}</Td>
@@ -829,7 +826,7 @@ function BonusTab({ data }: { data: SalaryRecord[] }) {
         </thead>
         <tbody>
           {data.map((r, idx) => {
-            const dept = r.employee?.team?.department?.name ?? "—";
+            const dept = r.employee?.department?.name ?? "—";
             return (
               <tr key={r.id} className="hover:bg-blue-50/30">
                 <Td className="text-slate-400">{idx + 1}</Td>

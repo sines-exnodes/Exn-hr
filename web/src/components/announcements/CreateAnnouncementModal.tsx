@@ -5,7 +5,10 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createAnnouncement } from "@/hooks/useApi";
-import type { AnnouncementTargetType, CreateAnnouncementRequest } from "@/types";
+import type {
+  AnnouncementTargetType,
+  CreateAnnouncementRequest,
+} from "@/types";
 
 interface CreateAnnouncementModalProps {
   isOpen: boolean;
@@ -35,7 +38,11 @@ const defaultPoll: PollDraft = {
   options: [{ text: "" }, { text: "" }],
 };
 
-export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAnnouncementModalProps) {
+export function CreateAnnouncementModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateAnnouncementModalProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [targetType, setTargetType] = useState<AnnouncementTargetType>("all");
@@ -108,7 +115,9 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
         question: poll.question.trim(),
         is_multiple_choice: poll.is_multiple_choice,
         is_anonymous: poll.is_anonymous,
-        deadline: poll.deadline ? new Date(poll.deadline).toISOString() : undefined,
+        deadline: poll.deadline
+          ? new Date(poll.deadline).toISOString()
+          : undefined,
         options: validOptions,
       };
     }
@@ -184,20 +193,25 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
         {/* Target */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Đối tượng</label>
+            <label className="text-sm font-medium text-slate-700">
+              Đối tượng
+            </label>
             <select
               value={targetType}
-              onChange={(e) => { setTargetType(e.target.value as AnnouncementTargetType); setTargetId(""); }}
+              onChange={(e) => {
+                setTargetType(e.target.value as AnnouncementTargetType);
+                setTargetId("");
+              }}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="all">Toàn công ty</option>
-              <option value="team">Theo nhóm</option>
+              <option value="department">Theo phòng ban</option>
               <option value="project">Theo dự án</option>
             </select>
           </div>
           {targetType !== "all" && (
             <Input
-              label={targetType === "team" ? "ID Nhóm" : "ID Dự án"}
+              label={targetType === "department" ? "ID Phòng ban" : "ID Dự án"}
               type="number"
               placeholder="Nhập ID..."
               value={targetId}
@@ -235,7 +249,9 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
               onChange={(e) => updatePoll("enabled", e.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
             />
-            <span className="text-sm font-medium text-slate-700">Thêm bình chọn (Poll)</span>
+            <span className="text-sm font-medium text-slate-700">
+              Thêm bình chọn (Poll)
+            </span>
           </label>
 
           {poll.enabled && (
@@ -251,14 +267,26 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
               {/* Poll options */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-700">Tuỳ chọn</label>
+                  <label className="text-sm font-medium text-slate-700">
+                    Tuỳ chọn
+                  </label>
                   <button
                     type="button"
                     onClick={addPollOption}
                     className="flex items-center gap-1 text-xs font-medium text-green-600 hover:text-green-700 transition-colors"
                   >
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                     Thêm tuỳ chọn
                   </button>
@@ -280,8 +308,18 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
                           className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                           aria-label="Xoá tuỳ chọn"
                         >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       )}
@@ -296,7 +334,9 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
                   <input
                     type="checkbox"
                     checked={poll.is_multiple_choice}
-                    onChange={(e) => updatePoll("is_multiple_choice", e.target.checked)}
+                    onChange={(e) =>
+                      updatePoll("is_multiple_choice", e.target.checked)
+                    }
                     className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
                   />
                   <span className="text-sm text-slate-700">Nhiều lựa chọn</span>
@@ -305,7 +345,9 @@ export function CreateAnnouncementModal({ isOpen, onClose, onSuccess }: CreateAn
                   <input
                     type="checkbox"
                     checked={poll.is_anonymous}
-                    onChange={(e) => updatePoll("is_anonymous", e.target.checked)}
+                    onChange={(e) =>
+                      updatePoll("is_anonymous", e.target.checked)
+                    }
                     className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
                   />
                   <span className="text-sm text-slate-700">Ẩn danh</span>

@@ -206,9 +206,9 @@ func TestRunPayroll_WithOvertimePay(t *testing.T) {
 	cleanTables(t)
 
 	// Setup employee
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, empID := seedEmployee(t, "otemp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
+	emp, _ := empSvc.GetByUserID(empUserID)
+	empID := emp.ID
 	ceoUserID, _ := seedEmployee(t, "ceo@test.com", models.RoleCEO, nil)
 
 	// Create and approve OT (3 hours, normal type)

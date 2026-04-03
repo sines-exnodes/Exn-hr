@@ -7,7 +7,7 @@ class GetMyProjectsUseCase {
   GetMyProjectsUseCase(this._repository);
   final ProjectRepository _repository;
 
-  Future<Either<ApiError, List<Project>>> call() {
-    return _repository.getMyProjects();
+  Future<Either<ApiError, List<Project>>> call({int page = 1, int size = 10}) {
+    return _repository.getMyProjects(page: page, size: size);
   }
 }

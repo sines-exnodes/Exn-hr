@@ -1,5 +1,11 @@
 package dto
 
+type ProjectFilter struct {
+	Status string `form:"status"`
+	Page   int    `form:"page,default=1"`
+	Size   int    `form:"size,default=10"`
+}
+
 type CreateProjectReq struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
@@ -29,4 +35,31 @@ type UpdateAssignmentReq struct {
 	AllocationPercentage *int    `json:"allocation_percentage"`
 	StartDate            *string `json:"start_date"`
 	EndDate              *string `json:"end_date"`
+}
+
+type CreateMilestoneReq struct {
+	Title       string                `json:"title" binding:"required"`
+	Description string                `json:"description"`
+	Deadline    string                `json:"deadline"`
+	Items       []CreateMilestoneItem `json:"items"`
+}
+
+type CreateMilestoneItem struct {
+	Content      string `json:"content" binding:"required"`
+	DisplayOrder int    `json:"display_order"`
+}
+
+type UpdateMilestoneReq struct {
+	Title       *string               `json:"title"`
+	Description *string               `json:"description"`
+	Deadline    *string               `json:"deadline"`
+	Status      *string               `json:"status"`
+	Items       []UpdateMilestoneItem `json:"items"`
+}
+
+type UpdateMilestoneItem struct {
+	ID           *uint  `json:"id"`
+	Content      string `json:"content"`
+	IsCompleted  bool   `json:"is_completed"`
+	DisplayOrder int    `json:"display_order"`
 }

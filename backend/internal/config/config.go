@@ -20,6 +20,11 @@ type Config struct {
 	DBSSLMode      string
 	JWTSecret      string
 	JWTExpiryHours string
+
+	// Cloudinary
+	CloudinaryCloudName string
+	CloudinaryAPIKey    string
+	CloudinaryAPISecret string
 }
 
 func Load() *Config {
@@ -36,6 +41,10 @@ func Load() *Config {
 		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:      getEnv("JWT_SECRET", "dev-secret-key"),
 		JWTExpiryHours: getEnv("JWT_EXPIRY_HOURS", "24"),
+
+		CloudinaryCloudName: getEnv("CLOUDINARY_CLOUD_NAME", ""),
+		CloudinaryAPIKey:    getEnv("CLOUDINARY_API_KEY", ""),
+		CloudinaryAPISecret: getEnv("CLOUDINARY_API_SECRET", ""),
 	}
 }
 

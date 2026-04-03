@@ -14,7 +14,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
 
   Future<void> save({
     required String phone,
-    required String address,
+    required String permanentAddress,
+    required String currentAddress,
     required String dob,
     required String gender,
     required String bankAccount,
@@ -28,7 +29,12 @@ class EditProfileCubit extends Cubit<EditProfileState> {
 
     final data = <String, dynamic>{};
     if (phone != (profile.phone ?? '')) data['phone'] = phone;
-    if (address != (profile.address ?? '')) data['address'] = address;
+    if (permanentAddress != (profile.permanentAddress ?? '')) {
+      data['permanent_address'] = permanentAddress;
+    }
+    if (currentAddress != (profile.currentAddress ?? '')) {
+      data['current_address'] = currentAddress;
+    }
     if (dob != (profile.dob ?? '')) data['dob'] = dob;
     if (gender != (profile.gender ?? '')) data['gender'] = gender;
     if (bankAccount != (profile.bankAccount ?? '')) data['bank_account'] = bankAccount;

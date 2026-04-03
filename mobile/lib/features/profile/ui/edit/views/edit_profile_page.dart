@@ -42,7 +42,8 @@ class _EditProfileView extends StatefulWidget {
 class _EditProfileViewState extends State<_EditProfileView> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _phoneController;
-  late final TextEditingController _addressController;
+  late final TextEditingController _permanentAddressController;
+  late final TextEditingController _currentAddressController;
   late final TextEditingController _dobController;
   late final TextEditingController _bankAccountController;
   late final TextEditingController _bankNameController;
@@ -50,14 +51,17 @@ class _EditProfileViewState extends State<_EditProfileView> {
   String _selectedGender = '';
   String _dobApiValue = '';
 
-  static const _genderOptions = ['male', 'female'];
+  static const _genderOptions = ['male', 'female', 'other'];
 
   @override
   void initState() {
     super.initState();
     final profile = context.read<EditProfileCubit>().state.profile!;
     _phoneController = TextEditingController(text: profile.phone ?? '');
-    _addressController = TextEditingController(text: profile.address ?? '');
+    _permanentAddressController =
+        TextEditingController(text: profile.permanentAddress ?? '');
+    _currentAddressController =
+        TextEditingController(text: profile.currentAddress ?? '');
     _dobApiValue = profile.dob ?? '';
     _dobController = TextEditingController(
       text: _dobApiValue.isNotEmpty ? formatDateDisplay(_dobApiValue) : '',
@@ -71,7 +75,8 @@ class _EditProfileViewState extends State<_EditProfileView> {
   @override
   void dispose() {
     _phoneController.dispose();
-    _addressController.dispose();
+    _permanentAddressController.dispose();
+    _currentAddressController.dispose();
     _dobController.dispose();
     _bankAccountController.dispose();
     _bankNameController.dispose();
@@ -165,9 +170,19 @@ class _EditProfileViewState extends State<_EditProfileView> {
                   FadeSlideAnimation(
                     delay: const Duration(milliseconds: 150),
                     child: AppInput(
-                      label: 'Địa chỉ',
-                      hint: 'Nhập địa chỉ',
-                      controller: _addressController,
+                      label: 'Địa chỉ thường trú',
+                      hint: 'Nhập địa chỉ thường trú',
+                      controller: _permanentAddressController,
+                      maxLines: 2,
+                    ),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 175),
+                    child: AppInput(
+                      label: 'Địa chỉ hiện tại',
+                      hint: 'Nhập địa chỉ hiện tại',
+                      controller: _currentAddressController,
                       maxLines: 2,
                     ),
                   ),
@@ -215,7 +230,10 @@ class _EditProfileViewState extends State<_EditProfileView> {
                         if (_formKey.currentState?.validate() ?? false) {
                           context.read<EditProfileCubit>().save(
                             phone: _phoneController.text.trim(),
-                            address: _addressController.text.trim(),
+                            permanentAddress:
+                                _permanentAddressController.text.trim(),
+                            currentAddress:
+                                _currentAddressController.text.trim(),
                             dob: _dobApiValue,
                             gender: _selectedGender,
                             bankAccount: _bankAccountController.text.trim(),
@@ -245,10 +263,15 @@ class _EditProfileViewState extends State<_EditProfileView> {
         Row(
           children: _genderOptions.map((g) {
             final isSelected = _selectedGender == g;
-            final label = g == 'male' ? 'Nam' : 'Nữ';
+            final label = g == 'male'
+                ? 'Nam'
+                : g == 'female'
+                    ? 'Nữ'
+                    : 'Khác';
+            final isLast = g == _genderOptions.last;
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: g == 'male' ? 8.w : 0),
+                padding: EdgeInsets.only(right: isLast ? 0 : 8.w),
                 child: GestureDetector(
                   onTap: () => setState(() => _selectedGender = g),
                   child: AnimatedContainer(
@@ -268,7 +291,9 @@ class _EditProfileViewState extends State<_EditProfileView> {
                       child: Text(
                         label,
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textPrimary,
                         ),
                       ),
                     ),

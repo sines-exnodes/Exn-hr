@@ -12,20 +12,6 @@ type UpdateDepartmentReq struct {
 	Description string `json:"description"`
 }
 
-// --- Team ---
-
-type CreateTeamReq struct {
-	Name         string `json:"name" binding:"required"`
-	DepartmentID uint   `json:"department_id" binding:"required"`
-	LeaderID     *uint  `json:"leader_id"`
-}
-
-type UpdateTeamReq struct {
-	Name         string `json:"name"`
-	DepartmentID *uint  `json:"department_id"`
-	LeaderID     *uint  `json:"leader_id"`
-}
-
 // --- Office Location / Attendance Config ---
 
 type CreateOfficeLocationReq struct {

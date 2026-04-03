@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
-import { createEmployee, useDepartments, useTeams } from "@/hooks/useApi";
+import { createEmployee, useDepartments, useEmployees } from "@/hooks/useApi";
 import type { CreateEmployeeRequest } from "@/types";
 
 const roleOptions = [
@@ -20,12 +20,36 @@ const roleOptions = [
 
 const contractTypeOptions = [
   { value: "", label: "Chọn loại hợp đồng" },
-  { value: "full_time", label: "Nhân viên chính thức (HĐLĐ)" },
-  { value: "expat", label: "Nhân viên nước ngoài" },
+  { value: "official", label: "Nhân viên chính thức (HĐLĐ)" },
   { value: "probation", label: "Thử việc (HĐTV)" },
-  { value: "intern", label: "Thực tập sinh" },
-  { value: "collaborator", label: "Cộng tác viên" },
-  { value: "service_contract", label: "Hợp đồng dịch vụ" },
+];
+
+const contractRenewalOptions = [
+  { value: "1", label: "Lần 1" },
+  { value: "2", label: "Lần 2" },
+  { value: "3", label: "Lần 3" },
+];
+
+const genderOptions = [
+  { value: "", label: "Chọn giới tính" },
+  { value: "male", label: "Nam" },
+  { value: "female", label: "Nữ" },
+  { value: "other", label: "Khác" },
+];
+
+const educationOptions = [
+  { value: "", label: "Chọn trình độ" },
+  { value: "high_school", label: "THPT" },
+  { value: "college", label: "Cao đẳng" },
+  { value: "university", label: "Đại học" },
+  { value: "master", label: "Thạc sĩ" },
+];
+
+const maritalStatusOptions = [
+  { value: "", label: "Chọn tình trạng" },
+  { value: "single", label: "Độc thân" },
+  { value: "married", label: "Kết hôn" },
+  { value: "other", label: "Khác" },
 ];
 
 const paymentMethodOptions = [
@@ -38,15 +62,26 @@ const initialForm: Partial<CreateEmployeeRequest> = {
   email: "",
   password: "",
   phone: "",
+  personal_email: "",
   role: "employee",
-  position: "",
   join_date: "",
   dob: "",
-  address: "",
+  permanent_address: "",
+  current_address: "",
+  nationality: "",
+  id_number: "",
+  id_issue_date: "",
+  education: undefined,
+  marital_status: undefined,
+  emergency_contact_name: "",
+  emergency_contact_relation: "",
+  emergency_contact_phone: "",
   insurance_salary: 0,
   basic_salary: 0,
   contract_type: undefined,
-  number_of_dependents: 0,
+  contract_sign_date: "",
+  contract_end_date: "",
+  contract_renewal: 1,
   bank_account: "",
   bank_name: "",
   bank_holder_name: "",
@@ -56,24 +91,24 @@ const initialForm: Partial<CreateEmployeeRequest> = {
 export default function NewEmployeePage() {
   const router = useRouter();
   const [form, setForm] = useState(initialForm);
-  const [teamId, setTeamId] = useState("");
+  const [deptId, setDeptId] = useState("");
+  const [managerId, setManagerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Real API calls for dropdowns
   const { data: deptRes } = useDepartments();
-  const { data: teamsRes } = useTeams();
+  const { data: empRes } = useEmployees({ size: 100 });
 
   const departments = deptRes?.data ?? [];
-  const teams = teamsRes?.data ?? [];
+  const employees = empRes?.data ?? [];
 
   const departmentOptions = departments.map((d) => ({
     value: String(d.id),
     label: d.name,
   }));
-  const teamOptions = teams.map((t) => ({
-    value: String(t.id),
-    label: `${t.name}${t.department?.name ? ` (${t.department.name})` : ""}`,
+  const managerOptions = employees.map((e) => ({
+    value: String(e.id),
+    label: `${e.full_name}${e.user?.role === "leader" ? " (Leader)" : ""}`,
   }));
 
   const set =
@@ -91,8 +126,7 @@ export default function NewEmployeePage() {
     if (!form.full_name) errs.full_name = "Tên không được để trống";
     if (!form.email) errs.email = "Email không được để trống";
     if (!form.password) errs.password = "Mật khẩu không được để trống";
-    if (!form.position) errs.position = "Vị trí không được để trống";
-    if (!form.join_date) errs.join_date = "Ngày vào làm không được để trống";
+    if (!form.join_date) errs.join_date = "Ngày bắt đầu không được để trống";
     return errs;
   };
 
@@ -111,17 +145,34 @@ export default function NewEmployeePage() {
         role: (form.role as CreateEmployeeRequest["role"]) ?? "employee",
         full_name: form.full_name!,
         phone: form.phone || undefined,
-        address: form.address || undefined,
+        personal_email: form.personal_email || undefined,
+        gender: (form.gender as CreateEmployeeRequest["gender"]) || undefined,
+        permanent_address: form.permanent_address || undefined,
+        current_address: form.current_address || undefined,
         dob: form.dob || undefined,
+        nationality: form.nationality || undefined,
+        id_number: form.id_number || undefined,
+        id_issue_date: form.id_issue_date || undefined,
+        education:
+          (form.education as CreateEmployeeRequest["education"]) || undefined,
+        marital_status:
+          (form.marital_status as CreateEmployeeRequest["marital_status"]) ||
+          undefined,
+        emergency_contact_name: form.emergency_contact_name || undefined,
+        emergency_contact_relation:
+          form.emergency_contact_relation || undefined,
+        emergency_contact_phone: form.emergency_contact_phone || undefined,
+        department_id: deptId ? Number(deptId) : undefined,
+        manager_id: managerId ? Number(managerId) : undefined,
         join_date: form.join_date!,
-        position: form.position!,
-        team_id: teamId ? Number(teamId) : undefined,
-        basic_salary: Number(form.basic_salary) || 0,
-        insurance_salary: Number(form.insurance_salary) || 0,
         contract_type:
           (form.contract_type as CreateEmployeeRequest["contract_type"]) ||
           undefined,
-        number_of_dependents: Number(form.number_of_dependents) || 0,
+        contract_sign_date: form.contract_sign_date || undefined,
+        contract_end_date: form.contract_end_date || undefined,
+        contract_renewal: Number(form.contract_renewal) || 1,
+        basic_salary: Number(form.basic_salary) || 0,
+        insurance_salary: Number(form.insurance_salary) || 0,
         bank_account: form.bank_account || undefined,
         bank_name: form.bank_name || undefined,
         bank_holder_name: form.bank_holder_name || undefined,
@@ -157,14 +208,14 @@ export default function NewEmployeePage() {
             </div>
           )}
 
-          {/* Section 1: Thông tin cơ bản */}
+          {/* Section 1: Thông tin cá nhân */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
                 1
               </div>
               <h2 className="text-base font-semibold text-slate-800">
-                Thông tin cơ bản
+                Thông tin cá nhân
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -179,9 +230,9 @@ export default function NewEmployeePage() {
                 />
               </div>
               <Input
-                label="Email"
+                label="Email công ty"
                 type="email"
-                placeholder="nhanvien@company.com"
+                placeholder="nhanvien@exn.vn"
                 value={form.email}
                 onChange={set("email")}
                 error={errors.email}
@@ -197,11 +248,26 @@ export default function NewEmployeePage() {
                 required
               />
               <Input
+                label="Email cá nhân"
+                type="email"
+                placeholder="email@gmail.com"
+                value={form.personal_email}
+                onChange={set("personal_email")}
+              />
+              <Input
                 label="Số điện thoại"
                 type="tel"
                 placeholder="0901234567"
                 value={form.phone}
                 onChange={set("phone")}
+              />
+              <Select
+                label="Giới tính"
+                options={genderOptions}
+                value={form.gender ?? ""}
+                onChange={
+                  set("gender") as React.ChangeEventHandler<HTMLSelectElement>
+                }
               />
               <Input
                 label="Ngày sinh"
@@ -209,16 +275,68 @@ export default function NewEmployeePage() {
                 value={form.dob}
                 onChange={set("dob")}
               />
+              <Input
+                label="Quốc tịch"
+                placeholder="Việt Nam"
+                value={form.nationality}
+                onChange={set("nationality")}
+              />
+              <Input
+                label="Số CCCD"
+                placeholder="012345678901"
+                value={form.id_number}
+                onChange={set("id_number")}
+              />
+              <Input
+                label="Ngày cấp CCCD"
+                type="date"
+                value={form.id_issue_date}
+                onChange={set("id_issue_date")}
+              />
+              <Select
+                label="Trình độ học vấn"
+                options={educationOptions}
+                value={form.education ?? ""}
+                onChange={
+                  set(
+                    "education",
+                  ) as React.ChangeEventHandler<HTMLSelectElement>
+                }
+              />
+              <Select
+                label="Tình trạng hôn nhân"
+                options={maritalStatusOptions}
+                value={form.marital_status ?? ""}
+                onChange={
+                  set(
+                    "marital_status",
+                  ) as React.ChangeEventHandler<HTMLSelectElement>
+                }
+              />
               <div className="sm:col-span-2 lg:col-span-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-medium text-slate-700">
-                    Địa chỉ
+                    Địa chỉ thường trú
                   </label>
                   <textarea
                     rows={2}
                     placeholder="Địa chỉ thường trú..."
-                    value={form.address}
-                    onChange={set("address")}
+                    value={form.permanent_address}
+                    onChange={set("permanent_address")}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
+                  />
+                </div>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Địa chỉ hiện tại
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Địa chỉ hiện tại..."
+                    value={form.current_address}
+                    onChange={set("current_address")}
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
                   />
                 </div>
@@ -226,43 +344,61 @@ export default function NewEmployeePage() {
             </div>
           </Card>
 
-          {/* Section 2: Thông tin công việc */}
+          {/* Section 2: Liên hệ khẩn cấp */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
                 2
               </div>
               <h2 className="text-base font-semibold text-slate-800">
+                Liên hệ khẩn cấp
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Input
+                label="Họ tên"
+                placeholder="Nguyen Thi B"
+                value={form.emergency_contact_name}
+                onChange={set("emergency_contact_name")}
+              />
+              <Input
+                label="Mối quan hệ"
+                placeholder="Vợ / Chồng / Cha / Mẹ"
+                value={form.emergency_contact_relation}
+                onChange={set("emergency_contact_relation")}
+              />
+              <Input
+                label="Số điện thoại"
+                type="tel"
+                placeholder="0901234567"
+                value={form.emergency_contact_phone}
+                onChange={set("emergency_contact_phone")}
+              />
+            </div>
+          </Card>
+
+          {/* Section 3: Thông tin công việc */}
+          <Card>
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
+                3
+              </div>
+              <h2 className="text-base font-semibold text-slate-800">
                 Thông tin công việc
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {departmentOptions.length > 0 ? (
-                <Select
-                  label="Team"
-                  options={[{ value: "", label: "Chọn team" }, ...teamOptions]}
-                  value={teamId}
-                  onChange={(e) => setTeamId(e.target.value)}
-                />
-              ) : (
-                <Select
-                  label="Team"
-                  options={[{ value: "", label: "Đang tải..." }]}
-                  value=""
-                  onChange={() => {}}
-                  disabled
-                />
-              )}
-              <Input
-                label="Vị trí / Chức danh"
-                placeholder="Senior Developer"
-                value={form.position}
-                onChange={set("position")}
-                error={errors.position}
-                required
+              <Select
+                label="Phòng ban"
+                options={[
+                  { value: "", label: "Chọn phòng ban" },
+                  ...departmentOptions,
+                ]}
+                value={deptId}
+                onChange={(e) => setDeptId(e.target.value)}
               />
               <Select
-                label="Vai trò hệ thống"
+                label="Vị trí"
                 options={roleOptions}
                 value={form.role}
                 onChange={
@@ -270,8 +406,17 @@ export default function NewEmployeePage() {
                 }
                 required
               />
+              <Select
+                label="Line Manager"
+                options={[
+                  { value: "", label: "Chọn Line Manager" },
+                  ...managerOptions,
+                ]}
+                value={managerId}
+                onChange={(e) => setManagerId(e.target.value)}
+              />
               <Input
-                label="Ngày vào làm"
+                label="Ngày bắt đầu"
                 type="date"
                 value={form.join_date}
                 onChange={set("join_date")}
@@ -289,20 +434,35 @@ export default function NewEmployeePage() {
                 }
               />
               <Input
-                label="Số người phụ thuộc"
-                type="number"
-                placeholder="0"
-                value={form.number_of_dependents ?? 0}
-                onChange={set("number_of_dependents")}
+                label="Ngày ký hợp đồng"
+                type="date"
+                value={form.contract_sign_date}
+                onChange={set("contract_sign_date")}
+              />
+              <Input
+                label="Ngày hết hạn hợp đồng"
+                type="date"
+                value={form.contract_end_date}
+                onChange={set("contract_end_date")}
+              />
+              <Select
+                label="Lần ký hợp đồng"
+                options={contractRenewalOptions}
+                value={String(form.contract_renewal ?? 1)}
+                onChange={
+                  set(
+                    "contract_renewal",
+                  ) as React.ChangeEventHandler<HTMLSelectElement>
+                }
               />
             </div>
           </Card>
 
-          {/* Section 3: Lương & Bảo hiểm */}
+          {/* Section 4: Lương & Bảo hiểm */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
-                3
+                4
               </div>
               <h2 className="text-base font-semibold text-slate-800">
                 Lương & Bảo hiểm
@@ -310,7 +470,7 @@ export default function NewEmployeePage() {
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
-                label="Lương cơ bản (VND)"
+                label="Lương cơ bản (NET – VND)"
                 type="number"
                 placeholder="15000000"
                 value={form.basic_salary || ""}
@@ -331,11 +491,11 @@ export default function NewEmployeePage() {
             </p>
           </Card>
 
-          {/* Section 4: Thông tin ngân hàng */}
+          {/* Section 5: Thông tin ngân hàng */}
           <Card>
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22C55E] text-white text-sm font-bold">
-                4
+                5
               </div>
               <h2 className="text-base font-semibold text-slate-800">
                 Thông tin ngân hàng

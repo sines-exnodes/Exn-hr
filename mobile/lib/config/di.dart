@@ -47,6 +47,7 @@ import 'package:exn_hr/features/projects/domain/repositories/project_repository.
 import 'package:exn_hr/features/projects/domain/usecases/get_my_projects_usecase.dart';
 import 'package:exn_hr/features/projects/domain/usecases/get_project_detail_usecase.dart';
 import 'package:exn_hr/features/projects/domain/usecases/get_upcoming_milestones_usecase.dart';
+import 'package:exn_hr/features/projects/domain/usecases/toggle_milestone_item_usecase.dart';
 import 'package:exn_hr/features/projects/ui/list/view_models/projects_cubit.dart';
 import 'package:exn_hr/features/projects/ui/detail/view_models/project_detail_cubit.dart';
 import 'package:exn_hr/features/announcements/data/repositories/announcements_repository_impl.dart';
@@ -128,8 +129,12 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<GetMyProjectsUseCase>(() => GetMyProjectsUseCase(getIt<ProjectRepository>()));
   getIt.registerLazySingleton<GetProjectDetailUseCase>(() => GetProjectDetailUseCase(getIt<ProjectRepository>()));
   getIt.registerLazySingleton<GetUpcomingMilestonesUseCase>(() => GetUpcomingMilestonesUseCase(getIt<ProjectRepository>()));
+  getIt.registerLazySingleton<ToggleMilestoneItemUseCase>(() => ToggleMilestoneItemUseCase(getIt<ProjectRepository>()));
   getIt.registerFactory<ProjectsCubit>(() => ProjectsCubit(getMyProjectsUseCase: getIt<GetMyProjectsUseCase>()));
-  getIt.registerFactory<ProjectDetailCubit>(() => ProjectDetailCubit(getProjectDetailUseCase: getIt<GetProjectDetailUseCase>()));
+  getIt.registerFactory<ProjectDetailCubit>(() => ProjectDetailCubit(
+        getProjectDetailUseCase: getIt<GetProjectDetailUseCase>(),
+        toggleMilestoneItemUseCase: getIt<ToggleMilestoneItemUseCase>(),
+      ));
 
   // Announcements
   getIt.registerLazySingleton<AnnouncementsRepository>(() => AnnouncementsRepositoryImpl(apiClient: getIt<ApiClient>()));
@@ -148,5 +153,6 @@ Future<void> configureDependencies() async {
         getProfileUseCase: getIt<GetProfileUseCase>(),
         getLeaveListUseCase: getIt<GetLeaveListUseCase>(),
         getOtListUseCase: getIt<GetOtListUseCase>(),
+        getUpcomingMilestonesUseCase: getIt<GetUpcomingMilestonesUseCase>(),
       ));
 }

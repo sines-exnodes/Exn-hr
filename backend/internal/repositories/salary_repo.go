@@ -90,7 +90,7 @@ func (r *SalaryRepository) UpsertSalaryRecord(record *models.SalaryRecord) error
 
 func (r *SalaryRepository) GetSalaryRecordByID(id uint) (*models.SalaryRecord, error) {
 	var record models.SalaryRecord
-	err := r.db.Preload("Employee.User").Preload("Employee.Team.Department").First(&record, id).Error
+	err := r.db.Preload("Employee.User").Preload("Employee.Department").First(&record, id).Error
 	return &record, err
 }
 

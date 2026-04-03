@@ -164,6 +164,77 @@ func (h *EmployeeHandler) SetAllowance(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.OK(nil, "Allowance set"))
 }
 
+// --- Dependents ---
+
+// GET /api/v1/employees/:id/dependents
+func (h *EmployeeHandler) ListDependents(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	deps, err := h.svc.ListDependents(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(deps, "OK"))
+}
+
+// POST /api/v1/employees/:id/dependents
+func (h *EmployeeHandler) CreateDependent(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	var req dto.CreateDependentReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	dep, err := h.svc.CreateDependent(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusCreated, dto.OK(dep, "Dependent created"))
+}
+
+// PUT /api/v1/employees/:id/dependents/:dep_id
+func (h *EmployeeHandler) UpdateDependent(c *gin.Context) {
+	depID, err := strconv.ParseUint(c.Param("dep_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid dep_id"))
+		return
+	}
+	var req dto.UpdateDependentReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	dep, err := h.svc.UpdateDependent(uint(depID), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(dep, "Dependent updated"))
+}
+
+// DELETE /api/v1/employees/:id/dependents/:dep_id
+func (h *EmployeeHandler) DeleteDependent(c *gin.Context) {
+	depID, err := strconv.ParseUint(c.Param("dep_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid dep_id"))
+		return
+	}
+	if err := h.svc.DeleteDependent(uint(depID)); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(nil, "Dependent deleted"))
+}
+
 // DELETE /api/v1/employees/:id/allowances/:allowance_id
 func (h *EmployeeHandler) DeleteAllowance(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

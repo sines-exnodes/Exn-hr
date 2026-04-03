@@ -7,7 +7,8 @@ import type {
   PaginatedResponse,
   Employee,
   Department,
-  Team,
+  Dependent,
+  CreateDependentRequest,
   AttendanceRecord,
   LeaveRequest,
   LeaveBalance,
@@ -83,7 +84,6 @@ export async function forgotPassword(data: { email: string }) {
 // ============================================================
 
 interface EmployeeFilters extends PaginationParams {
-  team_id?: number;
   department_id?: number;
   role?: string;
   search?: string;
@@ -199,34 +199,56 @@ export async function deleteDepartment(id: number) {
 }
 
 // ============================================================
-// Teams
+// Upload (Cloudinary)
 // ============================================================
 
-export function useTeams(config?: SWRConfiguration) {
-  return useSWR<ApiResponse<Team[]>>("/teams", fetcher, config);
+export async function uploadFile(file: File, folder?: string) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const qs = folder ? `?folder=${encodeURIComponent(folder)}` : "";
+  return api.post<ApiResponse<{ url: string; public_id: string }>>(
+    `/upload${qs}`,
+    formData,
+  );
 }
 
-export function useTeam(id?: number, config?: SWRConfiguration) {
-  return useSWR<ApiResponse<Team>>(id ? `/teams/${id}` : null, fetcher, config);
+// ============================================================
+// Dependents
+// ============================================================
+
+export function useDependents(employeeId?: number, config?: SWRConfiguration) {
+  return useSWR<ApiResponse<Dependent[]>>(
+    employeeId ? `/employees/${employeeId}/dependents` : null,
+    fetcher,
+    config,
+  );
 }
 
-export async function createTeam(data: {
-  name: string;
-  department_id: number;
-  leader_id?: number;
-}) {
-  return api.post<ApiResponse<Team>>("/teams", data);
-}
-
-export async function updateTeam(
-  id: number,
-  data: { name?: string; department_id?: number; leader_id?: number },
+export async function createDependent(
+  employeeId: number,
+  data: CreateDependentRequest,
 ) {
-  return api.put<ApiResponse<Team>>(`/teams/${id}`, data);
+  return api.post<ApiResponse<Dependent>>(
+    `/employees/${employeeId}/dependents`,
+    data,
+  );
 }
 
-export async function deleteTeam(id: number) {
-  return api.delete<ApiResponse<null>>(`/teams/${id}`);
+export async function updateDependent(
+  employeeId: number,
+  depId: number,
+  data: Partial<CreateDependentRequest>,
+) {
+  return api.put<ApiResponse<Dependent>>(
+    `/employees/${employeeId}/dependents/${depId}`,
+    data,
+  );
+}
+
+export async function deleteDependent(employeeId: number, depId: number) {
+  return api.delete<ApiResponse<null>>(
+    `/employees/${employeeId}/dependents/${depId}`,
+  );
 }
 
 // ============================================================
@@ -869,9 +891,6 @@ export function usePollResults(pollId?: number, config?: SWRConfiguration) {
   );
 }
 
-export async function votePoll(
-  pollId: number,
-  data: { option_ids: number[] },
-) {
+export async function votePoll(pollId: number, data: { option_ids: number[] }) {
   return api.post<ApiResponse<null>>(`/polls/${pollId}/vote`, data);
 }

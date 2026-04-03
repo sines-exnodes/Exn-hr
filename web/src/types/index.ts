@@ -58,59 +58,123 @@ export interface User {
 
 // ---- Employee ----
 
+export type Gender = "male" | "female" | "other";
+export type ContractType = "probation" | "official";
+export type Education = "high_school" | "college" | "university" | "master";
+export type MaritalStatus = "single" | "married" | "other";
+
 export interface Employee {
   id: number;
   user_id: number;
+
+  // Thông tin cá nhân
   full_name: string;
   phone?: string;
-  address?: string;
+  personal_email?: string;
+  gender?: Gender;
+  permanent_address?: string;
+  current_address?: string;
   dob?: string;
-  gender?: "male" | "female";
+  nationality?: string;
+  id_number?: string;
+  id_issue_date?: string;
+  id_front_image?: string;
+  id_back_image?: string;
+  education?: Education;
+  marital_status?: MaritalStatus;
+
+  // Liên hệ khẩn cấp
+  emergency_contact_name?: string;
+  emergency_contact_relation?: string;
+  emergency_contact_phone?: string;
+
+  // Thông tin công việc
+  department_id?: number;
+  manager_id?: number;
   join_date: string;
-  position: string;
-  team_id?: number;
+  contract_type?: ContractType;
+  contract_sign_date?: string;
+  contract_end_date?: string;
+  contract_renewal?: number;
+
+  // Lương & Bảo hiểm
   basic_salary: number;
   insurance_salary: number;
-  contract_type?:
-    | "full_time"
-    | "expat"
-    | "probation"
-    | "intern"
-    | "collaborator"
-    | "service_contract";
-  number_of_dependents?: number;
+
+  // Ngân hàng
   bank_account?: string;
   bank_name?: string;
   bank_holder_name?: string;
   payment_method?: "bank_transfer" | "cash";
+
   created_at: string;
   updated_at: string;
+
+  // Relations
   user?: User;
-  team?: Team;
+  department?: Department;
+  manager?: { id: number; full_name: string };
+  dependents?: Dependent[];
+}
+
+export interface Dependent {
+  id: number;
+  employee_id: number;
+  full_name: string;
+  dob?: string;
+  gender?: Gender;
+  relationship: "child" | "parent" | "spouse" | "other";
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateDependentRequest {
+  full_name: string;
+  dob?: string;
+  gender?: Gender;
+  relationship: "child" | "parent" | "spouse" | "other";
 }
 
 export interface CreateEmployeeRequest {
   email: string;
   password: string;
   role: Role;
+
+  // Thông tin cá nhân
   full_name: string;
   phone?: string;
-  address?: string;
+  personal_email?: string;
+  gender?: Gender;
+  permanent_address?: string;
+  current_address?: string;
   dob?: string;
-  gender?: "male" | "female";
+  nationality?: string;
+  id_number?: string;
+  id_issue_date?: string;
+  id_front_image?: string;
+  id_back_image?: string;
+  education?: Education;
+  marital_status?: MaritalStatus;
+
+  // Liên hệ khẩn cấp
+  emergency_contact_name?: string;
+  emergency_contact_relation?: string;
+  emergency_contact_phone?: string;
+
+  // Thông tin công việc
+  department_id?: number;
+  manager_id?: number;
   join_date: string;
-  position: string;
-  team_id?: number;
+  contract_type?: ContractType;
+  contract_sign_date?: string;
+  contract_end_date?: string;
+  contract_renewal?: number;
+
+  // Lương & Bảo hiểm
   basic_salary: number;
   insurance_salary: number;
-  contract_type?:
-    | "full_time"
-    | "expat"
-    | "probation"
-    | "intern"
-    | "collaborator"
-    | "service_contract";
-  number_of_dependents?: number;
+
+  // Ngân hàng
   bank_account?: string;
   bank_name?: string;
   bank_holder_name?: string;
@@ -120,25 +184,37 @@ export interface CreateEmployeeRequest {
 export interface UpdateEmployeeRequest {
   full_name?: string;
   phone?: string;
-  address?: string;
+  personal_email?: string;
+  gender?: Gender;
+  permanent_address?: string;
+  current_address?: string;
   dob?: string;
-  gender?: "male" | "female";
+  nationality?: string;
+  id_number?: string;
+  id_issue_date?: string;
+  id_front_image?: string;
+  id_back_image?: string;
+  education?: Education;
+  marital_status?: MaritalStatus;
+
+  emergency_contact_name?: string;
+  emergency_contact_relation?: string;
+  emergency_contact_phone?: string;
+
+  department_id?: number;
+  clear_department?: boolean;
+  manager_id?: number;
+  clear_manager?: boolean;
   join_date?: string;
-  position?: string;
-  team_id?: number;
-  /** Gửi true để gỡ nhân viên khỏi team (không thuộc phòng ban qua team nữa) */
-  clear_team?: boolean;
+  contract_type?: ContractType;
+  contract_sign_date?: string;
+  contract_end_date?: string;
+  contract_renewal?: number;
+
   basic_salary?: number;
   insurance_salary?: number;
   is_active?: boolean;
-  contract_type?:
-    | "full_time"
-    | "expat"
-    | "probation"
-    | "intern"
-    | "collaborator"
-    | "service_contract";
-  number_of_dependents?: number;
+
   bank_account?: string;
   bank_name?: string;
   bank_holder_name?: string;
@@ -151,18 +227,6 @@ export interface Department {
   id: number;
   name: string;
   description?: string;
-  teams?: Team[];
-}
-
-// ---- Team ----
-
-export interface Team {
-  id: number;
-  name: string;
-  department_id: number;
-  leader_id?: number;
-  department?: { id: number; name: string };
-  leader?: { id: number; full_name: string };
   members?: Employee[];
 }
 
@@ -450,9 +514,7 @@ export interface WorkloadOverview {
   }>;
 }
 
-// ---- Project Members (REQ-002 spec) ----
-// Note: ProjectAssignment above uses the old role schema (frontend/backend/…).
-// ProjectMember below matches the REQ-002 API contract (pm/ba/dev/…).
+// ---- Project Members ----
 
 export type ProjectMemberRole =
   | "pm"
@@ -460,20 +522,30 @@ export type ProjectMemberRole =
   | "dev"
   | "tester"
   | "designer"
+  | "backend"
+  | "frontend"
+  | "fullstack"
+  | "mobile"
+  | "qa"
+  | "qc"
+  | "devops"
   | "other";
 
 export interface ProjectMember {
   id: number;
   project_id: number;
   employee_id: number;
-  project_role: ProjectMemberRole;
-  joined_at?: string;
+  role: ProjectMemberRole;
+  allocation_percentage?: number;
+  start_date?: string;
+  end_date?: string;
   employee?: Employee;
 }
 
 export interface AddProjectMemberRequest {
   employee_id: number;
-  project_role: ProjectMemberRole;
+  role: ProjectMemberRole;
+  allocation_percentage?: number;
 }
 
 // ---- Milestones ----
@@ -527,7 +599,7 @@ export interface UpdateMilestoneRequest {
 
 // ---- Announcements ----
 
-export type AnnouncementTargetType = "all" | "team" | "project";
+export type AnnouncementTargetType = "all" | "department" | "project";
 
 export interface PollOption {
   id: number;

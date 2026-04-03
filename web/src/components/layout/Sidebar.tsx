@@ -13,6 +13,7 @@ import {
   BarChart3,
   Briefcase,
   LayoutGrid,
+  Megaphone,
   Moon,
   Sun,
   LogOut,
@@ -62,6 +63,11 @@ const navItems: NavItem[] = [
     label: "Dự án",
     icon: Briefcase,
     roles: ["admin", "ceo", "hr", "leader"],
+  },
+  {
+    href: "/announcements",
+    label: "Thông báo",
+    icon: Megaphone,
   },
   {
     href: "/reports",

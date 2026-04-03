@@ -176,10 +176,10 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 
 	// --- PIT (Personal Income Tax) ---
 	switch emp.ContractType {
-	case "full_time", "expat":
+	case "official":
 		// Progressive tax with deductions
 		bd.PersonalDeduction = PersonalDeductionAmount
-		bd.DependentDeduction = float64(emp.NumberOfDependents) * DependentDeductionAmount
+		bd.DependentDeduction = float64(len(emp.Dependents)) * DependentDeductionAmount
 
 		bd.TaxableIncome = (bd.ProratedSalary + taxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
 			bd.TotalInsuranceEmployee - bd.PersonalDeduction - bd.DependentDeduction
@@ -190,19 +190,15 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 
 		bd.PITAmount = calculateProgressivePIT(bd.TaxableIncome)
 
-	case "probation", "collaborator":
+	case "probation":
 		// Flat 10% on gross taxable income, no deductions
 		bd.TaxableIncome = bd.ProratedSalary + taxableAllowances + bd.TotalOTPay + bd.TotalBonus
 		bd.PITAmount = math.Round(bd.TaxableIncome * 0.10)
 
-	case "intern", "service_contract":
-		// No tax
-		bd.PITAmount = 0
-
 	default:
-		// Default: treat as full_time
+		// Default: treat as official
 		bd.PersonalDeduction = PersonalDeductionAmount
-		bd.DependentDeduction = float64(emp.NumberOfDependents) * DependentDeductionAmount
+		bd.DependentDeduction = float64(len(emp.Dependents)) * DependentDeductionAmount
 
 		bd.TaxableIncome = (bd.ProratedSalary + taxableAllowances + bd.TotalOTPay + bd.TotalBonus) -
 			bd.TotalInsuranceEmployee - bd.PersonalDeduction - bd.DependentDeduction

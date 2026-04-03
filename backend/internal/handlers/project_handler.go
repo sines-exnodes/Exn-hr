@@ -34,12 +34,45 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 
 // GET /api/v1/projects
 func (h *ProjectHandler) List(c *gin.Context) {
-	projects, err := h.svc.ListProjects()
+	var filter dto.ProjectFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid query params: "+err.Error()))
+		return
+	}
+	projects, total, err := h.svc.ListProjects(filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, dto.OK(projects, "OK"))
+	c.JSON(http.StatusOK, dto.PaginatedResponse{
+		Success: true,
+		Data:    projects,
+		Total:   total,
+		Page:    filter.Page,
+		Size:    filter.Size,
+	})
+}
+
+// GET /api/v1/projects/me
+func (h *ProjectHandler) GetMyProjects(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	var filter dto.ProjectFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid query params: "+err.Error()))
+		return
+	}
+	projects, total, err := h.svc.GetMyProjects(userID, filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.PaginatedResponse{
+		Success: true,
+		Data:    projects,
+		Total:   total,
+		Page:    filter.Page,
+		Size:    filter.Size,
+	})
 }
 
 // GET /api/v1/projects/:id
@@ -202,4 +235,111 @@ func (h *ProjectHandler) EmployeeWorkload(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, dto.OK(workload, "OK"))
+}
+
+// ---- Milestone handlers ----
+
+// GET /api/v1/projects/:id/milestones
+func (h *ProjectHandler) ListMilestones(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	milestones, err := h.svc.ListMilestones(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(milestones, "OK"))
+}
+
+// POST /api/v1/projects/:id/milestones
+func (h *ProjectHandler) CreateMilestone(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	var req dto.CreateMilestoneReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	milestone, err := h.svc.CreateMilestone(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusCreated, dto.OK(milestone, "Milestone created"))
+}
+
+// PUT /api/v1/milestones/:id
+func (h *ProjectHandler) UpdateMilestone(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	var req dto.UpdateMilestoneReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid request: "+err.Error()))
+		return
+	}
+	milestone, err := h.svc.UpdateMilestone(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(milestone, "Milestone updated"))
+}
+
+// DELETE /api/v1/milestones/:id
+func (h *ProjectHandler) DeleteMilestone(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid id"))
+		return
+	}
+	if err := h.svc.DeleteMilestone(uint(id)); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(nil, "Milestone deleted"))
+}
+
+// PUT /api/v1/milestones/:id/items/:item_id/toggle
+func (h *ProjectHandler) ToggleMilestoneItem(c *gin.Context) {
+	milestoneID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid milestone id"))
+		return
+	}
+	itemID, err := strconv.ParseUint(c.Param("item_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err("invalid item_id"))
+		return
+	}
+	item, err := h.svc.ToggleMilestoneItem(uint(milestoneID), uint(itemID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(item, "OK"))
+}
+
+// GET /api/v1/milestones/upcoming
+func (h *ProjectHandler) GetUpcomingMilestones(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	daysStr := c.DefaultQuery("days", "7")
+	days, err := strconv.Atoi(daysStr)
+	if err != nil || days <= 0 {
+		days = 7
+	}
+	milestones, err := h.svc.GetUpcomingMilestones(userID, days)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Err(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(milestones, "OK"))
 }

@@ -16,7 +16,6 @@ func TestCreateEmployee_Success(t *testing.T) {
 		Role:            models.RoleEmployee,
 		FullName:        "John Doe",
 		Phone:           "0901234567",
-		Position:        "Developer",
 		BasicSalary:     15000000,
 		InsuranceSalary: 8000000,
 	})
@@ -86,7 +85,6 @@ func TestUpdateEmployee_Success(t *testing.T) {
 	newSalary := float64(20000000)
 	emp, err := empSvc.Update(empID, dto.UpdateEmployeeReq{
 		FullName:    "Updated Name",
-		Position:    "Senior Developer",
 		BasicSalary: &newSalary,
 	})
 
@@ -95,9 +93,6 @@ func TestUpdateEmployee_Success(t *testing.T) {
 	}
 	if emp.FullName != "Updated Name" {
 		t.Errorf("expected 'Updated Name', got '%s'", emp.FullName)
-	}
-	if emp.Position != "Senior Developer" {
-		t.Errorf("expected 'Senior Developer', got '%s'", emp.Position)
 	}
 	if emp.BasicSalary != 20000000 {
 		t.Errorf("expected salary 20000000, got %f", emp.BasicSalary)

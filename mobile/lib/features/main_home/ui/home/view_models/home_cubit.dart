@@ -7,6 +7,8 @@ import 'package:exn_hr/features/main_home/ui/home/view_models/home_state.dart';
 import 'package:exn_hr/features/overtime/domain/entities/ot_request.dart';
 import 'package:exn_hr/features/overtime/domain/usecases/get_ot_list_usecase.dart';
 import 'package:exn_hr/features/profile/domain/usecases/get_profile_usecase.dart';
+import 'package:exn_hr/features/projects/domain/entities/project.dart';
+import 'package:exn_hr/features/projects/domain/usecases/get_upcoming_milestones_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -17,16 +19,19 @@ class HomeCubit extends Cubit<HomeState> {
     required GetProfileUseCase getProfileUseCase,
     required GetLeaveListUseCase getLeaveListUseCase,
     required GetOtListUseCase getOtListUseCase,
+    required GetUpcomingMilestonesUseCase getUpcomingMilestonesUseCase,
   })  : _getAttendanceHistoryUseCase = getAttendanceHistoryUseCase,
         _getProfileUseCase = getProfileUseCase,
         _getLeaveListUseCase = getLeaveListUseCase,
         _getOtListUseCase = getOtListUseCase,
+        _getUpcomingMilestonesUseCase = getUpcomingMilestonesUseCase,
         super(const HomeState());
 
   final GetAttendanceHistoryUseCase _getAttendanceHistoryUseCase;
   final GetProfileUseCase _getProfileUseCase;
   final GetLeaveListUseCase _getLeaveListUseCase;
   final GetOtListUseCase _getOtListUseCase;
+  final GetUpcomingMilestonesUseCase _getUpcomingMilestonesUseCase;
 
   Future<void> loadHomeData() async {
     emit(state.copyWith(
@@ -64,9 +69,14 @@ class HomeCubit extends Cubit<HomeState> {
 
     final leaveRes = await _getLeaveListUseCase(page: 1, size: 8);
     final otRes = await _getOtListUseCase(page: 1, size: 8);
+    final milestonesRes = await _getUpcomingMilestonesUseCase(days: 7);
     final leaves = leaveRes.fold((_) => <LeaveRequest>[], (l) => l);
     final ots = otRes.fold((_) => <OtRequest>[], (o) => o);
     final activities = _buildActivityPreviews(leaves, ots);
+    final upcomingMilestones = milestonesRes.fold(
+      (_) => <Milestone>[],
+      (list) => list.take(3).toList(),
+    );
 
     var todayHours = '0h 0m';
     if (todayRecord?.checkInTime != null && todayRecord?.checkOutTime != null) {
@@ -91,6 +101,7 @@ class HomeCubit extends Cubit<HomeState> {
       activities: activities,
       setAttendanceWarning: true,
       attendanceWarning: attWarn,
+      upcomingMilestones: upcomingMilestones,
     ));
   }
 

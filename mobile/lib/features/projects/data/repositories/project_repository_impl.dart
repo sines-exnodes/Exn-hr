@@ -13,12 +13,19 @@ class ProjectRepositoryImpl implements ProjectRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<Either<ApiError, List<Project>>> getMyProjects() async {
+  Future<Either<ApiError, List<Project>>> getMyProjects({
+    int page = 1,
+    int size = 10,
+  }) async {
     try {
-      final response = await _apiClient.get(ApiEndpoints.myProjects);
-      final items = ((response.data as Map<String, dynamic>)['data'] as List<dynamic>? ?? [])
-          .map((e) => ProjectModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
+      final response = await _apiClient.get(
+        ApiEndpoints.myProjects,
+        queryParameters: {'page': page, 'size': size},
+      );
+      final items =
+          ((response.data as Map<String, dynamic>)['data'] as List<dynamic>? ?? [])
+              .map((e) => ProjectModel.fromJson(e as Map<String, dynamic>).toEntity())
+              .toList();
       return Right(items);
     } on DioException catch (e) {
       return Left(ApiError.fromDioError(e));
@@ -31,7 +38,8 @@ class ProjectRepositoryImpl implements ProjectRepository {
   Future<Either<ApiError, Project>> getProjectDetail(int id) async {
     try {
       final response = await _apiClient.get(ApiEndpoints.projectById(id));
-      final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final data =
+          (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
       return Right(ProjectModel.fromJson(data).toEntity());
     } on DioException catch (e) {
       return Left(ApiError.fromDioError(e));
@@ -41,16 +49,34 @@ class ProjectRepositoryImpl implements ProjectRepository {
   }
 
   @override
-  Future<Either<ApiError, List<Milestone>>> getUpcomingMilestones({int days = 7}) async {
+  Future<Either<ApiError, List<Milestone>>> getUpcomingMilestones(
+      {int days = 7}) async {
     try {
       final response = await _apiClient.get(
         ApiEndpoints.upcomingMilestones,
         queryParameters: {'days': days},
       );
-      final items = ((response.data as Map<String, dynamic>)['data'] as List<dynamic>? ?? [])
-          .map((e) => MilestoneModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
+      final items =
+          ((response.data as Map<String, dynamic>)['data'] as List<dynamic>? ?? [])
+              .map((e) =>
+                  MilestoneModel.fromJson(e as Map<String, dynamic>).toEntity())
+              .toList();
       return Right(items);
+    } on DioException catch (e) {
+      return Left(ApiError.fromDioError(e));
+    } catch (e) {
+      return Left(ApiError.unknown());
+    }
+  }
+
+  @override
+  Future<Either<ApiError, void>> toggleMilestoneItem(
+      int milestoneId, int itemId) async {
+    try {
+      await _apiClient.put(
+        ApiEndpoints.toggleMilestoneItem(milestoneId, itemId),
+      );
+      return const Right(null);
     } on DioException catch (e) {
       return Left(ApiError.fromDioError(e));
     } catch (e) {

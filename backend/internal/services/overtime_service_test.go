@@ -34,9 +34,7 @@ func TestOvertimeApprovalFlow_LeaderThenCEO(t *testing.T) {
 	cleanTables(t)
 
 	// Setup
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 	ceoUserID, _ := seedEmployee(t, "ceo@test.com", models.RoleCEO, nil)
 
 	// Employee creates OT request
@@ -73,9 +71,7 @@ func TestOvertimeApprovalFlow_LeaderThenCEO(t *testing.T) {
 func TestOvertimeApproval_LeaderReject(t *testing.T) {
 	cleanTables(t)
 
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 
 	ot, _ := otSvc.Create(empUserID, dto.CreateOTReq{
 		Date: "2026-04-01", StartTime: "18:00", EndTime: "21:00", Hours: 3,
@@ -112,9 +108,7 @@ func TestOvertimeApproval_CEOCannotApproveBeforeLeader(t *testing.T) {
 func TestOvertimeApproval_CEOReject(t *testing.T) {
 	cleanTables(t)
 
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 	ceoUserID, _ := seedEmployee(t, "ceo@test.com", models.RoleCEO, nil)
 
 	ot, _ := otSvc.Create(empUserID, dto.CreateOTReq{
@@ -155,9 +149,7 @@ func TestCancelOvertime_Success(t *testing.T) {
 func TestCancelOvertime_CannotCancelApproved(t *testing.T) {
 	cleanTables(t)
 
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 	ceoUserID, _ := seedEmployee(t, "ceo@test.com", models.RoleCEO, nil)
 
 	ot, _ := otSvc.Create(empUserID, dto.CreateOTReq{
