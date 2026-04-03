@@ -314,7 +314,7 @@ export default function ProjectsPage() {
     { value: "", label: "Chọn nhân viên..." },
     ...allEmployees.map((e) => ({
       value: String(e.id),
-      label: `${e.full_name} — ${e.position}`,
+      label: `${e.full_name} — ${e.user?.role ?? ""}`,
     })),
   ];
 
@@ -494,15 +494,13 @@ export default function ProjectsPage() {
                                     {m.employee?.full_name ?? "—"}
                                   </p>
                                   <p className="text-xs text-slate-400">
-                                    {m.employee?.position ?? ""}
+                                    {m.employee?.user?.role ?? ""}
                                   </p>
                                 </div>
                               </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-slate-600">
-                              {m.employee?.team?.department?.name ??
-                                m.employee?.team?.name ??
-                                "—"}
+                              {m.employee?.department?.name ?? "—"}
                             </td>
                             <td className="px-4 py-3">
                               <RoleBadge role={m.role} />

@@ -254,7 +254,7 @@ export default function ReportsPage() {
   ).length;
   const byDept: Record<string, number> = {};
   employees.forEach((e) => {
-    const d = e.team?.department?.name ?? "Chưa gán";
+    const d = e.department?.name ?? "Chưa gán";
     byDept[d] = (byDept[d] || 0) + 1;
   });
 

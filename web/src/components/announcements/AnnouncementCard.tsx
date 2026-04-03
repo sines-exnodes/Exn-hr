@@ -3,9 +3,12 @@ import { Badge } from "@/components/ui/Badge";
 import { PollWidget } from "@/components/announcements/PollWidget";
 import type { Announcement, AnnouncementTargetType } from "@/types";
 
-const targetConfig: Record<AnnouncementTargetType, { label: string; variant: "green" | "blue" | "purple" }> = {
+const targetConfig: Record<
+  AnnouncementTargetType,
+  { label: string; variant: "green" | "blue" | "purple" }
+> = {
   all: { label: "Toàn công ty", variant: "green" },
-  team: { label: "Nhóm", variant: "blue" },
+  department: { label: "Phòng ban", variant: "blue" },
   project: { label: "Dự án", variant: "purple" },
 };
 
@@ -30,7 +33,10 @@ export function AnnouncementCard({
   onDelete,
   showManageActions,
 }: AnnouncementCardProps) {
-  const targetCfg = targetConfig[announcement.target_type] ?? { label: announcement.target_type, variant: "gray" as const };
+  const targetCfg = targetConfig[announcement.target_type] ?? {
+    label: announcement.target_type,
+    variant: "gray" as const,
+  };
   const isExpired = announcement.expires_at
     ? new Date(announcement.expires_at).getTime() < Date.now()
     : false;
@@ -39,7 +45,9 @@ export function AnnouncementCard({
     <div
       className={[
         "rounded-xl border bg-white shadow-sm animate-fade-slide-up transition-all duration-200",
-        announcement.is_pinned ? "border-green-300 ring-1 ring-green-200" : "border-slate-200",
+        announcement.is_pinned
+          ? "border-green-300 ring-1 ring-green-200"
+          : "border-slate-200",
         isExpired ? "opacity-60" : "",
       ].join(" ")}
     >
@@ -70,8 +78,18 @@ export function AnnouncementCard({
                 className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                 aria-label="Xoá thông báo"
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
                 </svg>
               </button>
             )}
@@ -88,7 +106,8 @@ export function AnnouncementCard({
           <span>{formatDate(announcement.created_at)}</span>
           {announcement.expires_at && (
             <span>
-              Hết hạn: {new Date(announcement.expires_at).toLocaleDateString("vi-VN")}
+              Hết hạn:{" "}
+              {new Date(announcement.expires_at).toLocaleDateString("vi-VN")}
             </span>
           )}
         </div>

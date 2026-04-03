@@ -168,7 +168,7 @@ export default function PayslipPage() {
 
   const emp = record.employee;
   const empName = emp?.full_name ?? `NV #${record.employee_id}`;
-  const dept = emp?.team?.department?.name ?? emp?.team?.name ?? "—";
+  const dept = emp?.department?.name ?? "—";
   const ctLabel = emp?.contract_type
     ? (contractTypeLabels[emp.contract_type] ?? emp.contract_type)
     : "—";

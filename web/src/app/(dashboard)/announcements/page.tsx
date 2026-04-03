@@ -9,21 +9,30 @@ import { CreateAnnouncementModal } from "@/components/announcements/CreateAnnoun
 import { useAnnouncements, deleteAnnouncement } from "@/hooks/useApi";
 import type { AnnouncementTargetType } from "@/types";
 
-const targetFilterOptions: { value: "" | AnnouncementTargetType; label: string }[] = [
+const targetFilterOptions: {
+  value: "" | AnnouncementTargetType;
+  label: string;
+}[] = [
   { value: "", label: "Tất cả" },
   { value: "all", label: "Toàn công ty" },
-  { value: "team", label: "Theo nhóm" },
+  { value: "department", label: "Theo phòng ban" },
   { value: "project", label: "Theo dự án" },
 ];
 
 export default function AnnouncementsPage() {
-  const [targetFilter, setTargetFilter] = useState<"" | AnnouncementTargetType>("");
+  const [targetFilter, setTargetFilter] = useState<"" | AnnouncementTargetType>(
+    "",
+  );
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const { data: response, isLoading, mutate } = useAnnouncements(
-    targetFilter ? { target_type: targetFilter } : undefined
+  const {
+    data: response,
+    isLoading,
+    mutate,
+  } = useAnnouncements(
+    targetFilter ? { target_type: targetFilter } : undefined,
   );
 
   const announcements = response?.data ?? [];
@@ -53,7 +62,10 @@ export default function AnnouncementsPage() {
     <>
       <Header
         title="Thông báo"
-        breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Thông báo" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Thông báo" },
+        ]}
       />
       <div className="p-6 space-y-6">
         {/* Stats */}
@@ -80,13 +92,17 @@ export default function AnnouncementsPage() {
             {
               label: "Hết hạn",
               value: announcements.filter(
-                (a) => a.expires_at && new Date(a.expires_at).getTime() < Date.now()
+                (a) =>
+                  a.expires_at && new Date(a.expires_at).getTime() < Date.now(),
               ).length,
               color: "text-red-600",
               bg: "bg-red-50",
             },
           ].map(({ label, value, color, bg }) => (
-            <div key={label} className={`rounded-xl border border-slate-200 ${bg} p-4 shadow-sm`}>
+            <div
+              key={label}
+              className={`rounded-xl border border-slate-200 ${bg} p-4 shadow-sm`}
+            >
               <p className="text-xs text-slate-500">{label}</p>
               <p className={`mt-1 text-3xl font-bold ${color}`}>{value}</p>
             </div>
@@ -114,8 +130,18 @@ export default function AnnouncementsPage() {
           <Button
             variant="primary"
             icon={
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
             }
             onClick={() => setShowCreate(true)}
@@ -126,17 +152,33 @@ export default function AnnouncementsPage() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="py-4 text-center text-sm text-slate-400">Đang tải...</div>
+          <div className="py-4 text-center text-sm text-slate-400">
+            Đang tải...
+          </div>
         )}
 
         {/* Empty */}
         {!isLoading && sorted.length === 0 && (
           <div className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center">
-            <svg className="mx-auto h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            <svg
+              className="mx-auto h-10 w-10 text-slate-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+              />
             </svg>
-            <p className="mt-3 text-sm font-medium text-slate-500">Chưa có thông báo nào.</p>
-            <p className="mt-1 text-xs text-slate-400">Bấm "Tạo thông báo" để bắt đầu.</p>
+            <p className="mt-3 text-sm font-medium text-slate-500">
+              Chưa có thông báo nào.
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Bấm "Tạo thông báo" để bắt đầu.
+            </p>
           </div>
         )}
 
@@ -169,8 +211,14 @@ export default function AnnouncementsPage() {
         size="sm"
         footer={
           <>
-            <Button variant="outline" onClick={() => setDeletingId(null)}>Huỷ</Button>
-            <Button variant="danger" loading={deleteLoading} onClick={handleDelete}>
+            <Button variant="outline" onClick={() => setDeletingId(null)}>
+              Huỷ
+            </Button>
+            <Button
+              variant="danger"
+              loading={deleteLoading}
+              onClick={handleDelete}
+            >
               Xoá
             </Button>
           </>
