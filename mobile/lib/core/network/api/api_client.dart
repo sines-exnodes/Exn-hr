@@ -3,7 +3,11 @@ import 'package:exn_hr/core/network/api/api_endpoints.dart';
 import 'package:exn_hr/core/storage/secure_storage.dart';
 
 class ApiClient {
-  ApiClient({required SecureStorage secureStorage}) : _secureStorage = secureStorage {
+  ApiClient({
+    required SecureStorage secureStorage,
+    void Function()? onUnauthorized,
+  })  : _secureStorage = secureStorage,
+        _onUnauthorized = onUnauthorized {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
@@ -33,6 +37,7 @@ class ApiClient {
       onError: (error, handler) async {
         if (error.response?.statusCode == 401) {
           await _secureStorage.clearAll();
+          _onUnauthorized?.call();
         }
         return handler.next(error);
       },
@@ -41,6 +46,7 @@ class ApiClient {
 
   late final Dio _dio;
   final SecureStorage _secureStorage;
+  final void Function()? _onUnauthorized;
 
   Dio get dio => _dio;
 

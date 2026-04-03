@@ -1,4 +1,5 @@
 import 'package:exn_hr/core/network/api/api_client.dart';
+import 'package:exn_hr/core/routing/app_router.dart';
 import 'package:exn_hr/core/storage/secure_storage.dart';
 import 'package:exn_hr/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:exn_hr/features/authentication/domain/repositories/auth_repository.dart';
@@ -65,7 +66,10 @@ Future<void> configureDependencies() async {
   final secureStorage = SecureStorage();
   getIt.registerSingleton<SecureStorage>(secureStorage);
 
-  final apiClient = ApiClient(secureStorage: secureStorage);
+  final apiClient = ApiClient(
+    secureStorage: secureStorage,
+    onUnauthorized: () => AppRouter.router.go(AppRoutes.signIn),
+  );
   getIt.registerSingleton<ApiClient>(apiClient);
 
   // Auth
