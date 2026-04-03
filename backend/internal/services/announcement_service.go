@@ -126,7 +126,7 @@ func (s *AnnouncementService) sendAnnouncementNotifications(a *models.Announceme
 		case models.AnnouncementTargetTeam:
 			if a.TargetID != nil {
 				emp, err := s.empRepo.FindByUserID(user.ID)
-				if err == nil && emp.TeamID != nil && *emp.TeamID == *a.TargetID {
+				if err == nil && emp.DepartmentID != nil && *emp.DepartmentID == *a.TargetID {
 					shouldNotify = true
 				}
 			}
@@ -171,16 +171,16 @@ func (s *AnnouncementService) ListForMe(userID uint, page, size int) ([]models.A
 		return nil, 0, errors.New("employee profile not found")
 	}
 
-	// Get team ID
-	var teamID *uint
-	if emp.TeamID != nil {
-		teamID = emp.TeamID
+	// Get department ID
+	var departmentID *uint
+	if emp.DepartmentID != nil {
+		departmentID = emp.DepartmentID
 	}
 
 	// Get project IDs
 	projectIDs, _ := s.projectRepo.GetProjectIDsForEmployee(emp.ID)
 
-	return s.announcementRepo.ListForEmployee(teamID, projectIDs, page, size)
+	return s.announcementRepo.ListForEmployee(departmentID, projectIDs, page, size)
 }
 
 func (s *AnnouncementService) Update(id uint, req dto.UpdateAnnouncementReq) (*models.Announcement, error) {

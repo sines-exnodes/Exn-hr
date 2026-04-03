@@ -10,10 +10,11 @@ import (
 
 type ProjectService struct {
 	projectRepo *repositories.ProjectRepository
+	empRepo     *repositories.EmployeeRepository
 }
 
-func NewProjectService(projectRepo *repositories.ProjectRepository) *ProjectService {
-	return &ProjectService{projectRepo: projectRepo}
+func NewProjectService(projectRepo *repositories.ProjectRepository, empRepo *repositories.EmployeeRepository) *ProjectService {
+	return &ProjectService{projectRepo: projectRepo, empRepo: empRepo}
 }
 
 func (s *ProjectService) CreateProject(req dto.CreateProjectReq) (*models.Project, error) {
@@ -34,8 +35,50 @@ func (s *ProjectService) CreateProject(req dto.CreateProjectReq) (*models.Projec
 	return project, nil
 }
 
-func (s *ProjectService) ListProjects() ([]models.Project, error) {
-	return s.projectRepo.ListProjects()
+func (s *ProjectService) ListProjects(filter dto.ProjectFilter) ([]models.Project, int64, error) {
+	return s.projectRepo.ListProjects(filter)
+}
+
+func (s *ProjectService) GetMyProjects(userID uint, filter dto.ProjectFilter) ([]models.Project, int64, error) {
+	emp, err := s.empRepo.FindByUserID(userID)
+	if err != nil {
+		return nil, 0, errors.New("employee profile not found")
+	}
+	projectIDs, err := s.projectRepo.GetProjectIDsForEmployee(emp.ID)
+	if err != nil {
+		return nil, 0, errors.New("failed to fetch employee projects")
+	}
+	return s.projectRepo.ListProjectsByIDs(projectIDs, filter)
+}
+
+func (s *ProjectService) GetUpcomingMilestones(userID uint, days int) ([]models.Milestone, error) {
+	if days <= 0 {
+		days = 7
+	}
+	emp, err := s.empRepo.FindByUserID(userID)
+	if err != nil {
+		return nil, errors.New("employee profile not found")
+	}
+	projectIDs, err := s.projectRepo.GetProjectIDsForEmployee(emp.ID)
+	if err != nil {
+		return nil, errors.New("failed to fetch employee projects")
+	}
+	return s.projectRepo.GetUpcomingMilestones(projectIDs, days)
+}
+
+func (s *ProjectService) ToggleMilestoneItem(milestoneID, itemID uint) (*models.MilestoneItem, error) {
+	item, err := s.projectRepo.GetMilestoneItem(itemID)
+	if err != nil {
+		return nil, errors.New("milestone item not found")
+	}
+	if item.MilestoneID != milestoneID {
+		return nil, errors.New("item does not belong to the given milestone")
+	}
+	item.IsCompleted = !item.IsCompleted
+	if err := s.projectRepo.UpdateMilestoneItem(item); err != nil {
+		return nil, errors.New("failed to update milestone item")
+	}
+	return item, nil
 }
 
 func (s *ProjectService) GetProject(id uint) (*models.Project, error) {

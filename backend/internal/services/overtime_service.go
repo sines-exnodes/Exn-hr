@@ -50,9 +50,9 @@ func (s *OvertimeService) Create(userID uint, req dto.CreateOTReq) (*models.Over
 		return nil, errors.New("failed to create overtime request")
 	}
 
-	// Notify leader
-	if emp.Team != nil && emp.Team.LeaderID != nil {
-		leaderEmp, err := s.empRepo.FindByID(*emp.Team.LeaderID)
+	// Notify line manager
+	if emp.ManagerID != nil {
+		leaderEmp, err := s.empRepo.FindByID(*emp.ManagerID)
 		if err == nil && leaderEmp.User != nil {
 			refID := otReq.ID
 			s.notifSvc.Send(

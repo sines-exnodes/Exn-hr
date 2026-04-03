@@ -20,21 +20,19 @@ var testDB *gorm.DB
 
 // Service instances for tests
 var (
-	testCfg       *config.Config
-	userRepo      *repositories.UserRepository
-	empRepo       *repositories.EmployeeRepository
-	deptRepo      *repositories.DepartmentRepository
-	teamRepo      *repositories.TeamRepository
+	testCfg        *config.Config
+	userRepo       *repositories.UserRepository
+	empRepo        *repositories.EmployeeRepository
+	deptRepo       *repositories.DepartmentRepository
 	attendanceRepo *repositories.AttendanceRepository
-	leaveRepo     *repositories.LeaveRepository
-	otRepo        *repositories.OvertimeRepository
-	salaryRepo    *repositories.SalaryRepository
-	notifRepo     *repositories.NotificationRepository
+	leaveRepo      *repositories.LeaveRepository
+	otRepo         *repositories.OvertimeRepository
+	salaryRepo     *repositories.SalaryRepository
+	notifRepo      *repositories.NotificationRepository
 
 	authSvc       *services.AuthService
 	empSvc        *services.EmployeeService
 	deptSvc       *services.DepartmentService
-	teamSvc       *services.TeamService
 	attendanceSvc *services.AttendanceService
 	leaveSvc      *services.LeaveService
 	otSvc         *services.OvertimeService
@@ -43,15 +41,9 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	// Setup test database
 	setupTestDB()
-
-	// Run tests
 	code := m.Run()
-
-	// Cleanup
 	cleanupTestDB()
-
 	os.Exit(code)
 }
 
@@ -69,7 +61,6 @@ func setupTestDB() {
 		JWTExpiryHours: "24",
 	}
 
-	// Connect to default DB to create test DB
 	defaultDSN := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		testCfg.DBHost, testCfg.DBPort, testCfg.DBUser, testCfg.DBPassword, "exn_hr", testCfg.DBSSLMode,
@@ -79,13 +70,11 @@ func setupTestDB() {
 		log.Fatal("Failed to connect to default database:", err)
 	}
 
-	// Drop and recreate test DB
 	sqlDB, _ := defaultDB.DB()
 	sqlDB.Exec("DROP DATABASE IF EXISTS exn_hr_test")
 	sqlDB.Exec("CREATE DATABASE exn_hr_test")
 	sqlDB.Close()
 
-	// Connect to test DB
 	testDSN := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		testCfg.DBHost, testCfg.DBPort, testCfg.DBUser, testCfg.DBPassword, testCfg.DBName, testCfg.DBSSLMode,
@@ -97,12 +86,11 @@ func setupTestDB() {
 		log.Fatal("Failed to connect to test database:", err)
 	}
 
-	// Migrate
 	testDB.AutoMigrate(
 		&models.User{},
 		&models.Department{},
-		&models.Team{},
 		&models.Employee{},
+		&models.Dependent{},
 		&models.AttendanceRecord{},
 		&models.OfficeLocation{},
 		&models.ApprovedWiFi{},
@@ -121,7 +109,6 @@ func setupTestDB() {
 	userRepo = repositories.NewUserRepository(testDB)
 	empRepo = repositories.NewEmployeeRepository(testDB)
 	deptRepo = repositories.NewDepartmentRepository(testDB)
-	teamRepo = repositories.NewTeamRepository(testDB)
 	attendanceRepo = repositories.NewAttendanceRepository(testDB)
 	leaveRepo = repositories.NewLeaveRepository(testDB)
 	otRepo = repositories.NewOvertimeRepository(testDB)
@@ -132,7 +119,6 @@ func setupTestDB() {
 	notifSvc = services.NewNotificationService(notifRepo)
 	authSvc = services.NewAuthService(userRepo, testCfg)
 	deptSvc = services.NewDepartmentService(deptRepo)
-	teamSvc = services.NewTeamService(teamRepo, deptRepo)
 	empSvc = services.NewEmployeeService(empRepo, userRepo, notifSvc)
 	attendanceSvc = services.NewAttendanceService(attendanceRepo, empRepo, notifSvc, nil)
 	leaveSvc = services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo, nil)
@@ -154,7 +140,7 @@ func cleanTables(t *testing.T) {
 		"notifications", "salary_records", "salary_advances", "bonus",
 		"employee_allowances", "allowances", "overtime_requests",
 		"leave_balances", "leave_requests", "attendance_records",
-		"approved_wi_fis", "office_locations", "employees", "teams",
+		"approved_wi_fis", "office_locations", "dependents", "employees",
 		"departments", "users",
 	}
 	for _, table := range tables {
@@ -177,7 +163,6 @@ func seedAdmin(t *testing.T) (userID uint, employeeID uint) {
 	emp := &models.Employee{
 		UserID:          user.ID,
 		FullName:        "Test Admin",
-		Position:        "Administrator",
 		BasicSalary:     20000000,
 		InsuranceSalary: 10000000,
 	}
@@ -187,7 +172,7 @@ func seedAdmin(t *testing.T) (userID uint, employeeID uint) {
 }
 
 // seedEmployee creates a test employee with user account
-func seedEmployee(t *testing.T, email, role string, teamID *uint) (userID uint, employeeID uint) {
+func seedEmployee(t *testing.T, email, role string, deptID *uint) (userID uint, employeeID uint) {
 	t.Helper()
 	hash, _ := utils.HashPassword("password123")
 	user := &models.User{
@@ -201,8 +186,7 @@ func seedEmployee(t *testing.T, email, role string, teamID *uint) (userID uint, 
 	emp := &models.Employee{
 		UserID:          user.ID,
 		FullName:        "Employee " + email,
-		Position:        "Staff",
-		TeamID:          teamID,
+		DepartmentID:    deptID,
 		BasicSalary:     15000000,
 		InsuranceSalary: 8000000,
 	}
@@ -211,23 +195,15 @@ func seedEmployee(t *testing.T, email, role string, teamID *uint) (userID uint, 
 	return user.ID, emp.ID
 }
 
-// seedDepartmentAndTeam creates a department and team, returns their IDs
-func seedDepartmentAndTeam(t *testing.T, leaderID *uint) (deptID uint, teamID uint) {
+// seedDepartment creates a department and returns its ID
+func seedDepartment(t *testing.T) uint {
 	t.Helper()
 	dept := &models.Department{
 		Name:        "Engineering",
 		Description: "Engineering Department",
 	}
 	testDB.Create(dept)
-
-	team := &models.Team{
-		Name:         "Backend Team",
-		DepartmentID: dept.ID,
-		LeaderID:     leaderID,
-	}
-	testDB.Create(team)
-
-	return dept.ID, team.ID
+	return dept.ID
 }
 
 // seedOfficeLocation creates a test office location with approved WiFi
@@ -249,6 +225,35 @@ func seedOfficeLocation(t *testing.T) uint {
 	testDB.Create(wifi)
 
 	return loc.ID
+}
+
+// seedDepartmentWithLeaderAndEmployee is a common test setup: creates dept, leader, and employee with manager_id pointing to leader
+func seedDepartmentWithLeaderAndEmployee(t *testing.T) (leaderUserID uint, empUserID uint, deptID uint) {
+	t.Helper()
+	deptID = seedDepartment(t)
+	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, &deptID)
+
+	// Create employee with manager pointing to leader
+	hash, _ := utils.HashPassword("password123")
+	user := &models.User{
+		Email:        "emp@test.com",
+		PasswordHash: hash,
+		Role:         models.RoleEmployee,
+		IsActive:     true,
+	}
+	testDB.Create(user)
+	emp := &models.Employee{
+		UserID:          user.ID,
+		FullName:        "Employee emp@test.com",
+		DepartmentID:    &deptID,
+		ManagerID:       &leaderEmpID,
+		BasicSalary:     15000000,
+		InsuranceSalary: 8000000,
+	}
+	testDB.Create(emp)
+	empUserID = user.ID
+
+	return leaderUserID, empUserID, deptID
 }
 
 func getTestEnv(key, fallback string) string {

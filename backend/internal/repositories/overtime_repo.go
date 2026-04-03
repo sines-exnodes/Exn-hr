@@ -20,7 +20,7 @@ func (r *OvertimeRepository) Create(req *models.OvertimeRequest) error {
 
 func (r *OvertimeRepository) FindByID(id uint) (*models.OvertimeRequest, error) {
 	var req models.OvertimeRequest
-	err := r.db.Preload("Employee.User").Preload("Employee.Team").First(&req, id).Error
+	err := r.db.Preload("Employee.User").Preload("Employee.Department").Preload("Employee.Manager").First(&req, id).Error
 	return &req, err
 }
 

@@ -57,7 +57,6 @@ func TestCreateLeaveRequest_InsufficientBalance(t *testing.T) {
 	cleanTables(t)
 	userID, _ := seedEmployee(t, "nobalance@test.com", models.RoleEmployee, nil)
 
-	// Request more than 12 days (annual limit)
 	_, err := leaveSvc.Create(userID, dto.CreateLeaveReq{
 		Type:      "paid",
 		StartDate: "2026-04-01",
@@ -74,14 +73,9 @@ func TestCreateLeaveRequest_InsufficientBalance(t *testing.T) {
 func TestLeaveApprovalFlow_LeaderThenHR(t *testing.T) {
 	cleanTables(t)
 
-	// Setup: Leader, Employee in same team, HR user
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 	hrUserID, _ := seedEmployee(t, "hr@test.com", models.RoleHR, nil)
 
-	// Employee creates leave request
 	leave, err := leaveSvc.Create(empUserID, dto.CreateLeaveReq{
 		Type:      "paid",
 		StartDate: "2026-04-01",
@@ -93,7 +87,6 @@ func TestLeaveApprovalFlow_LeaderThenHR(t *testing.T) {
 		t.Fatalf("create leave failed: %v", err)
 	}
 
-	// Verify initial status
 	if leave.LeaderStatus != "pending" {
 		t.Errorf("expected leader_status 'pending', got '%s'", leave.LeaderStatus)
 	}
@@ -126,15 +119,12 @@ func TestLeaveApprovalFlow_LeaderThenHR(t *testing.T) {
 func TestLeaveApproval_LeaderReject(t *testing.T) {
 	cleanTables(t)
 
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 
 	leave, _ := leaveSvc.Create(empUserID, dto.CreateLeaveReq{
 		Type: "paid", StartDate: "2026-04-01", EndDate: "2026-04-02", Days: 1,
 	})
 
-	// Leader rejects
 	leave, err := leaveSvc.ApproveByLeader(leaderUserID, leave.ID, dto.ApproveLeaveReq{Status: "rejected"})
 	if err != nil {
 		t.Fatalf("leader reject failed: %v", err)
@@ -154,7 +144,6 @@ func TestLeaveApproval_HRCannotApproveBeforeLeader(t *testing.T) {
 		Type: "paid", StartDate: "2026-04-01", EndDate: "2026-04-02", Days: 1,
 	})
 
-	// HR tries to approve before leader
 	_, err := leaveSvc.ApproveByHR(hrUserID, leave.ID, dto.ApproveLeaveReq{Status: "approved"})
 	if err == nil {
 		t.Fatal("expected error when HR approves before leader, got nil")
@@ -186,19 +175,15 @@ func TestGetLeaveBalance(t *testing.T) {
 func TestLeaveBalance_DecreasesAfterApproval(t *testing.T) {
 	cleanTables(t)
 
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 	hrUserID, _ := seedEmployee(t, "hr@test.com", models.RoleHR, nil)
 
-	// Create and fully approve a 2-day paid leave
 	leave, _ := leaveSvc.Create(empUserID, dto.CreateLeaveReq{
 		Type: "paid", StartDate: "2026-04-01", EndDate: "2026-04-02", Days: 2,
 	})
 	leaveSvc.ApproveByLeader(leaderUserID, leave.ID, dto.ApproveLeaveReq{Status: "approved"})
 	leaveSvc.ApproveByHR(hrUserID, leave.ID, dto.ApproveLeaveReq{Status: "approved"})
 
-	// Check balance
 	balance, err := leaveSvc.GetBalance(empUserID, 2026)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -224,7 +209,6 @@ func TestCancelLeave_Success(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	// Verify deleted
 	_, err = leaveSvc.GetByID(leave.ID)
 	if err == nil {
 		t.Error("expected error after cancellation, got nil")
@@ -234,9 +218,7 @@ func TestCancelLeave_Success(t *testing.T) {
 func TestCancelLeave_CannotCancelApproved(t *testing.T) {
 	cleanTables(t)
 
-	leaderUserID, leaderEmpID := seedEmployee(t, "leader@test.com", models.RoleLeader, nil)
-	_, teamID := seedDepartmentAndTeam(t, &leaderEmpID)
-	empUserID, _ := seedEmployee(t, "emp@test.com", models.RoleEmployee, &teamID)
+	leaderUserID, empUserID, _ := seedDepartmentWithLeaderAndEmployee(t)
 	hrUserID, _ := seedEmployee(t, "hr@test.com", models.RoleHR, nil)
 
 	leave, _ := leaveSvc.Create(empUserID, dto.CreateLeaveReq{

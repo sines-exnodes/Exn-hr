@@ -24,13 +24,13 @@ func (r *EmployeeRepository) CreateEmployee(emp *models.Employee) error {
 
 func (r *EmployeeRepository) FindByID(id uint) (*models.Employee, error) {
 	var emp models.Employee
-	err := r.db.Preload("User").Preload("Team.Department").First(&emp, id).Error
+	err := r.db.Preload("User").Preload("Department").Preload("Manager").Preload("Dependents").First(&emp, id).Error
 	return &emp, err
 }
 
 func (r *EmployeeRepository) FindByUserID(userID uint) (*models.Employee, error) {
 	var emp models.Employee
-	err := r.db.Preload("User").Preload("Team").Where("user_id = ?", userID).First(&emp).Error
+	err := r.db.Preload("User").Preload("Department").Preload("Manager").Preload("Dependents").Where("user_id = ?", userID).First(&emp).Error
 	return &emp, err
 }
 
@@ -48,14 +48,10 @@ func (r *EmployeeRepository) List(filter dto.EmployeeFilter) ([]models.Employee,
 
 	q := r.db.Model(&models.Employee{}).
 		Joins("JOIN users ON users.id = employees.user_id").
-		Preload("User").Preload("Team.Department")
+		Preload("User").Preload("Department")
 
-	if filter.TeamID != nil {
-		q = q.Where("employees.team_id = ?", *filter.TeamID)
-	}
 	if filter.DepartmentID != nil {
-		q = q.Joins("JOIN teams ON teams.id = employees.team_id").
-			Where("teams.department_id = ?", *filter.DepartmentID)
+		q = q.Where("employees.department_id = ?", *filter.DepartmentID)
 	}
 	if filter.Role != "" {
 		q = q.Where("users.role = ?", filter.Role)
@@ -87,7 +83,6 @@ func (r *EmployeeRepository) GetAllowances(employeeID uint) ([]models.EmployeeAl
 }
 
 func (r *EmployeeRepository) SetAllowance(ea *models.EmployeeAllowance) error {
-	// Upsert by employee_id + allowance_id
 	var existing models.EmployeeAllowance
 	err := r.db.Where("employee_id = ? AND allowance_id = ?", ea.EmployeeID, ea.AllowanceID).First(&existing).Error
 	if err == gorm.ErrRecordNotFound {
@@ -100,4 +95,30 @@ func (r *EmployeeRepository) SetAllowance(ea *models.EmployeeAllowance) error {
 func (r *EmployeeRepository) DeleteAllowance(employeeID, allowanceID uint) error {
 	return r.db.Where("employee_id = ? AND allowance_id = ?", employeeID, allowanceID).
 		Delete(&models.EmployeeAllowance{}).Error
+}
+
+// --- Dependent ---
+
+func (r *EmployeeRepository) CreateDependent(dep *models.Dependent) error {
+	return r.db.Create(dep).Error
+}
+
+func (r *EmployeeRepository) FindDependentByID(id uint) (*models.Dependent, error) {
+	var dep models.Dependent
+	err := r.db.First(&dep, id).Error
+	return &dep, err
+}
+
+func (r *EmployeeRepository) ListDependents(employeeID uint) ([]models.Dependent, error) {
+	var deps []models.Dependent
+	err := r.db.Where("employee_id = ?", employeeID).Find(&deps).Error
+	return deps, err
+}
+
+func (r *EmployeeRepository) UpdateDependent(dep *models.Dependent) error {
+	return r.db.Save(dep).Error
+}
+
+func (r *EmployeeRepository) DeleteDependent(id uint) error {
+	return r.db.Delete(&models.Dependent{}, id).Error
 }

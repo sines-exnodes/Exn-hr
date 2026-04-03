@@ -30,8 +30,8 @@ func main() {
 	db.AutoMigrate(
 		&models.User{},
 		&models.Department{},
-		&models.Team{},
 		&models.Employee{},
+		&models.Dependent{},
 		&models.AttendanceRecord{},
 		&models.OfficeLocation{},
 		&models.ApprovedWiFi{},
@@ -63,7 +63,6 @@ func main() {
 	// --- Repositories ---
 	userRepo := repositories.NewUserRepository(db)
 	deptRepo := repositories.NewDepartmentRepository(db)
-	teamRepo := repositories.NewTeamRepository(db)
 	empRepo := repositories.NewEmployeeRepository(db)
 	attendanceRepo := repositories.NewAttendanceRepository(db)
 	leaveRepo := repositories.NewLeaveRepository(db)
@@ -78,20 +77,19 @@ func main() {
 
 	authService := services.NewAuthService(userRepo, cfg)
 	deptSvc := services.NewDepartmentService(deptRepo)
-	teamSvc := services.NewTeamService(teamRepo, deptRepo)
 	empSvc := services.NewEmployeeService(empRepo, userRepo, notifSvc)
 	attendanceSvc := services.NewAttendanceService(attendanceRepo, empRepo, notifSvc, sseHub)
 	leaveSvc := services.NewLeaveService(leaveRepo, empRepo, notifSvc, userRepo, sseHub)
 	otSvc := services.NewOvertimeService(otRepo, empRepo, notifSvc, userRepo, sseHub)
 	salarySvc := services.NewSalaryService(salaryRepo, empRepo, otRepo, notifSvc)
-	projectSvc := services.NewProjectService(projectRepo)
+	projectSvc := services.NewProjectService(projectRepo, empRepo)
 	announcementSvc := services.NewAnnouncementService(announcementRepo, projectRepo, empRepo, userRepo, notifSvc)
 
 	// --- Handlers ---
 	authHandler := handlers.NewAuthHandler(authService)
 	deptHandler := handlers.NewDepartmentHandler(deptSvc)
-	teamHandler := handlers.NewTeamHandler(teamSvc)
 	empHandler := handlers.NewEmployeeHandler(empSvc)
+	uploadHandler := handlers.NewUploadHandler(cfg)
 	attendanceHandler := handlers.NewAttendanceHandler(attendanceSvc)
 	leaveHandler := handlers.NewLeaveHandler(leaveSvc)
 	otHandler := handlers.NewOvertimeHandler(otSvc)
@@ -155,16 +153,8 @@ func main() {
 				depts.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin), deptHandler.Delete)
 			}
 
-			// --- Teams — Admin/HR/CEO ---
-			teams := protected.Group("/teams")
-			teams.Use(middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader))
-			{
-				teams.GET("", teamHandler.List)
-				teams.GET("/:id", teamHandler.GetByID)
-				teams.POST("", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), teamHandler.Create)
-				teams.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), teamHandler.Update)
-				teams.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin), teamHandler.Delete)
-			}
+			// --- Upload (Cloudinary) ---
+			protected.POST("/upload", uploadHandler.Upload)
 
 			// --- Employees management — Admin/HR ---
 			employees := protected.Group("/employees")
@@ -179,6 +169,12 @@ func main() {
 				employees.GET("/:id/allowances", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.GetAllowances)
 				employees.POST("/:id/allowances", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.SetAllowance)
 				employees.DELETE("/:id/allowances/:allowance_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.DeleteAllowance)
+
+				// Dependents per employee
+				employees.GET("/:id/dependents", empHandler.ListDependents)
+				employees.POST("/:id/dependents", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.CreateDependent)
+				employees.PUT("/:id/dependents/:dep_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.UpdateDependent)
+				employees.DELETE("/:id/dependents/:dep_id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR), empHandler.DeleteDependent)
 			}
 
 			// --- Attendance ---
@@ -257,6 +253,8 @@ func main() {
 			}
 
 			// --- Projects ---
+			// /me must be registered BEFORE /:id to avoid Gin routing conflict
+			protected.GET("/projects/me", projectHandler.GetMyProjects)
 			projects := protected.Group("/projects")
 			{
 				projects.GET("", projectHandler.List)
@@ -273,10 +271,13 @@ func main() {
 			}
 
 			// --- Milestones (separate group to avoid Gin wildcard conflicts) ---
+			// /upcoming must be registered BEFORE /:id to avoid Gin routing conflict
+			protected.GET("/milestones/upcoming", projectHandler.GetUpcomingMilestones)
 			milestones := protected.Group("/milestones")
 			{
 				milestones.PUT("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.UpdateMilestone)
 				milestones.DELETE("/:id", middleware.RoleRequired(models.RoleAdmin, models.RoleHR, models.RoleCEO, models.RoleLeader), projectHandler.DeleteMilestone)
+				milestones.PUT("/:id/items/:item_id/toggle", projectHandler.ToggleMilestoneItem)
 			}
 
 			// --- Announcements ---
@@ -349,7 +350,6 @@ func seedAdmin(db *gorm.DB) {
 	empProfile := models.Employee{
 		UserID:   admin.ID,
 		FullName: "System Admin",
-		Position: "Administrator",
 	}
 	db.Create(&empProfile)
 	log.Println("Default admin created: admin@exn.vn / admin123")

@@ -20,7 +20,7 @@ func (r *LeaveRepository) Create(req *models.LeaveRequest) error {
 
 func (r *LeaveRepository) FindByID(id uint) (*models.LeaveRequest, error) {
 	var req models.LeaveRequest
-	err := r.db.Preload("Employee.User").Preload("Employee.Team").First(&req, id).Error
+	err := r.db.Preload("Employee.User").Preload("Employee.Department").Preload("Employee.Manager").First(&req, id).Error
 	return &req, err
 }
 

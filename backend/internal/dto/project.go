@@ -1,5 +1,11 @@
 package dto
 
+type ProjectFilter struct {
+	Status string `form:"status"`
+	Page   int    `form:"page,default=1"`
+	Size   int    `form:"size,default=10"`
+}
+
 type CreateProjectReq struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
