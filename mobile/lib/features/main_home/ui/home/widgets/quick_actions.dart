@@ -45,30 +45,75 @@ class QuickActions extends StatelessWidget {
         route: AppRoutes.attendanceHistory,
         needsRefresh: false,
       ),
+      _QuickAction(
+        label: 'Dự án',
+        icon: Icons.folder_open_rounded,
+        color: const Color(0xFF059669),
+        bgColor: const Color(0xFFD1FAE5),
+        route: AppRoutes.myProjects,
+        needsRefresh: false,
+      ),
     ];
 
+    final firstRow = actions.sublist(0, 3);
+    final secondRow = actions.sublist(3);
+
+    Widget buildRow(List<_QuickAction> rowActions, int startIndex) {
+      return Row(
+        children: rowActions
+            .asMap()
+            .entries
+            .map((e) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: e.key < rowActions.length - 1 ? 10.w : 0,
+                    ),
+                    child: _QuickActionCard(
+                      action: e.value,
+                      index: startIndex + e.key,
+                      onActionPush: onActionPush,
+                    ),
+                  ),
+                ))
+            .toList(),
+      );
+    }
+
+    // Second row: 2 items sized to match the top-row card width (1/3 of available width each)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Thao tác nhanh', style: AppTextStyles.h4),
         SizedBox(height: 14.w),
-        Row(
-          children: actions
-              .asMap()
-              .entries
-              .map((e) => Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: e.key < actions.length - 1 ? 10.w : 0,
-                      ),
-                      child: _QuickActionCard(
-                        action: e.value,
-                        index: e.key,
-                        onActionPush: onActionPush,
-                      ),
-                    ),
-                  ))
-              .toList(),
+        buildRow(firstRow, 0),
+        SizedBox(height: 10.w),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final totalWidth = constraints.maxWidth;
+            final itemWidth =
+                (totalWidth - 10.w * 2) / 3; // 3 items with 2 gaps of 10w
+            return Row(
+              children: [
+                SizedBox(
+                  width: itemWidth,
+                  child: _QuickActionCard(
+                    action: secondRow[0],
+                    index: 3,
+                    onActionPush: onActionPush,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                SizedBox(
+                  width: itemWidth,
+                  child: _QuickActionCard(
+                    action: secondRow[1],
+                    index: 4,
+                    onActionPush: onActionPush,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );

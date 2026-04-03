@@ -315,7 +315,13 @@ class _MilestonesSection extends StatelessWidget {
           ...sorted.map(
             (m) => Padding(
               padding: EdgeInsets.only(bottom: 10.w),
-              child: MilestoneItemWidget(milestone: m, compact: false),
+              child: MilestoneItemWidget(
+                milestone: m,
+                compact: false,
+                onItemToggle: (milestoneId, itemId) => context
+                    .read<ProjectDetailCubit>()
+                    .toggleMilestoneItem(milestoneId, itemId),
+              ),
             ),
           ),
       ],

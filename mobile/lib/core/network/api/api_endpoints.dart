@@ -48,6 +48,8 @@ class ApiEndpoints {
   static String projectById(int id) => '/projects/$id';
   static String projectMembers(int id) => '/projects/$id/members';
   static String projectMilestones(int id) => '/projects/$id/milestones';
+  static String toggleMilestoneItem(int milestoneId, int itemId) =>
+      '/milestones/$milestoneId/items/$itemId/toggle';
 
   // Announcements
   static const String myAnnouncements = '/announcements/me';

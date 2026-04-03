@@ -7,6 +7,7 @@ import 'package:exn_hr/features/main_home/ui/home/view_models/home_state.dart';
 import 'package:exn_hr/features/main_home/ui/home/widgets/check_in_card.dart';
 import 'package:exn_hr/features/main_home/ui/home/widgets/quick_actions.dart';
 import 'package:exn_hr/features/main_home/ui/home/widgets/recent_activity.dart';
+import 'package:exn_hr/features/main_home/ui/home/widgets/upcoming_milestones.dart';
 import 'package:exn_hr/features/leave/ui/list/views/leave_list_page.dart';
 import 'package:exn_hr/features/overtime/ui/list/views/ot_list_page.dart';
 import 'package:exn_hr/features/profile/ui/view/views/profile_page.dart';
@@ -142,6 +143,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     SizedBox(height: 24.w),
                     QuickActions(onActionPush: _pushAndRefresh),
                     SizedBox(height: 24.w),
+                    UpcomingMilestones(milestones: state.upcomingMilestones),
+                    if (state.upcomingMilestones.isNotEmpty) SizedBox(height: 24.w),
                     RecentActivity(items: state.activities),
                     SizedBox(height: 24.w),
                   ]),
