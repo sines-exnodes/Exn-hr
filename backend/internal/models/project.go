@@ -44,9 +44,11 @@ type Milestone struct {
 }
 
 type MilestoneItem struct {
-	ID           uint   `gorm:"primaryKey" json:"id"`
-	MilestoneID  uint   `gorm:"not null" json:"milestone_id"`
-	Content      string `gorm:"not null" json:"content"`
-	IsCompleted  bool   `gorm:"default:false" json:"is_completed"`
-	DisplayOrder int    `gorm:"default:0" json:"display_order"`
+	ID           uint      `gorm:"primaryKey" json:"id"`
+	MilestoneID  uint      `gorm:"not null" json:"milestone_id"`
+	Content      string    `gorm:"not null" json:"content"`
+	IsCompleted  bool      `gorm:"default:false" json:"is_completed"`
+	DisplayOrder int       `gorm:"default:0" json:"display_order"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }

@@ -145,11 +145,10 @@ func (r *AnnouncementRepository) FindPollByAnnouncementID(announcementID uint) (
 
 // --- Poll Vote ---
 
-func (r *AnnouncementRepository) FindVotesByEmployee(pollID, employeeID uint) ([]models.PollVote, error) {
+func (r *AnnouncementRepository) FindVotesByUser(pollID, userID uint) ([]models.PollVote, error) {
 	var votes []models.PollVote
 	err := r.db.
-		Joins("JOIN poll_options ON poll_options.id = poll_votes.poll_option_id").
-		Where("poll_options.poll_id = ? AND poll_votes.employee_id = ?", pollID, employeeID).
+		Where("poll_id = ? AND user_id = ?", pollID, userID).
 		Find(&votes).Error
 	return votes, err
 }
@@ -169,10 +168,9 @@ func (r *AnnouncementRepository) IncrementOptionVoteCount(optionID uint) error {
 func (r *AnnouncementRepository) GetPollVoters(pollID uint) ([]models.PollVote, error) {
 	var votes []models.PollVote
 	err := r.db.
-		Preload("Employee").
-		Preload("PollOption").
-		Joins("JOIN poll_options ON poll_options.id = poll_votes.poll_option_id").
-		Where("poll_options.poll_id = ?", pollID).
+		Preload("User").
+		Preload("Option").
+		Where("poll_id = ?", pollID).
 		Find(&votes).Error
 	return votes, err
 }

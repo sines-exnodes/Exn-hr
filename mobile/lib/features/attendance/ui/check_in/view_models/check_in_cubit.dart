@@ -23,6 +23,41 @@ class CheckInCubit extends Cubit<CheckInState> {
     ));
   }
 
+  Future<void> getToday() async {
+    final result = await _checkInUseCase.getToday();
+    if (isClosed) return;
+    result.fold(
+      (_) {},
+      (record) {
+        if (record != null && record.checkOutTime == null) {
+          emit(state.copyWith(isCheckedIn: true, record: record));
+        }
+      },
+    );
+  }
+
+  Future<void> checkOut() async {
+    if (state.latitude == null || state.longitude == null) return;
+    emit(state.copyWith(status: CheckInStatus.loading));
+    final result = await _checkInUseCase.checkOut(
+      latitude: state.latitude!,
+      longitude: state.longitude!,
+      wifiSsid: state.wifiSsid,
+    );
+    if (isClosed) return;
+    result.fold(
+      (error) => emit(state.copyWith(
+        status: CheckInStatus.failure,
+        errorMessage: error.message,
+      )),
+      (record) => emit(state.copyWith(
+        status: CheckInStatus.success,
+        isCheckedIn: false,
+        record: record,
+      )),
+    );
+  }
+
   Future<void> checkIn() async {
     if (state.latitude == null || state.longitude == null) return;
     emit(state.copyWith(status: CheckInStatus.loading));

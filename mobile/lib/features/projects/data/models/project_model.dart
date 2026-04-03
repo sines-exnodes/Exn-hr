@@ -3,7 +3,7 @@ class ProjectModel {
     required this.id,
     required this.name,
     required this.status,
-    required this.startDate,
+    this.startDate,
     this.description,
     this.endDate,
     this.milestones = const [],
@@ -13,7 +13,7 @@ class ProjectModel {
   final int id;
   final String name;
   final String status;
-  final String startDate;
+  final String? startDate;
   final String? description;
   final String? endDate;
   final List<MilestoneModel> milestones;
@@ -21,16 +21,16 @@ class ProjectModel {
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
     return ProjectModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
-      startDate: json['start_date'] as String,
+      startDate: json['start_date'] as String?,
       description: json['description'] as String?,
       endDate: json['end_date'] as String?,
       milestones: (json['milestones'] as List<dynamic>? ?? [])
           .map((e) => MilestoneModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      members: (json['members'] as List<dynamic>? ?? [])
+      members: (json['assignments'] as List<dynamic>? ?? [])
           .map((e) => ProjectMemberModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -57,12 +57,12 @@ class ProjectMemberModel {
   factory ProjectMemberModel.fromJson(Map<String, dynamic> json) {
     final employee = json['employee'] as Map<String, dynamic>?;
     return ProjectMemberModel(
-      id: json['id'] as int,
-      projectId: json['project_id'] as int,
-      employeeId: json['employee_id'] as int,
-      projectRole: json['project_role'] as String? ?? 'other',
+      id: (json['id'] as num).toInt(),
+      projectId: (json['project_id'] as num).toInt(),
+      employeeId: (json['employee_id'] as num).toInt(),
+      projectRole: json['role'] as String? ?? 'other',
       employeeName: employee?['full_name'] as String?,
-      joinedAt: json['joined_at'] as String?,
+      joinedAt: json['joined_at'] as String? ?? json['start_date'] as String?,
     );
   }
 }
@@ -84,11 +84,11 @@ class MilestoneItemModel {
 
   factory MilestoneItemModel.fromJson(Map<String, dynamic> json) {
     return MilestoneItemModel(
-      id: json['id'] as int,
-      milestoneId: json['milestone_id'] as int,
-      content: json['content'] as String,
+      id: (json['id'] as num).toInt(),
+      milestoneId: (json['milestone_id'] as num).toInt(),
+      content: json['content'] as String? ?? '',
       isCompleted: json['is_completed'] as bool? ?? false,
-      displayOrder: json['display_order'] as int? ?? 0,
+      displayOrder: (json['display_order'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -98,8 +98,8 @@ class MilestoneModel {
     required this.id,
     required this.projectId,
     required this.title,
-    required this.deadline,
     required this.status,
+    this.deadline,
     this.description,
     this.completedAt,
     this.projectName,
@@ -109,7 +109,7 @@ class MilestoneModel {
   final int id;
   final int projectId;
   final String title;
-  final String deadline;
+  final String? deadline;
   final String status;
   final String? description;
   final String? completedAt;
@@ -119,10 +119,10 @@ class MilestoneModel {
   factory MilestoneModel.fromJson(Map<String, dynamic> json) {
     final project = json['project'] as Map<String, dynamic>?;
     return MilestoneModel(
-      id: json['id'] as int,
-      projectId: json['project_id'] as int,
-      title: json['title'] as String,
-      deadline: json['deadline'] as String,
+      id: (json['id'] as num).toInt(),
+      projectId: (json['project_id'] as num).toInt(),
+      title: json['title'] as String? ?? '',
+      deadline: json['deadline'] as String?,
       status: json['status'] as String? ?? 'upcoming',
       description: json['description'] as String?,
       completedAt: json['completed_at'] as String?,

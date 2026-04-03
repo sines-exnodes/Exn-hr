@@ -239,13 +239,8 @@ func (s *AnnouncementService) Vote(pollID uint, userID uint, req dto.SubmitVoteR
 		return errors.New("poll is closed")
 	}
 
-	emp, err := s.empRepo.FindByUserID(userID)
-	if err != nil {
-		return errors.New("employee profile not found")
-	}
-
 	// Check if already voted
-	existingVotes, err := s.announcementRepo.FindVotesByEmployee(pollID, emp.ID)
+	existingVotes, err := s.announcementRepo.FindVotesByUser(pollID, userID)
 	if err == nil && len(existingVotes) > 0 {
 		return errors.New("you have already voted in this poll")
 	}
@@ -268,12 +263,11 @@ func (s *AnnouncementService) Vote(pollID uint, userID uint, req dto.SubmitVoteR
 	}
 
 	// Record votes
-	now := time.Now()
 	for _, optID := range req.OptionIDs {
 		vote := &models.PollVote{
-			PollOptionID: optID,
-			EmployeeID:   emp.ID,
-			VotedAt:      now,
+			PollID:   pollID,
+			OptionID: optID,
+			UserID:   userID,
 		}
 		if err := s.announcementRepo.CreateVote(vote); err != nil {
 			return errors.New("failed to record vote")
@@ -294,18 +288,13 @@ func (s *AnnouncementService) GetPollResults(pollID uint, userID uint, isAdminOr
 		return nil, errors.New("poll not found")
 	}
 
-	emp, err := s.empRepo.FindByUserID(userID)
-	if err != nil {
-		return nil, errors.New("employee profile not found")
-	}
-
 	// Check if user has voted
-	myVotes, _ := s.announcementRepo.FindVotesByEmployee(pollID, emp.ID)
+	myVotes, _ := s.announcementRepo.FindVotesByUser(pollID, userID)
 	hasVoted := len(myVotes) > 0
 
 	myVoteOptionIDs := make([]uint, 0, len(myVotes))
 	for _, v := range myVotes {
-		myVoteOptionIDs = append(myVoteOptionIDs, v.PollOptionID)
+		myVoteOptionIDs = append(myVoteOptionIDs, v.OptionID)
 	}
 
 	isClosed := poll.Status == models.PollStatusClosed ||
@@ -357,14 +346,14 @@ func (s *AnnouncementService) GetPollResults(pollID uint, userID uint, isAdminOr
 			voterInfos := make([]dto.VoterInfo, 0, len(voters))
 			for _, v := range voters {
 				info := dto.VoterInfo{
-					EmployeeID: v.EmployeeID,
-					OptionID:   v.PollOptionID,
+					EmployeeID: v.UserID,
+					OptionID:   v.OptionID,
 				}
-				if v.Employee != nil {
-					info.EmployeeName = v.Employee.FullName
+				if v.User != nil {
+					info.EmployeeName = v.User.Email
 				}
-				if v.PollOption != nil {
-					info.OptionText = v.PollOption.Text
+				if v.Option != nil {
+					info.OptionText = v.Option.Text
 				}
 				voterInfos = append(voterInfos, info)
 			}

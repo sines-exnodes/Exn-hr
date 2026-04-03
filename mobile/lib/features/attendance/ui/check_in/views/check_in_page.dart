@@ -14,7 +14,9 @@ class CheckInPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<CheckInCubit>()..detectLocation(),
+      create: (_) => getIt<CheckInCubit>()
+        ..detectLocation()
+        ..getToday(),
       child: const _CheckInView(),
     );
   }
@@ -77,7 +79,11 @@ class _CheckInView extends StatelessWidget {
   Widget _buildBigButton(BuildContext context, CheckInState state) {
     final isLoading = state.status == CheckInStatus.loading;
     return GestureDetector(
-      onTap: isLoading ? null : () => context.read<CheckInCubit>().checkIn(),
+      onTap: isLoading
+          ? null
+          : () => state.isCheckedIn
+              ? context.read<CheckInCubit>().checkOut()
+              : context.read<CheckInCubit>().checkIn(),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         width: 200.w,

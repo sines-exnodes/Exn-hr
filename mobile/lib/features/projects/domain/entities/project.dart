@@ -24,7 +24,7 @@ class Project extends Equatable {
     required this.id,
     required this.name,
     required this.status,
-    required this.startDate,
+    this.startDate,
     this.description,
     this.endDate,
     this.milestones = const [],
@@ -34,7 +34,7 @@ class Project extends Equatable {
   final int id;
   final String name;
   final String status;
-  final String startDate;
+  final String? startDate;
   final String? description;
   final String? endDate;
   final List<Milestone> milestones;
@@ -70,8 +70,8 @@ class Milestone extends Equatable {
     required this.id,
     required this.projectId,
     required this.title,
-    required this.deadline,
     required this.status,
+    this.deadline,
     this.description,
     this.completedAt,
     this.projectName,
@@ -81,7 +81,7 @@ class Milestone extends Equatable {
   final int id;
   final int projectId;
   final String title;
-  final String deadline;
+  final String? deadline;
   final String status;
   final String? description;
   final String? completedAt;
@@ -89,13 +89,15 @@ class Milestone extends Equatable {
   final List<MilestoneItem> items;
 
   bool get isOverdue {
-    final deadlineDate = DateTime.tryParse(deadline);
+    if (deadline == null) return false;
+    final deadlineDate = DateTime.tryParse(deadline!);
     if (deadlineDate == null) return false;
     return deadlineDate.isBefore(DateTime.now()) && status != 'completed';
   }
 
   bool get isUpcoming {
-    final deadlineDate = DateTime.tryParse(deadline);
+    if (deadline == null) return false;
+    final deadlineDate = DateTime.tryParse(deadline!);
     if (deadlineDate == null) return false;
     final now = DateTime.now();
     return deadlineDate.isAfter(now) &&

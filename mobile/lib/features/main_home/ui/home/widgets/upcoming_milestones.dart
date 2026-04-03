@@ -145,7 +145,7 @@ class _MilestoneTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                _formatDeadline(milestone.deadline),
+                _formatDeadline(milestone.deadline ?? ''),
                 style: AppTextStyles.caption.copyWith(
                   color: _statusColor,
                   fontWeight: FontWeight.w600,

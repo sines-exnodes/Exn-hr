@@ -19,7 +19,7 @@ class ProjectCard extends StatelessWidget {
     final upcomingMilestones = project.milestones
         .where((m) => m.status == 'upcoming' || m.status == 'in_progress')
         .toList()
-      ..sort((a, b) => a.deadline.compareTo(b.deadline));
+      ..sort((a, b) => (a.deadline ?? '').compareTo(b.deadline ?? ''));
 
     return Material(
       color: AppColors.surface,
@@ -64,7 +64,7 @@ class ProjectCard extends StatelessWidget {
                         ),
                         SizedBox(height: 2.w),
                         Text(
-                          '${project.startDate}${project.endDate != null ? ' — ${project.endDate}' : ''}',
+                          '${project.startDate ?? ''}${project.endDate != null ? ' — ${project.endDate}' : ''}',
                           style: AppTextStyles.caption
                               .copyWith(color: AppColors.textSecondary),
                         ),
@@ -220,7 +220,7 @@ class MilestoneItemWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    _formatDate(milestone.deadline),
+                    _formatDate(milestone.deadline ?? ''),
                     style: AppTextStyles.caption.copyWith(
                       color: milestone.isOverdue
                           ? AppColors.error

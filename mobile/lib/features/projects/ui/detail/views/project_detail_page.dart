@@ -136,7 +136,7 @@ class _ProjectHeader extends StatelessWidget {
                   size: 14.sp, color: AppColors.textSecondary),
               SizedBox(width: 6.w),
               Text(
-                'Bắt đầu: ${project.startDate}',
+                'Bắt đầu: ${project.startDate ?? 'N/A'}',
                 style: AppTextStyles.caption
                     .copyWith(color: AppColors.textSecondary),
               ),
@@ -300,7 +300,7 @@ class _MilestonesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sorted = [...milestones]
-      ..sort((a, b) => a.deadline.compareTo(b.deadline));
+      ..sort((a, b) => (a.deadline ?? '').compareTo(b.deadline ?? ''));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

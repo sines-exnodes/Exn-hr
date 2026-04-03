@@ -48,6 +48,20 @@ func (s *AuthService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 	}, nil
 }
 
+// GetMe returns user info for the /auth/me endpoint.
+func (s *AuthService) GetMe(userID uint) (*dto.UserResponse, error) {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+	return &dto.UserResponse{
+		ID:       user.ID,
+		Email:    user.Email,
+		Role:     user.Role,
+		IsActive: user.IsActive,
+	}, nil
+}
+
 // ForgotPassword currently acknowledges requests without exposing account existence.
 // Email delivery/reset token storage can be plugged in later.
 func (s *AuthService) ForgotPassword(req dto.ForgotPasswordRequest) error {

@@ -27,7 +27,7 @@ type Announcement struct {
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 
-	Creator *Employee `gorm:"foreignKey:CreatedBy" json:"creator,omitempty"`
+	Creator *User `gorm:"foreignKey:CreatedBy" json:"creator,omitempty"`
 	Poll    *Poll     `gorm:"foreignKey:AnnouncementID" json:"poll,omitempty"`
 }
 
@@ -57,11 +57,13 @@ type PollOption struct {
 }
 
 type PollVote struct {
-	ID           uint      `gorm:"primaryKey" json:"id"`
-	PollOptionID uint      `gorm:"not null;index" json:"poll_option_id"`
-	EmployeeID   uint      `gorm:"not null;index" json:"employee_id"`
-	VotedAt      time.Time `json:"voted_at"`
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	PollID    uint      `gorm:"not null;index" json:"poll_id"`
+	OptionID  uint      `gorm:"not null;index" json:"option_id"`
+	UserID    uint      `gorm:"not null;index" json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
 
-	PollOption *PollOption `gorm:"foreignKey:PollOptionID" json:"poll_option,omitempty"`
-	Employee   *Employee   `gorm:"foreignKey:EmployeeID" json:"employee,omitempty"`
+	Poll   *Poll       `gorm:"foreignKey:PollID" json:"poll,omitempty"`
+	Option *PollOption `gorm:"foreignKey:OptionID" json:"option,omitempty"`
+	User   *User       `gorm:"foreignKey:UserID" json:"user,omitempty"`
 }

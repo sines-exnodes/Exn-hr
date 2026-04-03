@@ -51,13 +51,13 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 
 // GET /api/v1/auth/me
 func (h *AuthHandler) Me(c *gin.Context) {
-	userID, _ := c.Get("user_id")
-	email, _ := c.Get("email")
-	role, _ := c.Get("role")
+	userID := c.GetUint("user_id")
 
-	c.JSON(http.StatusOK, dto.OK(gin.H{
-		"user_id": userID,
-		"email":   email,
-		"role":    role,
-	}, "OK"))
+	resp, err := h.authService.GetMe(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.Err("user not found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.OK(resp, "OK"))
 }
