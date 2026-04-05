@@ -37,4 +37,22 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Right(ProfileModel.fromJson(respData).toEntity());
     } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
   }
+
+  @override
+  Future<Either<ApiError, String>> uploadFile({required String filePath, String? folder}) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
+      final queryParams = folder != null ? {'folder': folder} : null;
+      final response = await _apiClient.post(
+        ApiEndpoints.upload,
+        data: formData,
+        queryParameters: queryParams,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final url = ((response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>)['url'] as String;
+      return Right(url);
+    } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }
+  }
 }

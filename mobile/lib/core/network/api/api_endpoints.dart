@@ -57,6 +57,9 @@ class ApiEndpoints {
   static String pollVote(int pollId) => '/polls/$pollId/vote';
   static String pollResults(int pollId) => '/polls/$pollId/results';
 
+  // Upload
+  static const String upload = '/upload';
+
   // Auth — Forgot Password
   static const String forgotPassword = '/auth/forgot-password';
 }

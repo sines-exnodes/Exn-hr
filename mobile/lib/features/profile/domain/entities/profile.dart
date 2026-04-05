@@ -18,6 +18,7 @@ class Profile extends Equatable {
     this.idIssueDate,
     this.idFrontImage,
     this.idBackImage,
+    this.avatarUrl,
     this.education,
     this.maritalStatus,
     this.emergencyContactName,
@@ -57,6 +58,7 @@ class Profile extends Equatable {
   final String? idIssueDate;
   final String? idFrontImage;
   final String? idBackImage;
+  final String? avatarUrl;
   final String? education;
   final String? maritalStatus;
   final String? emergencyContactName;

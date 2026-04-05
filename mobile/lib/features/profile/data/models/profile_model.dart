@@ -14,6 +14,7 @@ class ProfileModel {
     this.idIssueDate,
     this.idFrontImage,
     this.idBackImage,
+    this.avatarUrl,
     this.education,
     this.maritalStatus,
     this.emergencyContactName,
@@ -52,6 +53,7 @@ class ProfileModel {
   final String? idIssueDate;
   final String? idFrontImage;
   final String? idBackImage;
+  final String? avatarUrl;
   final String? education;
   final String? maritalStatus;
   final String? emergencyContactName;
@@ -94,6 +96,7 @@ class ProfileModel {
       idIssueDate: json['id_issue_date'] as String?,
       idFrontImage: json['id_front_image'] as String?,
       idBackImage: json['id_back_image'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
       education: json['education'] as String?,
       maritalStatus: json['marital_status'] as String?,
       emergencyContactName: json['emergency_contact_name'] as String?,

@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:exn_hr/config/di.dart';
 import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/features/profile/domain/entities/profile.dart';
+import 'package:exn_hr/features/profile/domain/repositories/profile_repository.dart';
 import 'package:exn_hr/features/profile/domain/usecases/update_profile_usecase.dart';
 import 'package:exn_hr/features/profile/ui/edit/view_models/edit_profile_cubit.dart';
 import 'package:exn_hr/features/profile/ui/edit/view_models/edit_profile_state.dart';
@@ -13,6 +16,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:exn_hr/core/utils/date_utils.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class EditProfilePage extends StatelessWidget {
@@ -25,6 +29,7 @@ class EditProfilePage extends StatelessWidget {
     return BlocProvider(
       create: (_) => EditProfileCubit(
         updateProfileUseCase: getIt<UpdateProfileUseCase>(),
+        profileRepository: getIt<ProfileRepository>(),
         profile: profile,
       ),
       child: const _EditProfileView(),
@@ -50,6 +55,14 @@ class _EditProfileViewState extends State<_EditProfileView> {
   late final TextEditingController _bankHolderController;
   String _selectedGender = '';
   String _dobApiValue = '';
+  String _avatarUrl = '';
+  String _idFrontImage = '';
+  String _idBackImage = '';
+  // Local file paths pending upload (only uploaded on save)
+  String? _avatarLocalPath;
+  String? _idFrontLocalPath;
+  String? _idBackLocalPath;
+  final _imagePicker = ImagePicker();
 
   static const _genderOptions = ['male', 'female', 'other'];
 
@@ -70,6 +83,9 @@ class _EditProfileViewState extends State<_EditProfileView> {
     _bankNameController = TextEditingController(text: profile.bankName ?? '');
     _bankHolderController = TextEditingController(text: profile.bankHolderName ?? '');
     _selectedGender = profile.gender ?? '';
+    _avatarUrl = profile.avatarUrl ?? '';
+    _idFrontImage = profile.idFrontImage ?? '';
+    _idBackImage = profile.idBackImage ?? '';
   }
 
   @override
@@ -138,6 +154,9 @@ class _EditProfileViewState extends State<_EditProfileView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // --- Avatar ---
+                  Center(child: _buildAvatarPicker()),
+                  SizedBox(height: 24.w),
                   // --- Personal Info ---
                   Text('Thông tin cá nhân', style: AppTextStyles.h4),
                   SizedBox(height: 16.w),
@@ -184,6 +203,39 @@ class _EditProfileViewState extends State<_EditProfileView> {
                       hint: 'Nhập địa chỉ hiện tại',
                       controller: _currentAddressController,
                       maxLines: 2,
+                    ),
+                  ),
+                  SizedBox(height: 28.w),
+                  // --- CCCD Images ---
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 190),
+                    child: Text('Ảnh CCCD', style: AppTextStyles.h4),
+                  ),
+                  SizedBox(height: 16.w),
+                  FadeSlideAnimation(
+                    delay: const Duration(milliseconds: 195),
+                    child: Row(
+                      children: [
+                        Expanded(child: _buildImagePicker(
+                          label: 'Mặt trước',
+                          imageUrl: _idFrontImage,
+                          onPick: () => _pickImage(
+                            (path) => _idFrontImage = path,
+                            (path) => _idFrontLocalPath = path,
+                          ),
+                          onRemove: () => setState(() { _idFrontImage = ''; _idFrontLocalPath = null; }),
+                        )),
+                        SizedBox(width: 12.w),
+                        Expanded(child: _buildImagePicker(
+                          label: 'Mặt sau',
+                          imageUrl: _idBackImage,
+                          onPick: () => _pickImage(
+                            (path) => _idBackImage = path,
+                            (path) => _idBackLocalPath = path,
+                          ),
+                          onRemove: () => setState(() { _idBackImage = ''; _idBackLocalPath = null; }),
+                        )),
+                      ],
                     ),
                   ),
                   SizedBox(height: 28.w),
@@ -239,6 +291,9 @@ class _EditProfileViewState extends State<_EditProfileView> {
                             bankAccount: _bankAccountController.text.trim(),
                             bankName: _bankNameController.text.trim(),
                             bankHolderName: _bankHolderController.text.trim(),
+                            avatarLocalPath: _avatarLocalPath,
+                            idFrontLocalPath: _idFrontLocalPath,
+                            idBackLocalPath: _idBackLocalPath,
                           );
                         }
                       },
@@ -251,6 +306,114 @@ class _EditProfileViewState extends State<_EditProfileView> {
         },
       ),
     ),
+    );
+  }
+
+  Future<void> _pickImage(
+    void Function(String localPath) onPicked,
+    void Function(String? localPath) setLocalPath,
+  ) async {
+    final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+    setState(() {
+      onPicked(picked.path);
+      setLocalPath(picked.path);
+    });
+  }
+
+  Widget _buildAvatarPicker() {
+    return GestureDetector(
+      onTap: () => _pickImage(
+        (path) => _avatarUrl = path,
+        (path) => _avatarLocalPath = path,
+      ),
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 48.r,
+            backgroundColor: AppColors.border,
+            backgroundImage: _avatarUrl.isNotEmpty
+                ? (_avatarUrl.startsWith('http') ? NetworkImage(_avatarUrl) : FileImage(File(_avatarUrl))) as ImageProvider
+                : null,
+            child: _avatarUrl.isEmpty
+                ? Icon(Icons.person_rounded, size: 40.sp, color: AppColors.textSecondary)
+                : null,
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.all(6.w),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Icon(Icons.camera_alt_rounded, size: 14.sp, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagePicker({
+    required String label,
+    required String imageUrl,
+    required VoidCallback onPick,
+    required VoidCallback onRemove,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.labelMedium),
+        SizedBox(height: 8.w),
+        GestureDetector(
+          onTap: imageUrl.isEmpty ? onPick : null,
+          child: Container(
+            height: 120.w,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: imageUrl.isNotEmpty
+                    ? Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: imageUrl.startsWith('http')
+                                ? Image.network(imageUrl, fit: BoxFit.cover)
+                                : Image.file(File(imageUrl), fit: BoxFit.cover),
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: GestureDetector(
+                              onTap: onRemove,
+                              child: Container(
+                                padding: EdgeInsets.all(4.w),
+                                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                child: Icon(Icons.close, size: 12.sp, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add_photo_alternate_outlined, size: 28.sp, color: AppColors.textSecondary),
+                            SizedBox(height: 4.w),
+                            Text('Tải ảnh', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+          ),
+        ),
+      ],
     );
   }
 

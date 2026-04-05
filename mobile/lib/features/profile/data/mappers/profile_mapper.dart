@@ -20,6 +20,7 @@ extension ProfileMapper on ProfileModel {
       idIssueDate: idIssueDate,
       idFrontImage: idFrontImage,
       idBackImage: idBackImage,
+      avatarUrl: avatarUrl,
       education: education,
       maritalStatus: maritalStatus,
       emergencyContactName: emergencyContactName,
