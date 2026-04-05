@@ -849,7 +849,7 @@ export function useAnnouncements(
           .map(([k, v]) => [k, String(v)]),
       ).toString()
     : "";
-  return useSWR<ApiResponse<Announcement[]>>(
+  return useSWR<PaginatedResponse<Announcement>>(
     `/announcements${qs}`,
     fetcher,
     config,
