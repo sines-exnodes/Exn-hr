@@ -42,6 +42,7 @@ type Employee struct {
 	IDIssueDate      string `json:"id_issue_date"`                      // Ngày cấp CCCD
 	IDFrontImage     string `json:"id_front_image"`                     // Cloudinary URL
 	IDBackImage      string `json:"id_back_image"`                      // Cloudinary URL
+	AvatarURL        string `json:"avatar_url"`                         // Cloudinary URL
 	Education        string `json:"education"`                          // high_school, college, university, master
 	MaritalStatus    string `json:"marital_status"`                     // single, married, other
 

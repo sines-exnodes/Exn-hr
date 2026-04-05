@@ -21,6 +21,7 @@ type CreateEmployeeReq struct {
 	IDIssueDate      string `json:"id_issue_date"`
 	IDFrontImage     string `json:"id_front_image"`
 	IDBackImage      string `json:"id_back_image"`
+	AvatarURL        string `json:"avatar_url"`
 	Education        string `json:"education"`      // high_school, college, university, master
 	MaritalStatus    string `json:"marital_status"`  // single, married, other
 
@@ -63,6 +64,7 @@ type UpdateEmployeeReq struct {
 	IDIssueDate      string `json:"id_issue_date"`
 	IDFrontImage     string `json:"id_front_image"`
 	IDBackImage      string `json:"id_back_image"`
+	AvatarURL        string `json:"avatar_url"`
 	Education        string `json:"education"`
 	MaritalStatus    string `json:"marital_status"`
 
@@ -109,6 +111,7 @@ type UpdateMyProfileReq struct {
 	IDIssueDate      string `json:"id_issue_date"`
 	IDFrontImage     string `json:"id_front_image"`
 	IDBackImage      string `json:"id_back_image"`
+	AvatarURL        string `json:"avatar_url"`
 	Education        string `json:"education"`
 	MaritalStatus    string `json:"marital_status"`
 
