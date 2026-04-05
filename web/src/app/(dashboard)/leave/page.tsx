@@ -15,6 +15,7 @@ import {
   cancelLeave,
 } from "@/hooks/useApi";
 import { useSSE } from "@/hooks/useSSE";
+import { Pagination } from "@/components/Pagination";
 
 const leaveTypeLabel: Record<string, string> = {
   paid: "Phép năm",
@@ -134,8 +135,11 @@ function LeaveTable({
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function LeavePage() {
-  const { data: response, mutate, isLoading } = useLeaveRequests();
+  const [page, setPage] = useState(1);
+  const { data: response, mutate, isLoading } = useLeaveRequests({ page, size: PAGE_SIZE });
 
   // Real-time updates via SSE
   useSSE({
@@ -155,6 +159,8 @@ export default function LeavePage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   const leaveData = response?.data ?? [];
+  const totalCount = response?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const pending = leaveData.filter((l) => l.overall_status === "pending");
   const approved = leaveData.filter((l) => l.overall_status === "approved");
@@ -287,6 +293,13 @@ export default function LeavePage() {
               );
             }}
           </Tabs>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            total={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </Card>
 
         {/* Reject modal */}

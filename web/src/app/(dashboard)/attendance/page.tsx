@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/Select";
 import type { AttendanceRecord } from "@/types";
 import { useAttendanceRecords, exportAttendanceCsv } from "@/hooks/useApi";
 import { useSSE } from "@/hooks/useSSE";
+import { Pagination } from "@/components/Pagination";
 
 const statusOptions = [
   { value: "", label: "Tất cả trạng thái" },
@@ -40,12 +41,20 @@ function formatDate(isoString?: string): string {
   }
 }
 
+const PAGE_SIZE = 20;
+
 export default function AttendancePage() {
   const [dateFrom, setDateFrom] = useState("2026-03-19");
   const [dateTo, setDateTo] = useState("2026-03-19");
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [page, setPage] = useState(1);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [dateFrom, dateTo, statusFilter, search]);
 
   const {
     data: response,
@@ -54,6 +63,8 @@ export default function AttendancePage() {
   } = useAttendanceRecords({
     start_date: dateFrom,
     end_date: dateTo,
+    page,
+    size: PAGE_SIZE,
   });
 
   // Real-time updates via SSE
@@ -64,6 +75,8 @@ export default function AttendancePage() {
   });
 
   const attendanceData = response?.data ?? [];
+  const totalCount = response?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const filtered = attendanceData.filter((r) => {
     const employeeName = r.employee?.full_name ?? "";
@@ -329,6 +342,13 @@ export default function AttendancePage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            total={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </Card>
       </div>
     </>

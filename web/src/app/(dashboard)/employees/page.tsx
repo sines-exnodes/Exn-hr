@@ -10,7 +10,10 @@ import { Select } from "@/components/ui/Select";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { useEmployees, useDepartments } from "@/hooks/useApi";
+import { Pagination } from "@/components/Pagination";
 import type { Employee } from "@/types";
+
+const PAGE_SIZE = 20;
 
 const statusOptions = [
   { value: "", label: "Tất cả trạng thái" },
@@ -23,17 +26,23 @@ function EmployeesPageContent() {
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [page] = useState(1);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fromUrl = searchParams.get("department_id");
     setDeptFilter(fromUrl ?? "");
+    setPage(1);
   }, [searchParams]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, deptFilter, statusFilter]);
 
   // Real API calls
   const { data: employeesRes, isLoading } = useEmployees({
     page,
-    size: 50,
+    size: PAGE_SIZE,
     search: search || undefined,
     department_id: deptFilter ? Number(deptFilter) : undefined,
   });
@@ -41,6 +50,7 @@ function EmployeesPageContent() {
 
   const employees: Employee[] = employeesRes?.data ?? [];
   const totalCount = employeesRes?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   // Build department options from API
   const departments = deptRes?.data ?? [];
@@ -268,6 +278,13 @@ function EmployeesPageContent() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            total={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </Card>
       </div>
     </>

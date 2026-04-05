@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/Modal";
 import { AnnouncementCard } from "@/components/announcements/AnnouncementCard";
 import { CreateAnnouncementModal } from "@/components/announcements/CreateAnnouncementModal";
 import { useAnnouncements, deleteAnnouncement } from "@/hooks/useApi";
+import { Pagination } from "@/components/Pagination";
 import type { AnnouncementTargetType } from "@/types";
 
 const targetFilterOptions: {
@@ -19,6 +20,8 @@ const targetFilterOptions: {
   { value: "project", label: "Theo dự án" },
 ];
 
+const PAGE_SIZE = 15;
+
 export default function AnnouncementsPage() {
   const [targetFilter, setTargetFilter] = useState<"" | AnnouncementTargetType>(
     "",
@@ -26,16 +29,26 @@ export default function AnnouncementsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [page, setPage] = useState(1);
+
+  // Reset page when filter changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [targetFilter]);
 
   const {
     data: response,
     isLoading,
     mutate,
-  } = useAnnouncements(
-    targetFilter ? { target_type: targetFilter } : undefined,
-  );
+  } = useAnnouncements({
+    page,
+    size: PAGE_SIZE,
+    ...(targetFilter ? { target_type: targetFilter } : {}),
+  });
 
   const announcements = response?.data ?? [];
+  const totalCount = response?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   // Pinned first
   const sorted = [...announcements].sort((a, b) => {
@@ -195,6 +208,17 @@ export default function AnnouncementsPage() {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="rounded-xl border border-slate-200 bg-white">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            total={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
+        </div>
       </div>
 
       <CreateAnnouncementModal

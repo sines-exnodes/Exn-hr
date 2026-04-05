@@ -16,6 +16,7 @@ import {
   cancelOvertime,
 } from "@/hooks/useApi";
 import { useSSE } from "@/hooks/useSSE";
+import { Pagination } from "@/components/Pagination";
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -182,8 +183,11 @@ function OTTable({
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function OvertimePage() {
-  const { data: response, mutate, isLoading } = useOvertimeRequests();
+  const [page, setPage] = useState(1);
+  const { data: response, mutate, isLoading } = useOvertimeRequests({ page, size: PAGE_SIZE });
 
   // Real-time updates via SSE
   useSSE({
@@ -213,6 +217,8 @@ export default function OvertimePage() {
   });
 
   const otData = response?.data ?? [];
+  const totalCount = response?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const leaderPending = otData.filter((o) => o.leader_status === "pending");
   const ceoPending = otData.filter(
@@ -419,6 +425,13 @@ export default function OvertimePage() {
               return <OTTable requests={data} />;
             }}
           </Tabs>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            total={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </Card>
 
         {/* Reject modal */}
