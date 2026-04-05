@@ -80,6 +80,7 @@ export interface Employee {
   id_issue_date?: string;
   id_front_image?: string;
   id_back_image?: string;
+  avatar_url?: string;
   education?: Education;
   marital_status?: MaritalStatus;
 
@@ -153,6 +154,7 @@ export interface CreateEmployeeRequest {
   id_issue_date?: string;
   id_front_image?: string;
   id_back_image?: string;
+  avatar_url?: string;
   education?: Education;
   marital_status?: MaritalStatus;
 
@@ -194,6 +196,7 @@ export interface UpdateEmployeeRequest {
   id_issue_date?: string;
   id_front_image?: string;
   id_back_image?: string;
+  avatar_url?: string;
   education?: Education;
   marital_status?: MaritalStatus;
 

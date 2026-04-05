@@ -18,6 +18,7 @@ import {
   useDepartments,
   useEmployees,
   updateEmployee,
+  uploadFile,
   useEmployeeAllowances,
   useAllowanceTypes,
   setEmployeeAllowance,
@@ -867,6 +868,14 @@ export default function EmployeeDetailPage() {
   const [bankName, setBankName] = useState("");
   const [bankHolderName, setBankHolderName] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [idFrontImage, setIdFrontImage] = useState("");
+  const [idBackImage, setIdBackImage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  // Local files pending upload (only uploaded on save)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
+  const [idBackFile, setIdBackFile] = useState<File | null>(null);
 
   const emp = empRes?.data as Employee | undefined;
   const attendanceRecords: AttendanceRecord[] = attendanceRes?.data ?? [];
@@ -923,6 +932,9 @@ export default function EmployeeDetailPage() {
     setBankName(emp.bank_name ?? "");
     setBankHolderName(emp.bank_holder_name ?? "");
     setPaymentMethod(emp.payment_method ?? "bank_transfer");
+    setAvatarUrl(emp.avatar_url ?? "");
+    setIdFrontImage(emp.id_front_image ?? "");
+    setIdBackImage(emp.id_back_image ?? "");
     setFormError("");
   }, [editOpen, emp]);
 
@@ -935,6 +947,22 @@ export default function EmployeeDetailPage() {
     setSaving(true);
     setFormError("");
     try {
+      // Upload pending files first
+      let finalAvatarUrl = avatarUrl;
+      let finalIdFront = idFrontImage;
+      let finalIdBack = idBackImage;
+      if (avatarFile) {
+        const res = await uploadFile(avatarFile, "avatars");
+        finalAvatarUrl = res.data.data.url;
+      }
+      if (idFrontFile) {
+        const res = await uploadFile(idFrontFile, "cccd");
+        finalIdFront = res.data.data.url;
+      }
+      if (idBackFile) {
+        const res = await uploadFile(idBackFile, "cccd");
+        finalIdBack = res.data.data.url;
+      }
       const basic = Number(basicSalary) || 0;
       const ins = Number(insuranceSalary) || 0;
       await updateEmployee(emp.id, {
@@ -948,6 +976,9 @@ export default function EmployeeDetailPage() {
         nationality: nationality.trim() || undefined,
         id_number: idNumber.trim() || undefined,
         id_issue_date: idIssueDate || undefined,
+        id_front_image: finalIdFront || undefined,
+        id_back_image: finalIdBack || undefined,
+        avatar_url: finalAvatarUrl || undefined,
         education: (education as Employee["education"]) || undefined,
         marital_status:
           (maritalStatus as Employee["marital_status"]) || undefined,
@@ -1146,6 +1177,50 @@ export default function EmployeeDetailPage() {
               </div>
             )}
 
+            {/* Avatar */}
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Ảnh đại diện
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="relative h-20 w-20 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-100 flex-shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-slate-400">
+                    <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                  {uploading ? "Đang tải..." : "Chọn ảnh"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setAvatarFile(file);
+                      setAvatarUrl(URL.createObjectURL(file));
+                    }}
+                  />
+                </label>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => { setAvatarUrl(""); setAvatarFile(null); }}
+                    className="text-[10px] text-red-500 hover:underline text-left"
+                  >
+                    Xoá ảnh
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <hr className="my-2 border-slate-200" />
+
             {/* Thông tin cá nhân */}
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
               Thông tin cá nhân
@@ -1198,6 +1273,79 @@ export default function EmployeeDetailPage() {
                 value={idIssueDate}
                 onChange={(e) => setIdIssueDate(e.target.value)}
               />
+              {/* CCCD Images */}
+              <div className="sm:col-span-2 grid grid-cols-2 gap-4">
+                {/* Front */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-slate-700">Ảnh CCCD mặt trước</label>
+                  <div className="relative h-36 rounded-lg border-2 border-dashed border-slate-300 overflow-hidden bg-slate-50 flex items-center justify-center">
+                    {idFrontImage ? (
+                      <>
+                        <img src={idFrontImage} alt="CCCD front" className="h-full w-full object-contain" />
+                        <button
+                          type="button"
+                          onClick={() => { setIdFrontImage(""); setIdFrontFile(null); }}
+                          className="absolute top-1 right-1 rounded-full bg-red-500 p-0.5 text-white hover:bg-red-600"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </>
+                    ) : (
+                      <label className="cursor-pointer flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
+                        <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span className="text-[10px]">Tải ảnh lên</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploading}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setIdFrontFile(file);
+                            setIdFrontImage(URL.createObjectURL(file));
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+                {/* Back */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-slate-700">Ảnh CCCD mặt sau</label>
+                  <div className="relative h-36 rounded-lg border-2 border-dashed border-slate-300 overflow-hidden bg-slate-50 flex items-center justify-center">
+                    {idBackImage ? (
+                      <>
+                        <img src={idBackImage} alt="CCCD back" className="h-full w-full object-contain" />
+                        <button
+                          type="button"
+                          onClick={() => { setIdBackImage(""); setIdBackFile(null); }}
+                          className="absolute top-1 right-1 rounded-full bg-red-500 p-0.5 text-white hover:bg-red-600"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </>
+                    ) : (
+                      <label className="cursor-pointer flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
+                        <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span className="text-[10px]">Tải ảnh lên</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploading}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setIdBackFile(file);
+                            setIdBackImage(URL.createObjectURL(file));
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
               <Select
                 label="Trình độ học vấn"
                 options={educationOptions}
