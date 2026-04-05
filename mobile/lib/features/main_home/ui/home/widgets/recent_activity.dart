@@ -60,7 +60,7 @@ class RecentActivity extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -106,7 +106,7 @@ class _ActivityTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -118,7 +118,7 @@ class _ActivityTile extends StatelessWidget {
             width: 42.w,
             height: 42.w,
             decoration: BoxDecoration(
-              color: preview.color.withOpacity(0.1),
+              color: preview.color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(preview.icon, color: preview.color, size: 20.sp),

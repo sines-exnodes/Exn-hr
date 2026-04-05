@@ -13,7 +13,7 @@ class QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      _QuickAction(
+      const _QuickAction(
         label: 'Nghỉ phép',
         icon: Icons.beach_access_rounded,
         color: AppColors.accentPurple,
@@ -21,7 +21,7 @@ class QuickActions extends StatelessWidget {
         route: AppRoutes.leaveRequest,
         needsRefresh: true,
       ),
-      _QuickAction(
+      const _QuickAction(
         label: 'Làm thêm',
         icon: Icons.more_time_rounded,
         color: AppColors.accentAmber,
@@ -29,7 +29,7 @@ class QuickActions extends StatelessWidget {
         route: AppRoutes.otRequest,
         needsRefresh: true,
       ),
-      _QuickAction(
+      const _QuickAction(
         label: 'Phiếu lương',
         icon: Icons.receipt_long_rounded,
         color: AppColors.accentBlue,
@@ -37,7 +37,7 @@ class QuickActions extends StatelessWidget {
         route: AppRoutes.payslip,
         needsRefresh: false,
       ),
-      _QuickAction(
+      const _QuickAction(
         label: 'Chấm công',
         icon: Icons.history_rounded,
         color: AppColors.accentTeal,
@@ -45,12 +45,20 @@ class QuickActions extends StatelessWidget {
         route: AppRoutes.attendanceHistory,
         needsRefresh: false,
       ),
-      _QuickAction(
+      const _QuickAction(
         label: 'Dự án',
         icon: Icons.folder_open_rounded,
-        color: const Color(0xFF059669),
-        bgColor: const Color(0xFFD1FAE5),
+        color: Color(0xFF059669),
+        bgColor: Color(0xFFD1FAE5),
         route: AppRoutes.myProjects,
+        needsRefresh: false,
+      ),
+      const _QuickAction(
+        label: 'Thông báo',
+        icon: Icons.campaign_rounded,
+        color: AppColors.info,
+        bgColor: AppColors.infoBg,
+        route: AppRoutes.announcements,
         needsRefresh: false,
       ),
     ];
@@ -87,34 +95,7 @@ class QuickActions extends StatelessWidget {
         SizedBox(height: 14.w),
         buildRow(firstRow, 0),
         SizedBox(height: 10.w),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final totalWidth = constraints.maxWidth;
-            final itemWidth =
-                (totalWidth - 10.w * 2) / 3; // 3 items with 2 gaps of 10w
-            return Row(
-              children: [
-                SizedBox(
-                  width: itemWidth,
-                  child: _QuickActionCard(
-                    action: secondRow[0],
-                    index: 3,
-                    onActionPush: onActionPush,
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                SizedBox(
-                  width: itemWidth,
-                  child: _QuickActionCard(
-                    action: secondRow[1],
-                    index: 4,
-                    onActionPush: onActionPush,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+        buildRow(secondRow, 3),
       ],
     );
   }
@@ -159,7 +140,7 @@ class _QuickActionCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: action.color.withOpacity(0.08),
+                color: action.color.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),

@@ -4,6 +4,7 @@ import 'package:exn_hr/core/themes/app_colors.dart';
 import 'package:exn_hr/core/themes/app_text_styles.dart';
 import 'package:exn_hr/core/utils/date_utils.dart';
 import 'package:exn_hr/core/widgets/animations/animations.dart';
+import 'package:exn_hr/features/leave/domain/entities/leave_request.dart';
 import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_cubit.dart';
 import 'package:exn_hr/features/leave/ui/list/view_models/leave_list_state.dart';
 import 'package:exn_hr/shared/ui/widgets/app_badge.dart';
@@ -24,8 +25,34 @@ class LeaveListPage extends StatelessWidget {
   }
 }
 
-class _LeaveListView extends StatelessWidget {
+class _LeaveListView extends StatefulWidget {
   const _LeaveListView();
+
+  @override
+  State<_LeaveListView> createState() => _LeaveListViewState();
+}
+
+class _LeaveListViewState extends State<_LeaveListView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<LeaveListCubit>().loadNextPage();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   static const _leaveTypeLabels = {
     'annual': 'Phép năm',
@@ -33,6 +60,13 @@ class _LeaveListView extends StatelessWidget {
     'personal': 'Việc riêng',
     'unpaid': 'Không lương',
     'paid': 'Có lương',
+  };
+
+  static const _filterOptions = <String, String>{
+    '': 'Tất cả',
+    'pending': 'Chờ duyệt',
+    'approved': 'Đã duyệt',
+    'rejected': 'Từ chối',
   };
 
   String _leaveTypeLabel(String type) {
@@ -58,22 +92,31 @@ class _LeaveListView extends StatelessWidget {
         title: const Text('Đơn nghỉ phép'),
         automaticallyImplyLeading: false,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final created = await context.push<bool>(AppRoutes.leaveRequest);
-          if (created == true && context.mounted) {
-            context.read<LeaveListCubit>().loadList();
-          }
-        },
-        backgroundColor: AppColors.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutBack,
+        builder: (context, value, child) => Transform.scale(
+          scale: value,
+          child: child,
+        ),
+        child: FloatingActionButton(
+          onPressed: () async {
+            final created = await context.push<bool>(AppRoutes.leaveRequest);
+            if (created == true && context.mounted) {
+              context.read<LeaveListCubit>().loadList();
+            }
+          },
+          backgroundColor: AppColors.primary,
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
       body: BlocBuilder<LeaveListCubit, LeaveListState>(
         builder: (context, state) {
           if (state.status == LeaveListStatus.loading) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
@@ -83,16 +126,37 @@ class _LeaveListView extends StatelessWidget {
           if (state.requests.isEmpty) {
             return _buildEmpty();
           }
+          final filtered = state.filteredRequests;
+          final headerCount = (state.balance != null ? 1 : 0) + 1;
+          final itemCount = filtered.length + headerCount + (state.isPaginating ? 1 : 0);
           return RefreshIndicator(
             onRefresh: () => context.read<LeaveListCubit>().loadList(),
             color: AppColors.primary,
             child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(16.w),
-              itemCount: state.requests.length,
+              itemCount: itemCount,
               itemBuilder: (context, index) {
-                final request = state.requests[index];
+                if (state.balance != null && index == 0) {
+                  return _buildBalanceCard(state.balance!);
+                }
+                final filterChipIndex = state.balance != null ? 1 : 0;
+                if (index == filterChipIndex) {
+                  return _buildFilterChips(context, state);
+                }
+                // Pagination loading indicator at the bottom
+                if (index == filtered.length + headerCount) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.w),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                final requestIndex = index - headerCount;
+                final request = filtered[requestIndex];
                 return AnimatedListItem(
-                  index: index,
+                  index: requestIndex,
                   child: Container(
                     margin: EdgeInsets.only(bottom: 12.w),
                     decoration: BoxDecoration(
@@ -100,7 +164,7 @@ class _LeaveListView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -206,6 +270,147 @@ class _LeaveListView extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context, LeaveListState state) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.w),
+      child: SizedBox(
+        height: 36.w,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _filterOptions.length,
+          separatorBuilder: (_, __) => SizedBox(width: 8.w),
+          itemBuilder: (context, index) {
+            final entry = _filterOptions.entries.elementAt(index);
+            final isSelected = state.statusFilter == entry.key;
+            return FilterChip(
+              label: Text(entry.value),
+              selected: isSelected,
+              onSelected: (_) =>
+                  context.read<LeaveListCubit>().updateStatusFilter(entry.key),
+              selectedColor: AppColors.primary.withValues(alpha: 0.15),
+              checkmarkColor: AppColors.primary,
+              backgroundColor: AppColors.bgCard,
+              side: BorderSide(
+                color: isSelected ? AppColors.primary : AppColors.bgSurface,
+              ),
+              labelStyle: AppTextStyles.caption.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 4.w),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBalanceCard(LeaveBalance balance) {
+    final usageRatio = balance.totalDays > 0
+        ? balance.usedDays / balance.totalDays
+        : 0.0;
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.gradientStart, AppColors.gradientEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.gradientStart.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Phép năm còn lại: ${balance.remainingDays.toStringAsFixed(balance.remainingDays.truncateToDouble() == balance.remainingDays ? 0 : 1)}/${balance.totalDays} ngày',
+            style: AppTextStyles.labelLarge.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 16.w),
+          Row(
+            children: [
+              _buildStatColumn('Tổng phép', '${balance.totalDays}'),
+              Container(
+                width: 1,
+                height: 32.w,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+              _buildStatColumn(
+                'Đã dùng',
+                balance.usedDays.toStringAsFixed(
+                    balance.usedDays.truncateToDouble() == balance.usedDays
+                        ? 0
+                        : 1),
+              ),
+              Container(
+                width: 1,
+                height: 32.w,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+              _buildStatColumn(
+                'Còn lại',
+                balance.remainingDays.toStringAsFixed(
+                    balance.remainingDays.truncateToDouble() ==
+                            balance.remainingDays
+                        ? 0
+                        : 1),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.w),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4.r),
+            child: LinearProgressIndicator(
+              value: usageRatio.clamp(0.0, 1.0),
+              minHeight: 6.w,
+              backgroundColor: Colors.white.withValues(alpha: 0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatColumn(String label, String value) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: AppTextStyles.h3.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 2.w),
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
+          ),
+        ],
       ),
     );
   }

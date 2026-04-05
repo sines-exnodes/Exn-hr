@@ -96,7 +96,7 @@ class _MilestoneTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -141,7 +141,7 @@ class _MilestoneTile extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.w),
               decoration: BoxDecoration(
-                color: _statusColor.withOpacity(0.1),
+                color: _statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(

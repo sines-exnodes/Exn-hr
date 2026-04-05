@@ -12,9 +12,18 @@ class AttendanceHistoryCubit extends Cubit<AttendanceHistoryState> {
 
   final GetAttendanceHistoryUseCase _getAttendanceHistoryUseCase;
 
-  Future<void> loadHistory({int page = 1}) async {
-    emit(state.copyWith(status: AttendanceHistoryStatus.loading));
-    final result = await _getAttendanceHistoryUseCase(page: page, size: 20);
+  static const int _pageSize = 20;
+
+  /// Initial load or pull-to-refresh (resets pagination).
+  Future<void> loadHistory() async {
+    emit(state.copyWith(
+      status: AttendanceHistoryStatus.loading,
+      records: const [],
+      currentPage: 1,
+      hasMore: true,
+      isPaginating: false,
+    ));
+    final result = await _getAttendanceHistoryUseCase(page: 1, size: _pageSize);
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(
@@ -24,7 +33,30 @@ class AttendanceHistoryCubit extends Cubit<AttendanceHistoryState> {
       (records) => emit(state.copyWith(
         status: AttendanceHistoryStatus.success,
         records: records,
+        currentPage: 1,
+        hasMore: records.length >= _pageSize,
       )),
+    );
+  }
+
+  /// Load the next page and append.
+  Future<void> loadNextPage() async {
+    if (!state.hasMore || state.isPaginating) return;
+    emit(state.copyWith(isPaginating: true));
+    final nextPage = state.currentPage + 1;
+    final result = await _getAttendanceHistoryUseCase(page: nextPage, size: _pageSize);
+    if (isClosed) return;
+    result.fold(
+      (error) => emit(state.copyWith(isPaginating: false)),
+      (newRecords) {
+        final combined = [...state.records, ...newRecords];
+        emit(state.copyWith(
+          records: combined,
+          currentPage: nextPage,
+          hasMore: newRecords.length >= _pageSize,
+          isPaginating: false,
+        ));
+      },
     );
   }
 }

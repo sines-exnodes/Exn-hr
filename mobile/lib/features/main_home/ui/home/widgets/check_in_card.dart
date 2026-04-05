@@ -27,7 +27,7 @@ class CheckInCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.warningBg,
               borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: AppColors.warning.withOpacity(0.25)),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
@@ -35,7 +35,7 @@ class CheckInCard extends StatelessWidget {
                   width: 32.w,
                   height: 32.w,
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.15),
+                    color: AppColors.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(Icons.warning_amber_rounded,
@@ -66,7 +66,7 @@ class CheckInCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -85,13 +85,13 @@ class CheckInCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: 10.w, vertical: 4.w),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
                           state.isCheckedIn ? 'Đã chấm vào' : 'Chưa chấm công',
                           style: AppTextStyles.labelSmall
-                              .copyWith(color: Colors.white.withOpacity(0.9)),
+                              .copyWith(color: Colors.white.withValues(alpha: 0.9)),
                         ),
                       ),
                       SizedBox(height: 10.w),
@@ -109,10 +109,10 @@ class CheckInCard extends StatelessWidget {
                     width: 56.w,
                     height: 56.w,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Icon(
@@ -156,7 +156,7 @@ class CheckInCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -198,16 +198,16 @@ class CheckInCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
+        color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
               style: AppTextStyles.caption
-                  .copyWith(color: Colors.white.withOpacity(0.7), fontSize: 10.sp)),
+                  .copyWith(color: Colors.white.withValues(alpha: 0.7), fontSize: 10.sp)),
           SizedBox(height: 4.w),
           Text(value,
               style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
@@ -230,7 +230,7 @@ class CheckInCard extends StatelessWidget {
           SizedBox(
             width: 28.w,
             height: 28.w,
-            child: CircularProgressIndicator(
+            child: const CircularProgressIndicator(
               strokeWidth: 2.5,
               color: AppColors.primary,
             ),

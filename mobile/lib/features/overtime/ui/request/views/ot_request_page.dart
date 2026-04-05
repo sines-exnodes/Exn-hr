@@ -235,7 +235,7 @@ class _OtRequestViewState extends State<_OtRequestView> {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.1),
+                                color: AppColors.primary.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -290,7 +290,7 @@ class _OtRequestViewState extends State<_OtRequestView> {
             width: 32.w,
             height: 32.w,
             decoration: BoxDecoration(
-              color: AppColors.info.withOpacity(0.15),
+              color: AppColors.info.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(Icons.info_outline, color: AppColors.info, size: 16.sp),

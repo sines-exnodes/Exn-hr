@@ -21,9 +21,18 @@ class AnnouncementsCubit extends Cubit<AnnouncementsState> {
   final VotePollUseCase _votePollUseCase;
   final GetPollResultsUseCase _getPollResultsUseCase;
 
+  static const int _pageSize = 15;
+
+  /// Initial load or pull-to-refresh (resets pagination).
   Future<void> loadAnnouncements() async {
-    emit(state.copyWith(status: AnnouncementsStatus.loading));
-    final result = await _getMyAnnouncementsUseCase();
+    emit(state.copyWith(
+      status: AnnouncementsStatus.loading,
+      announcements: const [],
+      currentPage: 1,
+      hasMore: true,
+      isPaginating: false,
+    ));
+    final result = await _getMyAnnouncementsUseCase(page: 1, size: _pageSize);
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(
@@ -31,17 +40,45 @@ class AnnouncementsCubit extends Cubit<AnnouncementsState> {
         errorMessage: error.message,
       )),
       (announcements) {
-        final sorted = [...announcements]..sort((a, b) {
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
-            return b.createdAt.compareTo(a.createdAt);
-          });
+        final sorted = _sortAnnouncements(announcements);
         emit(state.copyWith(
           status: AnnouncementsStatus.success,
           announcements: sorted,
+          currentPage: 1,
+          hasMore: announcements.length >= _pageSize,
         ));
       },
     );
+  }
+
+  /// Load the next page and append.
+  Future<void> loadNextPage() async {
+    if (!state.hasMore || state.isPaginating) return;
+    emit(state.copyWith(isPaginating: true));
+    final nextPage = state.currentPage + 1;
+    final result =
+        await _getMyAnnouncementsUseCase(page: nextPage, size: _pageSize);
+    if (isClosed) return;
+    result.fold(
+      (error) => emit(state.copyWith(isPaginating: false)),
+      (newAnnouncements) {
+        final combined = [...state.announcements, ..._sortAnnouncements(newAnnouncements)];
+        emit(state.copyWith(
+          announcements: combined,
+          currentPage: nextPage,
+          hasMore: newAnnouncements.length >= _pageSize,
+          isPaginating: false,
+        ));
+      },
+    );
+  }
+
+  List<Announcement> _sortAnnouncements(List<Announcement> announcements) {
+    return [...announcements]..sort((a, b) {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
   }
 
   Future<void> votePoll(int pollId, List<int> optionIds) async {

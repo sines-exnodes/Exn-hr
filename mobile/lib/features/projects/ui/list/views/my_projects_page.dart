@@ -57,7 +57,7 @@ class _MyProjectsViewState extends State<_MyProjectsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgPage,
       appBar: AppBar(
         title: const Text('Dự án của tôi'),
         automaticallyImplyLeading: true,
@@ -78,20 +78,28 @@ class _MyProjectsViewState extends State<_MyProjectsView> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.error_outline,
-                              size: 48.sp, color: AppColors.error),
-                          SizedBox(height: 12.w),
+                          Container(
+                            width: 64.w,
+                            height: 64.w,
+                            decoration: BoxDecoration(
+                              color: AppColors.errorBg,
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Icon(Icons.error_outline, size: 32.sp, color: AppColors.error),
+                          ),
+                          SizedBox(height: 16.w),
                           Text(
                             state.errorMessage ??
                                 'Không tải được danh sách dự án',
-                            style: AppTextStyles.bodyMedium,
+                            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                             textAlign: TextAlign.center,
                           ),
                           SizedBox(height: 16.w),
-                          TextButton(
+                          TextButton.icon(
                             onPressed: () =>
                                 context.read<ProjectsCubit>().loadProjects(),
-                            child: const Text('Thử lại'),
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('Thử lại'),
                           ),
                         ],
                       ),
@@ -104,17 +112,26 @@ class _MyProjectsViewState extends State<_MyProjectsView> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.folder_open_rounded,
-                            size: 48.sp, color: AppColors.textHint),
-                        SizedBox(height: 12.w),
+                        Container(
+                          width: 64.w,
+                          height: 64.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD1FAE5),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Icon(Icons.folder_open_rounded, size: 32.sp, color: const Color(0xFF059669)),
+                        ),
+                        SizedBox(height: 16.w),
                         Text(
                           state.searchQuery.isNotEmpty ||
                                   state.statusFilter !=
                                       ProjectStatusFilter.all
                               ? 'Không có dự án phù hợp'
                               : 'Bạn chưa tham gia dự án nào',
-                          style: AppTextStyles.bodyMedium,
+                          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                         ),
+                        SizedBox(height: 4.w),
+                        Text('Tham gia dự án để xem tại đây', style: AppTextStyles.caption),
                       ],
                     ),
                   );
@@ -204,15 +221,15 @@ class _SearchAndFilterBar extends StatelessWidget {
                   EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.w),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),

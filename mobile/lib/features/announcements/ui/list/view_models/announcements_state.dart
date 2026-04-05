@@ -9,12 +9,18 @@ class AnnouncementsState extends Equatable {
     this.announcements = const [],
     this.votingPollId,
     this.errorMessage,
+    this.currentPage = 1,
+    this.hasMore = true,
+    this.isPaginating = false,
   });
 
   final AnnouncementsStatus status;
   final List<Announcement> announcements;
   final int? votingPollId;
   final String? errorMessage;
+  final int currentPage;
+  final bool hasMore;
+  final bool isPaginating;
 
   AnnouncementsState copyWith({
     AnnouncementsStatus? status,
@@ -22,6 +28,9 @@ class AnnouncementsState extends Equatable {
     int? votingPollId,
     String? errorMessage,
     bool clearVotingPollId = false,
+    int? currentPage,
+    bool? hasMore,
+    bool? isPaginating,
   }) {
     return AnnouncementsState(
       status: status ?? this.status,
@@ -29,10 +38,13 @@ class AnnouncementsState extends Equatable {
       votingPollId:
           clearVotingPollId ? null : (votingPollId ?? this.votingPollId),
       errorMessage: errorMessage ?? this.errorMessage,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isPaginating: isPaginating ?? this.isPaginating,
     );
   }
 
   @override
   List<Object?> get props =>
-      [status, announcements, votingPollId, errorMessage];
+      [status, announcements, votingPollId, errorMessage, currentPage, hasMore, isPaginating];
 }

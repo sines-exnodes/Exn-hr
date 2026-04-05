@@ -16,6 +16,7 @@ class HomeState extends Equatable {
     this.activities = const [],
     this.attendanceWarning,
     this.upcomingMilestones = const [],
+    this.unreadNotificationCount = 0,
   });
 
   final HomeStatus status;
@@ -30,6 +31,8 @@ class HomeState extends Equatable {
   final String? attendanceWarning;
   /// Các milestone sắp đến hạn trong 7 ngày tới.
   final List<Milestone> upcomingMilestones;
+  /// Số thông báo chưa đọc.
+  final int unreadNotificationCount;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -43,6 +46,7 @@ class HomeState extends Equatable {
     String? attendanceWarning,
     bool setAttendanceWarning = false,
     List<Milestone>? upcomingMilestones,
+    int? unreadNotificationCount,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -56,6 +60,8 @@ class HomeState extends Equatable {
       attendanceWarning:
           setAttendanceWarning ? attendanceWarning : this.attendanceWarning,
       upcomingMilestones: upcomingMilestones ?? this.upcomingMilestones,
+      unreadNotificationCount:
+          unreadNotificationCount ?? this.unreadNotificationCount,
     );
   }
 
@@ -71,5 +77,6 @@ class HomeState extends Equatable {
         activities,
         attendanceWarning,
         upcomingMilestones,
+        unreadNotificationCount,
       ];
 }

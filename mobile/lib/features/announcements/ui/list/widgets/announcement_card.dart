@@ -124,7 +124,7 @@ class _TargetBadge extends StatelessWidget {
     switch (targetType) {
       case 'company':
         color = AppColors.info;
-        label = 'Toan cong ty';
+        label = 'Toàn công ty';
         icon = Icons.business_rounded;
         break;
       case 'team':
@@ -134,7 +134,7 @@ class _TargetBadge extends StatelessWidget {
         break;
       case 'project':
         color = AppColors.primary;
-        label = 'Du an';
+        label = 'Dự án';
         icon = Icons.folder_rounded;
         break;
       default:

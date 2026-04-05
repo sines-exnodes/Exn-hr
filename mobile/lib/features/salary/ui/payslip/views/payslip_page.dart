@@ -34,7 +34,7 @@ class _PayslipView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgPage,
       appBar: AppBar(
         title: const Text('Phiếu lương'),
         leading: IconButton(
@@ -52,14 +52,23 @@ class _PayslipView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
-                  SizedBox(height: 12.w),
-                  Text(state.errorMessage ?? 'Không tải được dữ liệu',
-                      style: AppTextStyles.bodyMedium),
+                  Container(
+                    width: 64.w,
+                    height: 64.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.errorBg,
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Icon(Icons.error_outline, size: 32.sp, color: AppColors.error),
+                  ),
                   SizedBox(height: 16.w),
-                  TextButton(
+                  Text(state.errorMessage ?? 'Không tải được dữ liệu',
+                      style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  SizedBox(height: 16.w),
+                  TextButton.icon(
                     onPressed: () => context.read<PayslipCubit>().loadPayslips(),
-                    child: const Text('Thử lại'),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Thử lại'),
                   ),
                 ],
               ),
@@ -167,7 +176,7 @@ class _PayslipView extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -218,12 +227,12 @@ class _PayslipView extends StatelessWidget {
 
   Widget _buildIncomeCard(Payslip p) {
     return _buildSection('Thu nhập', [
-      _line('Lương theo ngày công', p.proratedSalary, true),
-      if (p.totalAllowances > 0) _line('Phụ cấp', p.totalAllowances, true),
-      if (p.otPayNormal > 0) _line('OT ngày thường (x1.5)', p.otPayNormal, true),
-      if (p.otPayWeekend > 0) _line('OT cuối tuần (x2.0)', p.otPayWeekend, true),
-      if (p.otPayHoliday > 0) _line('OT ngày lễ (x3.0)', p.otPayHoliday, true),
-      if (p.totalBonus > 0) _line('Thưởng', p.totalBonus, true),
+      _line('Lương theo ngày công', p.proratedSalary, true, icon: Icons.work_outline),
+      if (p.totalAllowances > 0) _line('Phụ cấp', p.totalAllowances, true, icon: Icons.card_giftcard_outlined),
+      if (p.otPayNormal > 0) _line('OT ngày thường (x1.5)', p.otPayNormal, true, icon: Icons.schedule_rounded),
+      if (p.otPayWeekend > 0) _line('OT cuối tuần (x2.0)', p.otPayWeekend, true, icon: Icons.weekend_outlined),
+      if (p.otPayHoliday > 0) _line('OT ngày lễ (x3.0)', p.otPayHoliday, true, icon: Icons.celebration_outlined),
+      if (p.totalBonus > 0) _line('Thưởng', p.totalBonus, true, icon: Icons.star_outline_rounded),
       Divider(height: 20.w, color: AppColors.divider),
       _totalLine('Tổng thu nhập', p.totalIncome),
     ]);
@@ -231,11 +240,11 @@ class _PayslipView extends StatelessWidget {
 
   Widget _buildDeductionsCard(Payslip p) {
     return _buildSection('Các khoản trừ', [
-      if (p.totalInsuranceEmployee > 0) _line('Bảo hiểm (BHXH+BHYT+BHTN)', p.totalInsuranceEmployee, false),
-      if (p.unionFeeEmployee > 0) _line('Phí công đoàn', p.unionFeeEmployee, false),
-      if (p.pitAmount > 0) _line('Thuế TNCN', p.pitAmount, false),
-      if (p.salaryAdvance > 0) _line('Tạm ứng', p.salaryAdvance, false),
-      if (p.parkingFee > 0) _line('Phí gửi xe', p.parkingFee, false),
+      if (p.totalInsuranceEmployee > 0) _line('Bảo hiểm (BHXH+BHYT+BHTN)', p.totalInsuranceEmployee, false, icon: Icons.health_and_safety_outlined),
+      if (p.unionFeeEmployee > 0) _line('Phí công đoàn', p.unionFeeEmployee, false, icon: Icons.groups_outlined),
+      if (p.pitAmount > 0) _line('Thuế TNCN', p.pitAmount, false, icon: Icons.account_balance_outlined),
+      if (p.salaryAdvance > 0) _line('Tạm ứng', p.salaryAdvance, false, icon: Icons.payments_outlined),
+      if (p.parkingFee > 0) _line('Phí gửi xe', p.parkingFee, false, icon: Icons.local_parking_outlined),
       Divider(height: 20.w, color: AppColors.divider),
       _totalLine('Tổng khấu trừ', p.totalDeductions),
       SizedBox(height: 8.w),
@@ -268,17 +277,28 @@ class _PayslipView extends StatelessWidget {
     );
   }
 
-  Widget _line(String label, double amount, bool isIncome) {
+  Widget _line(String label, double amount, bool isIncome, {IconData? icon}) {
+    final color = isIncome ? AppColors.success : AppColors.error;
     return Padding(
       padding: EdgeInsets.only(bottom: 10.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(label, style: AppTextStyles.bodySmall)),
+          Expanded(
+            child: Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 14.sp, color: color),
+                  SizedBox(width: 6.w),
+                ],
+                Expanded(child: Text(label, style: AppTextStyles.bodySmall)),
+              ],
+            ),
+          ),
           Text(
             '${isIncome ? '+' : '-'} ${_fmt(amount)}',
             style: AppTextStyles.labelMedium.copyWith(
-              color: isIncome ? AppColors.success : AppColors.error,
+              color: color,
             ),
           ),
         ],
@@ -302,9 +322,19 @@ class _PayslipView extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
-            Icon(Icons.receipt_long_rounded, size: 48.sp, color: AppColors.textHint),
-            SizedBox(height: 12.w),
-            Text('Chưa có phiếu lương tháng này', style: AppTextStyles.bodyMedium),
+            Container(
+              width: 64.w,
+              height: 64.w,
+              decoration: BoxDecoration(
+                color: AppColors.accentBlueBg,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Icon(Icons.receipt_long_rounded, size: 32.sp, color: AppColors.accentBlue),
+            ),
+            SizedBox(height: 16.w),
+            Text('Chưa có phiếu lương tháng này', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+            SizedBox(height: 4.w),
+            Text('Phiếu lương sẽ xuất hiện khi có dữ liệu', style: AppTextStyles.caption),
           ],
         ),
       ),

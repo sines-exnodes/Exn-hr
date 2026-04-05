@@ -24,8 +24,34 @@ class OtListPage extends StatelessWidget {
   }
 }
 
-class _OtListView extends StatelessWidget {
+class _OtListView extends StatefulWidget {
   const _OtListView();
+
+  @override
+  State<_OtListView> createState() => _OtListViewState();
+}
+
+class _OtListViewState extends State<_OtListView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<OtListCubit>().loadNextPage();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   Color _statusAccentColor(String status) {
     switch (status.toLowerCase()) {
@@ -46,22 +72,31 @@ class _OtListView extends StatelessWidget {
         title: const Text('Đơn làm thêm (OT)'),
         automaticallyImplyLeading: false,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final created = await context.push<bool>(AppRoutes.otRequest);
-          if (created == true && context.mounted) {
-            context.read<OtListCubit>().loadList();
-          }
-        },
-        backgroundColor: AppColors.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutBack,
+        builder: (context, value, child) => Transform.scale(
+          scale: value,
+          child: child,
+        ),
+        child: FloatingActionButton(
+          onPressed: () async {
+            final created = await context.push<bool>(AppRoutes.otRequest);
+            if (created == true && context.mounted) {
+              context.read<OtListCubit>().loadList();
+            }
+          },
+          backgroundColor: AppColors.primary,
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
       body: BlocBuilder<OtListCubit, OtListState>(
         builder: (context, state) {
           if (state.status == OtListStatus.loading) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
@@ -71,14 +106,26 @@ class _OtListView extends StatelessWidget {
           if (state.requests.isEmpty) {
             return _buildEmpty();
           }
+          final filtered = state.filteredRequests;
           return RefreshIndicator(
             onRefresh: () => context.read<OtListCubit>().loadList(),
             color: AppColors.primary,
             child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(16.w),
-              itemCount: state.requests.length,
+              itemCount: filtered.length + 2 + (state.isPaginating ? 1 : 0),
               itemBuilder: (context, index) {
-                final req = state.requests[index];
+                if (index == 0) return _buildSummaryCard(state);
+                if (index == 1) return _buildFilterChips(context, state);
+                if (index - 2 >= filtered.length) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.w),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                final req = filtered[index - 2];
                 return AnimatedListItem(
                   index: index,
                   child: Container(
@@ -88,7 +135,7 @@ class _OtListView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -208,6 +255,108 @@ class _OtListView extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  static const _filterOptions = <String, String>{
+    '': 'Tất cả',
+    'pending': 'Chờ duyệt',
+    'approved': 'Đã duyệt',
+    'rejected': 'Từ chối',
+  };
+
+  Widget _buildSummaryCard(OtListState state) {
+    final hours = state.totalOtHoursThisMonth;
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.gradientStart, AppColors.gradientEnd],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.gradientStart.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(Icons.timer_outlined, color: Colors.white, size: 22.sp),
+          ),
+          SizedBox(width: 12.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Tổng OT tháng này',
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+              SizedBox(height: 2.w),
+              Text(
+                '${hours % 1 == 0 ? hours.toInt() : hours.toStringAsFixed(1)} giờ',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context, OtListState state) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.w),
+      child: SizedBox(
+        height: 36.w,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _filterOptions.length,
+          separatorBuilder: (_, __) => SizedBox(width: 8.w),
+          itemBuilder: (context, index) {
+            final entry = _filterOptions.entries.elementAt(index);
+            final isSelected = state.statusFilter == entry.key;
+            return FilterChip(
+              label: Text(entry.value),
+              selected: isSelected,
+              onSelected: (_) =>
+                  context.read<OtListCubit>().updateStatusFilter(entry.key),
+              selectedColor: AppColors.primary.withValues(alpha: 0.15),
+              checkmarkColor: AppColors.primary,
+              backgroundColor: AppColors.bgCard,
+              side: BorderSide(
+                color: isSelected ? AppColors.primary : AppColors.bgSurface,
+              ),
+              labelStyle: AppTextStyles.caption.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 4.w),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            );
+          },
+        ),
       ),
     );
   }

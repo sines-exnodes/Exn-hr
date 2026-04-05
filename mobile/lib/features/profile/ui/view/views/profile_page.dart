@@ -34,7 +34,7 @@ class _ProfileView extends StatelessWidget {
       body: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
           if (state.status == ProfileStatus.loading) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
@@ -68,7 +68,7 @@ class _ProfileView extends StatelessWidget {
           }
           final profile = state.profile;
           if (profile == null) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
@@ -131,7 +131,7 @@ class _ProfileView extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.25),
+            color: AppColors.primary.withValues(alpha: 0.25),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
@@ -153,10 +153,10 @@ class _ProfileView extends StatelessWidget {
             width: 80.w,
             height: 80.w,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 3,
               ),
             ),
@@ -169,14 +169,14 @@ class _ProfileView extends StatelessWidget {
           SizedBox(height: 4.w),
           Text(email,
               style: AppTextStyles.bodySmall
-                  .copyWith(color: Colors.white.withOpacity(0.8))),
+                  .copyWith(color: Colors.white.withValues(alpha: 0.8))),
           SizedBox(height: 10.w),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 5.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: Text(
               role.toUpperCase(),
@@ -200,7 +200,7 @@ class _ProfileView extends StatelessWidget {
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -266,7 +266,7 @@ class _ProfileView extends StatelessWidget {
           if (profile.bankAccount != null &&
               profile.bankAccount!.isNotEmpty) ...[
             SizedBox(height: 4.w),
-            Divider(color: AppColors.divider),
+            const Divider(color: AppColors.divider),
             SizedBox(height: 4.w),
             _buildInfoRow(Icons.account_balance_outlined, 'Ngân hàng',
                 profile.bankName ?? 'N/A'),
@@ -379,6 +379,13 @@ class _ProfileView extends StatelessWidget {
         onTap: () => context.push(AppRoutes.myProjects),
       ),
       _SettingsTileData(
+        icon: Icons.campaign_outlined,
+        label: 'Thông báo công ty',
+        color: AppColors.info,
+        bgColor: AppColors.infoBg,
+        onTap: () => context.push(AppRoutes.announcements),
+      ),
+      _SettingsTileData(
         icon: Icons.lock_outline_rounded,
         label: 'Đổi mật khẩu',
         color: AppColors.accentBlue,
@@ -413,7 +420,7 @@ class _ProfileView extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
-                  child: Text('Đăng xuất',
+                  child: const Text('Đăng xuất',
                       style: TextStyle(color: AppColors.error)),
                 ),
               ],
@@ -435,7 +442,7 @@ class _ProfileView extends StatelessWidget {
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),

@@ -22,8 +22,36 @@ class AttendanceHistoryPage extends StatelessWidget {
   }
 }
 
-class _AttendanceHistoryView extends StatelessWidget {
+class _AttendanceHistoryView extends StatefulWidget {
   const _AttendanceHistoryView();
+
+  @override
+  State<_AttendanceHistoryView> createState() => _AttendanceHistoryViewState();
+}
+
+class _AttendanceHistoryViewState extends State<_AttendanceHistoryView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<AttendanceHistoryCubit>().loadNextPage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +102,16 @@ class _AttendanceHistoryView extends StatelessWidget {
             onRefresh: () => context.read<AttendanceHistoryCubit>().loadHistory(),
             color: AppColors.primary,
             child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(16.w),
-              itemCount: state.records.length,
+              itemCount: state.records.length + (state.isPaginating ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index >= state.records.length) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.w),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final record = state.records[index];
                 final dateLabel = formatDateDisplay(record.checkInTime);
                 String hoursLabel = '0h';

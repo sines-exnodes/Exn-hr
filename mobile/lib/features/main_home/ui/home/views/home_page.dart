@@ -187,7 +187,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.25),
+            color: AppColors.primary.withValues(alpha: 0.25),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
@@ -230,19 +230,49 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
               GestureDetector(
                 onTap: () => context.push(AppRoutes.notifications),
-                child: Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    color: AppColors.glassWhite,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.glassBorder),
-                  ),
-                  child: Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.white,
-                    size: 22.sp,
-                  ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 40.w,
+                      height: 40.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.glassWhite,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        color: Colors.white,
+                        size: 22.sp,
+                      ),
+                    ),
+                    if (state.unreadNotificationCount > 0)
+                      Positioned(
+                        top: -4.w,
+                        right: -4.w,
+                        child: Container(
+                          width: 18.w,
+                          height: 18.w,
+                          decoration: const BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            state.unreadNotificationCount > 99
+                                ? '99+'
+                                : '${state.unreadNotificationCount}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -258,7 +288,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     Text(
                       greeting,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                     SizedBox(height: 4.w),

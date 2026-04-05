@@ -16,9 +16,18 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final GetNotificationsUseCase _getNotificationsUseCase;
   final MarkNotificationReadUseCase _markNotificationReadUseCase;
 
+  static const int _pageSize = 20;
+
+  /// Initial load or pull-to-refresh (resets pagination).
   Future<void> loadNotifications() async {
-    emit(state.copyWith(status: NotificationsStatus.loading));
-    final result = await _getNotificationsUseCase();
+    emit(state.copyWith(
+      status: NotificationsStatus.loading,
+      notifications: const [],
+      currentPage: 1,
+      hasMore: true,
+      isPaginating: false,
+    ));
+    final result = await _getNotificationsUseCase(page: 1, size: _pageSize);
     if (isClosed) return;
     result.fold(
       (error) => emit(state.copyWith(
@@ -28,7 +37,30 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       (notifications) => emit(state.copyWith(
         status: NotificationsStatus.success,
         notifications: notifications,
+        currentPage: 1,
+        hasMore: notifications.length >= _pageSize,
       )),
+    );
+  }
+
+  /// Load the next page and append.
+  Future<void> loadNextPage() async {
+    if (!state.hasMore || state.isPaginating) return;
+    emit(state.copyWith(isPaginating: true));
+    final nextPage = state.currentPage + 1;
+    final result = await _getNotificationsUseCase(page: nextPage, size: _pageSize);
+    if (isClosed) return;
+    result.fold(
+      (error) => emit(state.copyWith(isPaginating: false)),
+      (newNotifications) {
+        final combined = [...state.notifications, ...newNotifications];
+        emit(state.copyWith(
+          notifications: combined,
+          currentPage: nextPage,
+          hasMore: newNotifications.length >= _pageSize,
+          isPaginating: false,
+        ));
+      },
     );
   }
 

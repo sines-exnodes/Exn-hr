@@ -127,14 +127,14 @@ class _PollWidgetState extends State<PollWidget> {
           Icon(Icons.visibility_off_outlined,
               size: 12.sp, color: AppColors.textHint),
           SizedBox(width: 4.w),
-          Text('An danh',
+          Text('Ẩn danh',
               style: AppTextStyles.caption.copyWith(color: AppColors.textHint)),
           SizedBox(width: 12.w),
         ],
         Icon(Icons.how_to_vote_outlined,
             size: 12.sp, color: AppColors.textHint),
         SizedBox(width: 4.w),
-        Text('${widget.poll.totalVotes} phieu',
+        Text('${widget.poll.totalVotes} phiếu',
             style:
                 AppTextStyles.caption.copyWith(color: AppColors.textHint)),
         if (widget.poll.deadline != null) ...[
@@ -155,11 +155,11 @@ class _PollWidgetState extends State<PollWidget> {
         if (_canVote && !_showResults)
           _buildVoteButton(),
         if (widget.poll.isClosed)
-          _buildStatusChip('Da dong', AppColors.textSecondary),
+          _buildStatusChip('Đã đóng', AppColors.textSecondary),
         if (widget.poll.isDeadlinePassed && !widget.poll.isClosed)
-          _buildStatusChip('Het han', AppColors.warning),
+          _buildStatusChip('Hết hạn', AppColors.warning),
         if (widget.poll.hasVoted && !widget.poll.isClosed)
-          _buildStatusChip('Da bau', AppColors.primary),
+          _buildStatusChip('Đã bầu', AppColors.primary),
       ],
     );
   }
@@ -186,7 +186,7 @@ class _PollWidgetState extends State<PollWidget> {
                     strokeWidth: 2, color: Colors.white),
               )
             : Text(
-                'Bau',
+                'Bầu',
                 style: AppTextStyles.caption.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -349,7 +349,7 @@ class _ResultOptionRow extends StatelessWidget {
           ),
           SizedBox(height: 2.w),
           Text(
-            '${option.voteCount} phieu',
+            '${option.voteCount} phiếu',
             style: AppTextStyles.caption
                 .copyWith(color: AppColors.textHint, fontSize: 10),
           ),

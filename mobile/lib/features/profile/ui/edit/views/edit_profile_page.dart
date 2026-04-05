@@ -279,7 +279,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
                     padding: EdgeInsets.symmetric(vertical: 14.w),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary.withOpacity(0.1)
+                          ? AppColors.primary.withValues(alpha: 0.1)
                           : AppColors.surface,
                       borderRadius: BorderRadius.circular(10.r),
                       border: Border.all(

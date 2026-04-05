@@ -28,7 +28,7 @@ class _CheckInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgPage,
       appBar: AppBar(
         title: const Text('Chấm công'),
         leading: IconButton(
@@ -90,7 +90,7 @@ class _CheckInView extends StatelessWidget {
         height: 200.w,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
+          gradient: const RadialGradient(
             colors: [
               AppColors.primary,
               AppColors.primaryDark,
@@ -98,7 +98,7 @@ class _CheckInView extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.4),
+              color: AppColors.primary.withValues(alpha: 0.4),
               blurRadius: 30,
               offset: const Offset(0, 10),
             ),
@@ -172,7 +172,7 @@ class _CheckInView extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isActive ? AppColors.primary.withOpacity(0.3) : AppColors.border,
+          color: isActive ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
         ),
       ),
       child: Column(
@@ -197,16 +197,23 @@ class _CheckInView extends StatelessWidget {
   }
 
   Widget _buildCurrentTime() {
-    final now = DateTime.now();
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:'
-        '${now.minute.toString().padLeft(2, '0')}';
-    final dateStr = '${now.day}/${now.month}/${now.year}';
-    return Column(
-      children: [
-        Text(timeStr, style: AppTextStyles.h1.copyWith(fontSize: 40.sp)),
-        SizedBox(height: 4.w),
-        Text(dateStr, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-      ],
+    return StreamBuilder<DateTime>(
+      stream: Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()),
+      initialData: DateTime.now(),
+      builder: (context, snapshot) {
+        final now = snapshot.data!;
+        final timeStr = '${now.hour.toString().padLeft(2, '0')}:'
+            '${now.minute.toString().padLeft(2, '0')}';
+        final dateStr = '${now.day.toString().padLeft(2, '0')}/'
+            '${now.month.toString().padLeft(2, '0')}/${now.year}';
+        return Column(
+          children: [
+            Text(timeStr, style: AppTextStyles.h1.copyWith(fontSize: 40.sp)),
+            SizedBox(height: 4.w),
+            Text(dateStr, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          ],
+        );
+      },
     );
   }
 }

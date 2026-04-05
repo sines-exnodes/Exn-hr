@@ -14,9 +14,15 @@ class AnnouncementsRepositoryImpl implements AnnouncementsRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<Either<ApiError, List<Announcement>>> getMyAnnouncements() async {
+  Future<Either<ApiError, List<Announcement>>> getMyAnnouncements({
+    int page = 1,
+    int size = 15,
+  }) async {
     try {
-      final response = await _apiClient.get(ApiEndpoints.myAnnouncements);
+      final response = await _apiClient.get(
+        ApiEndpoints.myAnnouncements,
+        queryParameters: {'page': page, 'size': size},
+      );
       final items =
           ((response.data as Map<String, dynamic>)['data'] as List<dynamic>? ??
                   [])

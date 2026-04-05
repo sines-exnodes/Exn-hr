@@ -22,8 +22,35 @@ class NotificationsPage extends StatelessWidget {
   }
 }
 
-class _NotificationsView extends StatelessWidget {
+class _NotificationsView extends StatefulWidget {
   const _NotificationsView();
+
+  @override
+  State<_NotificationsView> createState() => _NotificationsViewState();
+}
+
+class _NotificationsViewState extends State<_NotificationsView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<NotificationsCubit>().loadNextPage();
+    }
+  }
 
   Color _iconColor(String type) {
     switch (type) {
@@ -79,7 +106,7 @@ class _NotificationsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgPage,
       appBar: AppBar(
         title: const Text('Thông báo'),
         leading: IconButton(
@@ -99,18 +126,27 @@ class _NotificationsView extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
-                    SizedBox(height: 12.w),
+                    Container(
+                      width: 64.w,
+                      height: 64.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.errorBg,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Icon(Icons.error_outline, size: 32.sp, color: AppColors.error),
+                    ),
+                    SizedBox(height: 16.w),
                     Text(
                       state.errorMessage ?? 'Không tải được thông báo',
-                      style: AppTextStyles.bodyMedium,
+                      style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 16.w),
-                    TextButton(
+                    TextButton.icon(
                       onPressed: () =>
                           context.read<NotificationsCubit>().loadNotifications(),
-                      child: const Text('Thử lại'),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Thử lại'),
                     ),
                   ],
                 ),
@@ -122,10 +158,19 @@ class _NotificationsView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_off_outlined,
-                      size: 48.sp, color: AppColors.textHint),
-                  SizedBox(height: 12.w),
-                  Text('Chưa có thông báo', style: AppTextStyles.bodyMedium),
+                  Container(
+                    width: 64.w,
+                    height: 64.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.infoBg,
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Icon(Icons.notifications_off_outlined, size: 32.sp, color: AppColors.info),
+                  ),
+                  SizedBox(height: 16.w),
+                  Text('Chưa có thông báo', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  SizedBox(height: 4.w),
+                  Text('Các thông báo sẽ hiển thị tại đây', style: AppTextStyles.caption),
                 ],
               ),
             );
@@ -135,9 +180,16 @@ class _NotificationsView extends StatelessWidget {
                 context.read<NotificationsCubit>().loadNotifications(),
             color: AppColors.primary,
             child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(16.w),
-              itemCount: state.notifications.length,
+              itemCount: state.notifications.length + (state.isPaginating ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index >= state.notifications.length) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.w),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final notification = state.notifications[index];
                 return AnimatedListItem(
                   index: index,
@@ -168,12 +220,12 @@ class _NotificationsView extends StatelessWidget {
           decoration: BoxDecoration(
             color: notification.isRead
                 ? AppColors.surface
-                : AppColors.primary.withOpacity(0.04),
+                : AppColors.primary.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: notification.isRead
                   ? AppColors.border
-                  : AppColors.primary.withOpacity(0.2),
+                  : AppColors.primary.withValues(alpha: 0.2),
             ),
           ),
           child: Row(
@@ -183,7 +235,7 @@ class _NotificationsView extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(icon, color: color, size: 20.sp),

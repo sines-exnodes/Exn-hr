@@ -91,6 +91,10 @@ class HomeCubit extends Cubit<HomeState> {
     final isCheckedIn =
         todayRecord?.checkOutTime == null && todayRecord?.checkInTime != null;
 
+    // TODO: Fetch unread notification count from API when endpoint is available.
+    // e.g. final unreadCount = await _getUnreadNotificationCountUseCase();
+    const unreadNotificationCount = 0;
+
     if (isClosed) return;
     emit(state.copyWith(
       status: HomeStatus.success,
@@ -102,6 +106,7 @@ class HomeCubit extends Cubit<HomeState> {
       setAttendanceWarning: true,
       attendanceWarning: attWarn,
       upcomingMilestones: upcomingMilestones,
+      unreadNotificationCount: unreadNotificationCount,
     ));
   }
 

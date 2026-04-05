@@ -42,7 +42,7 @@ class _OtApprovalView extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Từ chối', style: TextStyle(color: AppColors.error)),
+            child: const Text('Từ chối', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -127,114 +127,164 @@ class _OtApprovalView extends StatelessWidget {
                 return AnimatedListItem(
                   index: index,
                   child: Container(
-                  margin: EdgeInsets.only(bottom: 12.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (busy)
-                        LinearProgressIndicator(
-                          minHeight: 3.w,
-                          backgroundColor: AppColors.primary.withOpacity(0.08),
-                          color: AppColors.primary,
+                    margin: EdgeInsets.only(bottom: 12.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    req.employeeName ?? 'Nhân viên',
-                                    style: AppTextStyles.labelLarge,
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w,
-                                    vertical: 4.w,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _stageColor(req).withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                  child: Text(
-                                    _stageLabel(req),
-                                    style: AppTextStyles.labelSmall
-                                        .copyWith(color: _stageColor(req)),
-                                  ),
-                                ),
-                              ],
+                            Container(
+                              width: 4.w,
+                              color: AppColors.warning,
                             ),
-                            SizedBox(height: 6.w),
-                            Row(
-                              children: [
-                                Text(
-                                  '${formatDateDisplay(req.date)} · ${req.startTime} — ${req.endTime} (${req.hours}h)',
-                                  style: AppTextStyles.bodySmall,
-                                ),
-                                SizedBox(width: 8.w),
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.w),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.info.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(4.r),
-                                  ),
-                                  child: Text(
-                                    req.otTypeLabel,
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.info,
-                                      fontSize: 10.sp,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (busy)
+                                    LinearProgressIndicator(
+                                      minHeight: 3.w,
+                                      backgroundColor:
+                                          AppColors.primary.withValues(alpha: 0.08),
+                                      color: AppColors.primary,
+                                    ),
+                                  Padding(
+                                    padding: EdgeInsets.all(16.w),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 36.w,
+                                              height: 36.w,
+                                              decoration: const BoxDecoration(
+                                                color: AppColors.primaryLight,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.person_rounded,
+                                                color: AppColors.primary,
+                                                size: 18.sp,
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.w),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    req.employeeName ??
+                                                        'Nhân viên',
+                                                    style: AppTextStyles
+                                                        .labelLarge,
+                                                  ),
+                                                  SizedBox(height: 2.w),
+                                                  Text(
+                                                    'OT · ${req.hours}h · ${req.otTypeLabel}',
+                                                    style:
+                                                        AppTextStyles.caption,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 8.w,
+                                                vertical: 4.w,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: _stageColor(req)
+                                                    .withValues(alpha: 0.12),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.r),
+                                              ),
+                                              child: Text(
+                                                _stageLabel(req),
+                                                style: AppTextStyles.labelSmall
+                                                    .copyWith(
+                                                        color:
+                                                            _stageColor(req)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 12.w),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.calendar_today_rounded,
+                                              size: 14.sp,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                            SizedBox(width: 6.w),
+                                            Text(
+                                              '${formatDateDisplay(req.date)} · ${req.startTime} — ${req.endTime}',
+                                              style: AppTextStyles.bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 6.w),
+                                        Text(
+                                          req.reason,
+                                          style: AppTextStyles.caption,
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 12.w),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: AppButton(
+                                                label: 'Từ chối',
+                                                type: AppButtonType.outlined,
+                                                foregroundColor:
+                                                    AppColors.error,
+                                                height: 44.w,
+                                                isDisabled: busy,
+                                                onPressed: () =>
+                                                    _confirmReject(
+                                                        context, req.id),
+                                              ),
+                                            ),
+                                            SizedBox(width: 12.w),
+                                            Expanded(
+                                              child: AppButton(
+                                                label: 'Duyệt',
+                                                height: 44.w,
+                                                isDisabled: busy,
+                                                onPressed: () => context
+                                                    .read<OtApprovalCubit>()
+                                                    .approve(req.id),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 4.w),
-                            Text(
-                              req.reason,
-                              style: AppTextStyles.caption,
-                              maxLines: 3,
-                            ),
-                            SizedBox(height: 12.w),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: AppButton(
-                                    label: 'Từ chối',
-                                    type: AppButtonType.outlined,
-                                    foregroundColor: AppColors.error,
-                                    height: 44.w,
-                                    isDisabled: busy,
-                                    onPressed: () => _confirmReject(context, req.id),
-                                  ),
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: AppButton(
-                                    label: 'Duyệt',
-                                    height: 44.w,
-                                    isDisabled: busy,
-                                    onPressed: () => context
-                                        .read<OtApprovalCubit>()
-                                        .approve(req.id),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
                 );
               },
             ),
