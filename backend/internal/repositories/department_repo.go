@@ -37,8 +37,7 @@ func (r *DepartmentRepository) Delete(id uint) error {
 func (r *DepartmentRepository) List() ([]models.Department, error) {
 	var depts []models.Department
 	err := r.db.
-		Preload("Teams.Leader").
-		Preload("Teams.Members").
+		Preload("Members").
 		Order("id ASC").
 		Find(&depts).Error
 	return depts, err

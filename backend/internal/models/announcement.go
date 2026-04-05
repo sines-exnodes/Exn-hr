@@ -53,7 +53,7 @@ type PollOption struct {
 	DisplayOrder int    `gorm:"default:0" json:"display_order"`
 
 	Poll  *Poll      `gorm:"foreignKey:PollID" json:"poll,omitempty"`
-	Votes []PollVote `gorm:"foreignKey:PollOptionID" json:"votes,omitempty"`
+	Votes []PollVote `gorm:"foreignKey:OptionID" json:"votes,omitempty"`
 }
 
 type PollVote struct {
