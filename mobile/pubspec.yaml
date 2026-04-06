@@ -1,10 +1,10 @@
 name: exn_hr
 description: Exn-Hr Mobile App
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 environment:
-  sdk: '>=3.2.0 <4.0.0'
-  flutter: '>=3.16.0'
+  sdk: ">=3.2.0 <4.0.0"
+  flutter: ">=3.16.0"
 dependencies:
   flutter:
     sdk: flutter
@@ -33,13 +33,12 @@ dev_dependencies:
   flutter_lints: ^3.0.1
   flutter_launcher_icons: ^0.14.3
 
-flutter_launcher_icons:
+flutter_icons:
   android: true
-  ios: false
+  ios: true
   remove_alpha_ios: true
-  image_path: "assets/images/exn.png"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/exn.png"
+  image_path: "assets/images/exn_app.png"
+
 flutter:
   uses-material-design: true
   assets:
