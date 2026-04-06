@@ -106,16 +106,26 @@ func (s *SalaryService) computeBreakdown(emp models.Employee, month, year, stand
 	bd.InsuranceSalary = insuranceSalary
 	bd.StandardWorkDays = standardWorkDays
 
-	// --- Actual work days from attendance ---
+	// --- Actual work days from attendance (tracking only, NOT used for salary) ---
 	actualWorkDays, err := s.salaryRepo.CountWorkDays(emp.ID, month, year)
 	if err != nil {
-		return bd, fmt.Errorf("failed to count work days: %w", err)
+		actualWorkDays = 0 // non-critical, just for reporting
 	}
 	bd.ActualWorkDays = actualWorkDays
 
 	// --- Prorated salary ---
-	if standardWorkDays > 0 {
-		bd.ProratedSalary = math.Round(basicSalary / float64(standardWorkDays) * actualWorkDays)
+	// Default: full basic salary. Only deduct unpaid leave days.
+	// Paid leave does NOT reduce salary. Attendance does NOT affect salary.
+	unpaidLeaveDays, err := s.salaryRepo.CountUnpaidLeaveDays(emp.ID, month, year)
+	if err != nil {
+		unpaidLeaveDays = 0
+	}
+
+	if standardWorkDays > 0 && unpaidLeaveDays > 0 {
+		dailyRate := basicSalary / float64(standardWorkDays)
+		bd.ProratedSalary = math.Round(basicSalary - (unpaidLeaveDays * dailyRate))
+	} else {
+		bd.ProratedSalary = basicSalary // full salary
 	}
 
 	// --- Allowances (taxable vs non-taxable) ---

@@ -3,11 +3,13 @@ package dto
 // --- Leave ---
 
 type CreateLeaveReq struct {
-	Type      string  `json:"type" binding:"required,oneof=paid unpaid"`
-	StartDate string  `json:"start_date" binding:"required"`
-	EndDate   string  `json:"end_date" binding:"required"`
-	Days      float64 `json:"days" binding:"required,min=0.5"`
-	Reason    string  `json:"reason"`
+	Type          string  `json:"type" binding:"required,oneof=paid unpaid"`
+	StartDate     string  `json:"start_date" binding:"required"`
+	EndDate       string  `json:"end_date" binding:"required"`
+	Days          float64 `json:"days" binding:"required,min=0.5"`
+	IsHalfDay     bool    `json:"is_half_day"`                                       // true = nửa buổi (0.5 ngày)
+	HalfDayPeriod string  `json:"half_day_period" binding:"omitempty,oneof=morning afternoon"` // morning or afternoon
+	Reason        string  `json:"reason"`
 }
 
 type ApproveLeaveReq struct {

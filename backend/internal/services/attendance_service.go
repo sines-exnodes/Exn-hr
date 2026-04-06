@@ -101,13 +101,28 @@ func (s *AttendanceService) CheckIn(userID uint, req dto.CheckInReq) (*models.At
 		return nil, errors.New("location is not within an approved office area or WiFi network")
 	}
 
+	// Late check: if check-in after 08:15 (15 min grace from 08:00), mark as late
+	now := time.Now()
+	workStartHour, workStartMin := 8, 0
+	gracePeriodMinutes := 15
+	startOfWork := time.Date(now.Year(), now.Month(), now.Day(), workStartHour, workStartMin, 0, 0, now.Location())
+	deadline := startOfWork.Add(time.Duration(gracePeriodMinutes) * time.Minute)
+
+	isLate := now.After(deadline)
+	lateMinutes := 0
+	if isLate {
+		lateMinutes = int(now.Sub(startOfWork).Minutes())
+	}
+
 	record := &models.AttendanceRecord{
 		EmployeeID:  emp.ID,
-		CheckInTime: time.Now(),
+		CheckInTime: now,
 		GPSLat:      req.Latitude,
 		GPSLng:      req.Longitude,
 		WiFiSSID:    req.WiFiSSID,
 		Status:      "checked_in",
+		IsLate:      isLate,
+		LateMinutes: lateMinutes,
 	}
 
 	if err := s.attendanceRepo.Create(record); err != nil {

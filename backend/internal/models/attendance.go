@@ -3,15 +3,17 @@ package models
 import "time"
 
 type AttendanceRecord struct {
-	ID           uint      `gorm:"primaryKey" json:"id"`
-	EmployeeID   uint      `gorm:"not null;index" json:"employee_id"`
-	CheckInTime  time.Time `json:"check_in_time"`
+	ID           uint       `gorm:"primaryKey" json:"id"`
+	EmployeeID   uint       `gorm:"not null;index" json:"employee_id"`
+	CheckInTime  time.Time  `json:"check_in_time"`
 	CheckOutTime *time.Time `json:"check_out_time"`
-	GPSLat       float64   `json:"gps_lat"`
-	GPSLng       float64   `json:"gps_lng"`
-	WiFiSSID     string    `json:"wifi_ssid"`
-	Status       string    `gorm:"default:checked_in" json:"status"` // checked_in, checked_out
-	CreatedAt    time.Time `json:"created_at"`
+	GPSLat       float64    `json:"gps_lat"`
+	GPSLng       float64    `json:"gps_lng"`
+	WiFiSSID     string     `json:"wifi_ssid"`
+	Status       string     `gorm:"default:checked_in" json:"status"` // checked_in, checked_out
+	IsLate       bool       `gorm:"default:false" json:"is_late"`
+	LateMinutes  int        `gorm:"default:0" json:"late_minutes"`
+	CreatedAt    time.Time  `json:"created_at"`
 
 	Employee *Employee `gorm:"foreignKey:EmployeeID" json:"employee,omitempty"`
 }

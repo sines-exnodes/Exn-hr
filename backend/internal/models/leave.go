@@ -9,10 +9,14 @@ type LeaveRequest struct {
 	StartDate     string    `gorm:"not null" json:"start_date"`
 	EndDate       string    `gorm:"not null" json:"end_date"`
 	Days          float64   `gorm:"not null" json:"days"`
+	IsHalfDay     bool      `gorm:"default:false" json:"is_half_day"`    // true = nửa buổi (0.5 ngày)
+	HalfDayPeriod string    `json:"half_day_period,omitempty"`            // morning, afternoon
 	Reason        string    `json:"reason"`
 	LeaderStatus  string    `gorm:"default:pending" json:"leader_status"`  // pending, approved, rejected
 	HRStatus      string    `gorm:"default:pending" json:"hr_status"`      // pending, approved, rejected
 	OverallStatus string    `gorm:"default:pending" json:"overall_status"` // pending, approved, rejected
+	LeaderComment string    `json:"leader_comment"`
+	HRComment     string    `json:"hr_comment"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 

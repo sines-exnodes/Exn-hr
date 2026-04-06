@@ -69,12 +69,20 @@ func (s *LeaveService) Create(userID uint, req dto.CreateLeaveReq) (*models.Leav
 		}
 	}
 
+	// Half-day: force days = 0.5
+	days := req.Days
+	if req.IsHalfDay {
+		days = 0.5
+	}
+
 	leaveReq := &models.LeaveRequest{
 		EmployeeID:    emp.ID,
 		Type:          req.Type,
 		StartDate:     req.StartDate,
 		EndDate:       req.EndDate,
-		Days:          req.Days,
+		Days:          days,
+		IsHalfDay:     req.IsHalfDay,
+		HalfDayPeriod: req.HalfDayPeriod,
 		Reason:        req.Reason,
 		LeaderStatus:  "pending",
 		HRStatus:      "pending",

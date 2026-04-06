@@ -178,6 +178,7 @@ func (r *SalaryRepository) GetEmployeeAllowancesSplit(employeeID uint) (Allowanc
 }
 
 // CountWorkDays returns the number of distinct days an employee checked in for a given month/year
+// Note: This is for tracking/reporting only, NOT used in salary calculation.
 func (r *SalaryRepository) CountWorkDays(employeeID uint, month, year int) (float64, error) {
 	var count float64
 	err := r.db.Model(&models.AttendanceRecord{}).
@@ -185,4 +186,17 @@ func (r *SalaryRepository) CountWorkDays(employeeID uint, month, year int) (floa
 			employeeID, month, year).
 		Select("COUNT(DISTINCT DATE(check_in_time))").Scan(&count).Error
 	return count, err
+}
+
+// CountUnpaidLeaveDays returns total unpaid leave days (approved) for an employee in a given month/year.
+// Only fully approved leaves (overall_status = 'approved', type = 'unpaid') are counted.
+func (r *SalaryRepository) CountUnpaidLeaveDays(employeeID uint, month, year int) (float64, error) {
+	var totalDays float64
+	err := r.db.Model(&models.LeaveRequest{}).
+		Where("employee_id = ? AND overall_status = 'approved' AND type = 'unpaid'", employeeID).
+		Where("(EXTRACT(MONTH FROM start_date::date) = ? AND EXTRACT(YEAR FROM start_date::date) = ?) OR "+
+			"(EXTRACT(MONTH FROM end_date::date) = ? AND EXTRACT(YEAR FROM end_date::date) = ?)",
+			month, year, month, year).
+		Select("COALESCE(SUM(days), 0)").Scan(&totalDays).Error
+	return totalDays, err
 }
