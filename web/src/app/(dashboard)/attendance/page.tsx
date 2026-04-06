@@ -268,6 +268,7 @@ export default function AttendancePage() {
                     "Ngày",
                     "Check-in",
                     "Check-out",
+                    "Đúng giờ",
                     "Trạng thái",
                     "GPS",
                     "WiFi",
@@ -285,7 +286,7 @@ export default function AttendancePage() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-4 py-10 text-center text-sm text-slate-400"
                     >
                       Không có dữ liệu.
@@ -319,6 +320,17 @@ export default function AttendancePage() {
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600">
                           {formatTime(rec.check_out_time)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {rec.is_late ? (
+                            <Badge variant="red" dot>
+                              Đi trễ {rec.late_minutes} phút
+                            </Badge>
+                          ) : (
+                            <Badge variant="green" dot>
+                              Đúng giờ
+                            </Badge>
+                          )}
                         </td>
                         <td className="px-4 py-3">{statusBadge(rec.status)}</td>
                         <td className="px-4 py-3">

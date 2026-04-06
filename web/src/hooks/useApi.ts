@@ -23,6 +23,7 @@ import type {
   ApproveRequest,
   RunPayrollRequest,
   ChangePasswordRequest,
+  CreateLeaveRequest,
   Bonus,
   SalaryAdvance,
   EmployeeAllowance,
@@ -391,13 +392,7 @@ export function useLeaveBalance(year?: number, config?: SWRConfiguration) {
   );
 }
 
-export async function createLeaveRequest(data: {
-  type: string;
-  start_date: string;
-  end_date: string;
-  days: number;
-  reason: string;
-}) {
+export async function createLeaveRequest(data: CreateLeaveRequest) {
   return api.post<ApiResponse<LeaveRequest>>("/leave", data);
 }
 

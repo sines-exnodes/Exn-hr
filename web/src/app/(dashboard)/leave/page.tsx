@@ -7,9 +7,12 @@ import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import type { LeaveRequest } from "@/types";
 import {
   useLeaveRequests,
+  createLeaveRequest,
   leaderApproveLeave,
   hrApproveLeave,
   cancelLeave,
@@ -98,7 +101,16 @@ function LeaveTable({
                   {req.end_date}
                 </td>
                 <td className="px-4 py-3 text-sm font-semibold text-slate-700">
-                  {req.days}
+                  <div className="flex items-center gap-1.5">
+                    {req.days}
+                    {req.is_half_day && (
+                      <Badge variant="purple">
+                        {req.half_day_period === "morning"
+                          ? "Nửa buổi (Sáng)"
+                          : "Nửa buổi (Chiều)"}
+                      </Badge>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">
                   {req.reason}
@@ -150,6 +162,73 @@ export default function LeavePage() {
       mutate();
     },
   });
+
+  // Create leave modal state
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    type: "paid" as string,
+    start_date: "",
+    end_date: "",
+    days: 1,
+    reason: "",
+    is_half_day: false,
+    half_day_period: "morning" as string,
+  });
+  const [createLoading, setCreateLoading] = useState(false);
+
+  const handleCreateChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
+    setCreateForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === "is_half_day" && value === true) {
+        next.days = 0.5;
+        next.end_date = next.start_date;
+      }
+      if (field === "is_half_day" && value === false) {
+        next.days = 1;
+      }
+      if (field === "start_date" && next.is_half_day) {
+        next.end_date = value as string;
+      }
+      return next;
+    });
+  };
+
+  const handleCreateSubmit = async () => {
+    setCreateLoading(true);
+    try {
+      await createLeaveRequest({
+        type: createForm.type,
+        start_date: createForm.start_date,
+        end_date: createForm.end_date,
+        days: createForm.days,
+        reason: createForm.reason,
+        ...(createForm.is_half_day
+          ? {
+              is_half_day: true,
+              half_day_period: createForm.half_day_period,
+            }
+          : {}),
+      });
+      await mutate();
+      setCreateOpen(false);
+      setCreateForm({
+        type: "paid",
+        start_date: "",
+        end_date: "",
+        days: 1,
+        reason: "",
+        is_half_day: false,
+        half_day_period: "morning",
+      });
+    } catch (err) {
+      console.error("Create leave failed", err);
+    } finally {
+      setCreateLoading(false);
+    }
+  };
 
   const [rejectModal, setRejectModal] = useState<{
     id: number;
@@ -223,6 +302,11 @@ export default function LeavePage() {
           { label: "Dashboard", href: "/" },
           { label: "Nghỉ phép" },
         ]}
+        actions={
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+            + Tạo đơn nghỉ phép
+          </Button>
+        }
       />
       <div className="p-6 space-y-5">
         {/* Loading indicator */}
@@ -335,6 +419,139 @@ export default function LeavePage() {
                 placeholder="Nhập lý do từ chối..."
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
+              />
+            </div>
+          </div>
+        </Modal>
+
+        {/* Create leave modal */}
+        <Modal
+          isOpen={createOpen}
+          onClose={() => setCreateOpen(false)}
+          title="Tạo đơn nghỉ phép"
+          size="lg"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                Huỷ
+              </Button>
+              <Button
+                variant="primary"
+                disabled={
+                  createLoading ||
+                  !createForm.start_date ||
+                  !createForm.reason
+                }
+                onClick={handleCreateSubmit}
+              >
+                {createLoading ? "Đang gửi..." : "Gửi đơn"}
+              </Button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <Select
+              label="Loại nghỉ phép"
+              options={[
+                { value: "paid", label: "Phép năm" },
+                { value: "unpaid", label: "Không lương" },
+              ]}
+              value={createForm.type}
+              onChange={(e) => handleCreateChange("type", e.target.value)}
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Từ ngày"
+                type="date"
+                value={createForm.start_date}
+                onChange={(e) =>
+                  handleCreateChange("start_date", e.target.value)
+                }
+              />
+              <Input
+                label="Đến ngày"
+                type="date"
+                value={createForm.end_date}
+                onChange={(e) =>
+                  handleCreateChange("end_date", e.target.value)
+                }
+                disabled={createForm.is_half_day}
+              />
+            </div>
+
+            {/* Half-day toggle */}
+            <div className="flex items-center gap-3">
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  checked={createForm.is_half_day}
+                  onChange={(e) =>
+                    handleCreateChange("is_half_day", e.target.checked)
+                  }
+                  className="peer sr-only"
+                />
+                <div className="h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#22C55E] peer-checked:after:translate-x-full" />
+              </label>
+              <span className="text-sm font-medium text-slate-700">
+                Nghỉ nửa buổi
+              </span>
+            </div>
+
+            {/* Half-day period selector */}
+            {createForm.is_half_day && (
+              <div className="flex items-center gap-4 rounded-lg bg-slate-50 p-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="half_day_period"
+                    value="morning"
+                    checked={createForm.half_day_period === "morning"}
+                    onChange={(e) =>
+                      handleCreateChange("half_day_period", e.target.value)
+                    }
+                    className="h-4 w-4 text-[#22C55E] focus:ring-[#22C55E]"
+                  />
+                  <span className="text-sm text-slate-700">Buổi sáng</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="half_day_period"
+                    value="afternoon"
+                    checked={createForm.half_day_period === "afternoon"}
+                    onChange={(e) =>
+                      handleCreateChange("half_day_period", e.target.value)
+                    }
+                    className="h-4 w-4 text-[#22C55E] focus:ring-[#22C55E]"
+                  />
+                  <span className="text-sm text-slate-700">Buổi chiều</span>
+                </label>
+              </div>
+            )}
+
+            <Input
+              label="Số ngày"
+              type="number"
+              min={0.5}
+              step={0.5}
+              value={createForm.days}
+              onChange={(e) =>
+                handleCreateChange("days", parseFloat(e.target.value) || 0)
+              }
+              disabled={createForm.is_half_day}
+            />
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">
+                Lý do <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Nhập lý do nghỉ phép..."
+                value={createForm.reason}
+                onChange={(e) => handleCreateChange("reason", e.target.value)}
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#22C55E]"
               />
             </div>

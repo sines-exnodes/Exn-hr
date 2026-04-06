@@ -8,6 +8,7 @@ import { useNotifications, useUnreadCount, markNotificationRead } from "@/hooks/
 interface HeaderProps {
   title: string;
   breadcrumbs?: { label: string; href?: string }[];
+  actions?: React.ReactNode;
 }
 
 function timeAgo(iso: string): string {
@@ -21,7 +22,7 @@ function timeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-export function Header({ title, breadcrumbs }: HeaderProps) {
+export function Header({ title, breadcrumbs, actions }: HeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false);
 
   const { data: notifRes, mutate: mutateNotifs } = useNotifications({ page: 1, size: 10 });
@@ -64,6 +65,9 @@ export function Header({ title, breadcrumbs }: HeaderProps) {
         )}
         <h1 className="text-lg font-semibold text-slate-800">{title}</h1>
       </div>
+
+      {/* Center: custom actions */}
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
 
       {/* Right: search + notifications */}
       <div className="flex items-center gap-3">

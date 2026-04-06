@@ -244,6 +244,8 @@ export interface AttendanceRecord {
   gps_lng?: number;
   wifi_ssid?: string;
   status: "checked_in" | "checked_out";
+  is_late?: boolean;
+  late_minutes?: number;
   employee?: Employee;
 }
 
@@ -282,6 +284,8 @@ export interface LeaveRequest {
   end_date: string;
   days: number;
   reason: string;
+  is_half_day?: boolean;
+  half_day_period?: string;
   leader_status: ApprovalStatus;
   hr_status: ApprovalStatus;
   overall_status: ApprovalStatus;
@@ -289,6 +293,16 @@ export interface LeaveRequest {
   hr_comment?: string;
   created_at?: string;
   employee?: Employee;
+}
+
+export interface CreateLeaveRequest {
+  type: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  reason: string;
+  is_half_day?: boolean;
+  half_day_period?: string;
 }
 
 export interface LeaveBalance {
