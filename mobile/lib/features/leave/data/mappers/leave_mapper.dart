@@ -9,6 +9,7 @@ extension LeaveMapper on LeaveModel {
       reason: reason, leaderStatus: leaderStatus,
       hrStatus: hrStatus, overallStatus: overallStatus,
       employeeName: employeeName,
+      isHalfDay: isHalfDay, halfDayPeriod: halfDayPeriod,
     );
   }
 }

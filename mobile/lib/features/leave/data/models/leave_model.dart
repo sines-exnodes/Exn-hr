@@ -13,6 +13,8 @@ class LeaveModel {
     this.leaderComment,
     this.hrComment,
     this.employee,
+    this.isHalfDay = false,
+    this.halfDayPeriod,
   });
 
   final int id;
@@ -28,6 +30,8 @@ class LeaveModel {
   final String? leaderComment;
   final String? hrComment;
   final Map<String, dynamic>? employee;
+  final bool isHalfDay;
+  final String? halfDayPeriod;
 
   String? get employeeName {
     if (employee == null) return null;
@@ -49,6 +53,8 @@ class LeaveModel {
       leaderComment: json['leader_comment'] as String?,
       hrComment: json['hr_comment'] as String?,
       employee: json['employee'] as Map<String, dynamic>?,
+      isHalfDay: json['is_half_day'] as bool? ?? false,
+      halfDayPeriod: json['half_day_period'] as String?,
     );
   }
 }

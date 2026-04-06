@@ -125,17 +125,49 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
                     ),
                     SizedBox(height: 16.w),
                     FadeSlideAnimation(
-                      delay: const Duration(milliseconds: 200),
-                      child: AppInput(
-                        label: 'Ngày kết thúc',
-                        hint: 'Chọn ngày kết thúc',
-                        controller: _endController,
-                        readOnly: true,
-                        onTap: () => _pickDate(context, false),
-                        suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
-                        validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
-                      ),
+                      delay: const Duration(milliseconds: 150),
+                      child: _buildHalfDaySwitch(context, state),
                     ),
+                    if (!state.isHalfDay) ...[
+                      SizedBox(height: 16.w),
+                      FadeSlideAnimation(
+                        delay: const Duration(milliseconds: 200),
+                        child: AppInput(
+                          label: 'Ngày kết thúc',
+                          hint: 'Chọn ngày kết thúc',
+                          controller: _endController,
+                          readOnly: true,
+                          onTap: () => _pickDate(context, false),
+                          suffixIcon: Icon(Icons.calendar_today_rounded, size: 18.sp),
+                          validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
+                        ),
+                      ),
+                    ],
+                    if (state.isHalfDay) ...[
+                      SizedBox(height: 16.w),
+                      FadeSlideAnimation(
+                        delay: const Duration(milliseconds: 200),
+                        child: _buildHalfDayPeriodPicker(context, state),
+                      ),
+                      SizedBox(height: 12.w),
+                      FadeSlideAnimation(
+                        delay: const Duration(milliseconds: 250),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline_rounded, size: 16.sp, color: AppColors.primary),
+                              SizedBox(width: 8.w),
+                              Text('0.5 ngày', style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     SizedBox(height: 16.w),
                     FadeSlideAnimation(
                       delay: const Duration(milliseconds: 300),
@@ -169,6 +201,54 @@ class _LeaveRequestViewState extends State<_LeaveRequestView> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildHalfDaySwitch(BuildContext context, LeaveRequestState state) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Nghỉ nửa buổi', style: AppTextStyles.labelMedium),
+        Switch(
+          value: state.isHalfDay,
+          onChanged: (_) => context.read<LeaveRequestCubit>().toggleHalfDay(),
+          activeThumbColor: AppColors.primary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHalfDayPeriodPicker(BuildContext context, LeaveRequestState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Buổi nghỉ', style: AppTextStyles.labelMedium),
+        SizedBox(height: 8.w),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'morning', label: Text('Buổi sáng')),
+            ButtonSegment(value: 'afternoon', label: Text('Buổi chiều')),
+          ],
+          selected: {state.halfDayPeriod ?? 'morning'},
+          onSelectionChanged: (selected) {
+            context.read<LeaveRequestCubit>().setHalfDayPeriod(selected.first);
+          },
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppColors.primary;
+              }
+              return AppColors.bgCard;
+            }),
+            foregroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.white;
+              }
+              return AppColors.textPrimary;
+            }),
+          ),
+        ),
+      ],
     );
   }
 

@@ -13,6 +13,8 @@ class LeaveRequest extends Equatable {
     required this.hrStatus,
     required this.overallStatus,
     this.employeeName,
+    this.isHalfDay = false,
+    this.halfDayPeriod,
   });
 
   final int id;
@@ -26,9 +28,11 @@ class LeaveRequest extends Equatable {
   final String hrStatus;
   final String overallStatus;
   final String? employeeName;
+  final bool isHalfDay;
+  final String? halfDayPeriod;
 
   @override
-  List<Object?> get props => [id, type, startDate, endDate, overallStatus];
+  List<Object?> get props => [id, type, startDate, endDate, overallStatus, isHalfDay, halfDayPeriod];
 }
 
 class LeaveBalance extends Equatable {

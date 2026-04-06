@@ -171,6 +171,24 @@ class _AttendanceHistoryViewState extends State<_AttendanceHistoryView> {
                         children: [
                           Text(hoursLabel, style: AppTextStyles.labelMedium),
                           Text('Tổng', style: AppTextStyles.caption),
+                          if (record.isLate)
+                            Padding(
+                              padding: EdgeInsets.only(top: 4.w),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.w),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                                child: Text(
+                                  'Đi trễ ${record.lateMinutes} phút',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.error,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ],

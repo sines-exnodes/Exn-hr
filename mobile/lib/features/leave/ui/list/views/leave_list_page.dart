@@ -241,7 +241,9 @@ class _LeaveListViewState extends State<_LeaveListView> {
                                                 BorderRadius.circular(6.r),
                                           ),
                                           child: Text(
-                                            '${request.days} ngày',
+                                            request.isHalfDay
+                                                ? 'Nửa buổi (${request.halfDayPeriod == 'morning' ? 'Sáng' : 'Chiều'})'
+                                                : '${request.days} ngày',
                                             style: AppTextStyles.caption
                                                 .copyWith(
                                                     fontWeight: FontWeight.w600),

@@ -7,6 +7,7 @@ extension AttendanceMapper on AttendanceModel {
       id: id, employeeId: employeeId,
       checkInTime: checkInTime, checkOutTime: checkOutTime,
       gpsLat: gpsLat, gpsLng: gpsLng, wifiSsid: wifiSsid, status: status,
+      isLate: isLate, lateMinutes: lateMinutes,
     );
   }
 }

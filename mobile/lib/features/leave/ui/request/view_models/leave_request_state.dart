@@ -11,6 +11,8 @@ class LeaveRequestState extends Equatable {
     this.selectedType = 'paid',
     this.startDate,
     this.endDate,
+    this.isHalfDay = false,
+    this.halfDayPeriod,
   });
 
   final LeaveRequestStatus status;
@@ -19,6 +21,8 @@ class LeaveRequestState extends Equatable {
   final String selectedType;
   final String? startDate;
   final String? endDate;
+  final bool isHalfDay;
+  final String? halfDayPeriod;
 
   LeaveRequestState copyWith({
     LeaveRequestStatus? status,
@@ -27,6 +31,8 @@ class LeaveRequestState extends Equatable {
     String? selectedType,
     String? startDate,
     String? endDate,
+    bool? isHalfDay,
+    String? halfDayPeriod,
   }) {
     return LeaveRequestState(
       status: status ?? this.status,
@@ -35,9 +41,11 @@ class LeaveRequestState extends Equatable {
       selectedType: selectedType ?? this.selectedType,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
+      isHalfDay: isHalfDay ?? this.isHalfDay,
+      halfDayPeriod: halfDayPeriod ?? this.halfDayPeriod,
     );
   }
 
   @override
-  List<Object?> get props => [status, request, errorMessage, selectedType, startDate, endDate];
+  List<Object?> get props => [status, request, errorMessage, selectedType, startDate, endDate, isHalfDay, halfDayPeriod];
 }

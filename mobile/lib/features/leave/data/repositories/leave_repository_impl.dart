@@ -13,9 +13,14 @@ class LeaveRepositoryImpl implements LeaveRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<Either<ApiError, LeaveRequest>> createRequest({required String type, required String startDate, required String endDate, required double days, required String reason}) async {
+  Future<Either<ApiError, LeaveRequest>> createRequest({required String type, required String startDate, required String endDate, required double days, required String reason, bool isHalfDay = false, String? halfDayPeriod}) async {
     try {
-      final response = await _apiClient.post(ApiEndpoints.leave, data: {'type': type, 'start_date': startDate, 'end_date': endDate, 'days': days, 'reason': reason});
+      final body = <String, dynamic>{'type': type, 'start_date': startDate, 'end_date': endDate, 'days': days, 'reason': reason};
+      if (isHalfDay) {
+        body['is_half_day'] = true;
+        if (halfDayPeriod != null) body['half_day_period'] = halfDayPeriod;
+      }
+      final response = await _apiClient.post(ApiEndpoints.leave, data: body);
       final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
       return Right(LeaveModel.fromJson(data).toEntity());
     } on DioException catch (e) { return Left(ApiError.fromDioError(e)); } catch (e) { return Left(ApiError.unknown()); }

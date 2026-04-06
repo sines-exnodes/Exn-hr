@@ -7,7 +7,7 @@ class CreateLeaveRequestUseCase {
   CreateLeaveRequestUseCase(this._repository);
   final LeaveRepository _repository;
 
-  Future<Either<ApiError, LeaveRequest>> call({required String type, required String startDate, required String endDate, required double days, required String reason}) {
-    return _repository.createRequest(type: type, startDate: startDate, endDate: endDate, days: days, reason: reason);
+  Future<Either<ApiError, LeaveRequest>> call({required String type, required String startDate, required String endDate, required double days, required String reason, bool isHalfDay = false, String? halfDayPeriod}) {
+    return _repository.createRequest(type: type, startDate: startDate, endDate: endDate, days: days, reason: reason, isHalfDay: isHalfDay, halfDayPeriod: halfDayPeriod);
   }
 }

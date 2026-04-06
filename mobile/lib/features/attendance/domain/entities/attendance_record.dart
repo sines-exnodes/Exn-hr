@@ -10,6 +10,8 @@ class AttendanceRecord extends Equatable {
     this.gpsLng,
     this.wifiSsid,
     this.status,
+    this.isLate = false,
+    this.lateMinutes = 0,
   });
 
   final int id;
@@ -20,7 +22,9 @@ class AttendanceRecord extends Equatable {
   final double? gpsLng;
   final String? wifiSsid;
   final String? status;
+  final bool isLate;
+  final int lateMinutes;
 
   @override
-  List<Object?> get props => [id, employeeId, checkInTime, checkOutTime, status];
+  List<Object?> get props => [id, employeeId, checkInTime, checkOutTime, status, isLate, lateMinutes];
 }

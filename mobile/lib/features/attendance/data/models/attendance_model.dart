@@ -8,6 +8,8 @@ class AttendanceModel {
     this.gpsLng,
     this.wifiSsid,
     this.status,
+    this.isLate = false,
+    this.lateMinutes = 0,
   });
 
   final int id;
@@ -18,6 +20,8 @@ class AttendanceModel {
   final double? gpsLng;
   final String? wifiSsid;
   final String? status;
+  final bool isLate;
+  final int lateMinutes;
 
   factory AttendanceModel.fromJson(Map<String, dynamic> json) {
     return AttendanceModel(
@@ -29,6 +33,8 @@ class AttendanceModel {
       gpsLng: (json['gps_lng'] as num?)?.toDouble(),
       wifiSsid: json['wifi_ssid'] as String?,
       status: json['status'] as String?,
+      isLate: json['is_late'] as bool? ?? false,
+      lateMinutes: (json['late_minutes'] as num?)?.toInt() ?? 0,
     );
   }
 }
