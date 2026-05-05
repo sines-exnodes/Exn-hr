@@ -6,7 +6,7 @@
 
 **Maintenance:** Updated after each new DR is completed or when existing patterns change. Add new entries, update existing ones, or mark deprecated patterns.
 
-**Last Updated:** 2026-04-21 (DR-004-001-01 WEB-APP Attendance List)
+**Last Updated:** 2026-04-25 (DR-004-001-03 MOBILE-APP Announcement Detail)
 
 ---
 
@@ -28,14 +28,15 @@
 14. [Mobile Create Form Pattern](#14-mobile-create-form-pattern)
 15. [Mobile Check-In/Out Pattern](#15-mobile-check-inout-pattern)
 16. [Calendar Matrix View Pattern](#16-calendar-matrix-view-pattern)
-17. [Open/Pending Decisions](#17-openpending-decisions)
+17. [Mobile Announcement Widget Pattern](#17-mobile-announcement-widget-pattern)
+18. [Open/Pending Decisions](#18-openpending-decisions)
 
 ---
 
 ## 1. List View Pattern
 
 **Applies to:** Any page that displays a collection of records in a table format.
-**Confirmed in:** User List (DR-001-005-01), Department List (DR-008-001-01), Position List (DR-008-002-01), Role List (DR-001-004-01), Skill List (DR-008-003-01), Leave Requests List (DR-002-001-01), Request Tickets List (DR-003-001-01)
+**Confirmed in:** User List (DR-001-005-01), Department List (DR-008-001-01), Position List (DR-008-002-01), Role List (DR-001-004-01), Skill List (DR-008-003-01), Leave Requests List (DR-002-001-01), Request Tickets List (DR-003-001-01), Announcement List (DR-009-001-01)
 
 ### 1.1 Search
 
@@ -98,6 +99,7 @@
 - Role: Edit, Delete
 - Leave Requests: Approve, Reject, Cancel (varies by status and user role)
 - Request Tickets: Edit, In Progress, On Hold, Resume, Resolve, Close, Reopen, Cancel, Delete (varies by status and user role; 6-status lifecycle)
+- Announcements: Draft status = Edit, Send, Delete; Sent status = Delete only (2-status lifecycle; immutable after send)
 
 ### 1.6 Table Display
 
@@ -199,6 +201,42 @@
 | Active Employees Only | Employee dropdown loads active employees only — inactive/deactivated excluded | Create Request Ticket (DR-003-001-02) |
 
 **Note:** The employee info card may show additional context-specific fields (e.g., Leave Days Remaining for leave requests). Each feature decides which extra fields to include.
+
+### 2.9 Dual-Action Save Pattern
+
+**Applies to:** Forms with two distinct save actions that create different statuses.
+**Confirmed in:** Create Announcement (DR-010-001-02)
+
+| Rule | Detail | Confirmed In |
+|------|--------|-------------|
+| Two Save Actions | Form has "Save As Draft" (secondary) and "Save & Send" (primary) buttons | Create Announcement |
+| Dual Button Placement | Both actions appear in header AND bottom of form | Create Announcement |
+| Header Layout | Cancel + Save As Draft + Save & Send (right-aligned) | Create Announcement |
+| Bottom Layout | Save As Draft (left, 50%) + Save & Send (right, 50%) side-by-side | Create Announcement |
+| Primary Action Style | "Save & Send" uses dark background (#010101), white text | Create Announcement |
+| Secondary Action Style | "Save As Draft" uses white background with border | Create Announcement |
+| Different Statuses | Draft action creates status=Draft; Send action creates status=Sent | Create Announcement |
+| Immutable After Send | Records saved via "Save & Send" cannot be edited | Create Announcement |
+| Success Toast (Draft) | "[Record type] has been saved as draft" | Create Announcement |
+| Success Toast (Sent) | "[Record type] has been sent" | Create Announcement |
+
+### 2.10 Mutually Exclusive Toggle Pattern
+
+**Applies to:** Forms with toggle switches that function as radio buttons (only one can be ON).
+**Confirmed in:** Create Announcement (DR-010-001-02)
+
+| Rule | Detail | Confirmed In |
+|------|--------|-------------|
+| Toggle Behavior | Turning one toggle ON automatically turns the other OFF | Create Announcement |
+| Default State | One toggle is ON by default (the most common use case) | Create Announcement |
+| Conditional Fields | Dependent fields enabled/disabled based on toggle state | Create Announcement |
+| Disabled Visual | Dependent fields shown at 50% opacity when disabled | Create Announcement |
+| Validation | If toggle requires dependent field, validation enforces selection | Create Announcement |
+
+**Announcement-specific implementation:**
+- "Everyone" toggle (default ON) = send to all employees
+- "Specific one" toggle (default OFF) = enable Employee multi-select dropdown
+- Employee dropdown disabled at 50% opacity when "Everyone" is selected
 
 ---
 
@@ -545,6 +583,26 @@ Request Ticket (EP-003 US-001)
 - Submitter can reopen Resolved tickets (reverts to Open)
 - Managers/admins can delete any ticket regardless of status (soft delete)
 - Data visibility: employees see own tickets only; managers/admins see all
+
+### 9.4 Announcement Status
+
+| Status | Badge Color | Meaning |
+|--------|-------------|---------|
+| Draft | Gray | Announcement created but not yet sent |
+| Sent | Green | Announcement has been sent to employees |
+
+**Transitions:**
+- Draft -> Sent (via Send action)
+- Draft -> Deleted (via Delete action)
+- Sent -> Deleted (via Delete action — admin cleanup only)
+
+**Rules:**
+- Only 2 statuses: Draft and Sent
+- Once Sent, announcements are immutable (cannot be edited)
+- Delete of Sent announcement is administrative cleanup only; employees retain received copy
+- Permission-controlled access via US-004 Permission Management
+
+**Confirmed in:** DR-009-001-01
 
 ---
 
@@ -1009,7 +1067,117 @@ Request Ticket (EP-003 US-001)
 
 ---
 
-## 17. Open/Pending Decisions
+## 17. Mobile Announcement Widget Pattern
+
+**Applies to:** Mobile app widgets that display read-only data from WEB-APP sources.
+**Confirmed in:** MOBILE-APP Top 5 Latest Announcements (DR-004-001-01)
+**Platform:** MOBILE-APP only
+
+### 17.1 Widget Layout
+
+| Rule | Detail | Confirmed In |
+|------|--------|--------------|
+| Entry Point | Embedded on home screen dashboard (not a separate screen) | DR-004-001-01 |
+| Widget Header | Title + "View All" link (right-aligned) | DR-004-001-01 |
+| Content Area | Vertical stack of item cards (up to 5) | DR-004-001-01 |
+| Card Content | Unread indicator (left) + Title + Date (right) + Preview text (below) | DR-004-001-01 |
+
+### 17.2 Unread/Read Indicator Pattern
+
+| Rule | Detail | Confirmed In |
+|------|--------|--------------|
+| Indicator Type | Small colored dot (blue or primary accent) | DR-004-001-01 |
+| Unread State | Dot visible on left side of card | DR-004-001-01 |
+| Read State | Dot hidden (no indicator shown) | DR-004-001-01 |
+| Mark as Read | Triggered when user taps card (not when widget is viewed) | DR-004-001-01 |
+| Persistence | Read status tracked per user per item (server-side) | DR-004-001-01 |
+| No Reverse | Once read, cannot transition back to unread | DR-004-001-01 |
+| Cross-Device Sync | Read status synced across mobile and web | DR-004-001-01 |
+
+### 17.3 Cross-Platform Data Consumer Pattern
+
+| Rule | Detail | Confirmed In |
+|------|--------|--------------|
+| Data Source | WEB-APP creates data, MOBILE-APP consumes | DR-004-001-01 |
+| Status Filter | Only items with "Sent" status displayed (Draft excluded) | DR-004-001-01 |
+| Targeting Filter | Only items targeting current user (Everyone OR specific) | DR-004-001-01 |
+| Sort Order | Newest first (by sent_date descending) | DR-004-001-01 |
+| Display Limit | Widget shows limited count (e.g., 5); full list via "View All" | DR-004-001-01 |
+
+### 17.4 Widget Display States
+
+| State | Condition | What User Sees | Confirmed In |
+|-------|-----------|----------------|--------------|
+| Loading | Initial fetch or refresh | Skeleton cards (3-5 placeholders) | DR-004-001-01 |
+| Empty | No items for this user | Icon + "No [items] yet" message | DR-004-001-01 |
+| Populated | 1-5 items available | Item cards in vertical stack | DR-004-001-01 |
+| Error | Network/server failure | Error message + "Tap to retry" | DR-004-001-01 |
+| Refreshing | Pull-to-refresh in progress | Spinner at top of widget | DR-004-001-01 |
+
+### 17.5 Widget Interactions
+
+| Interaction | Behavior | Confirmed In |
+|-------------|----------|--------------|
+| Tap Card | Navigate to detail screen + mark as read | DR-004-001-01 |
+| Tap View All | Navigate to full list screen | DR-004-001-01 |
+| Pull-to-Refresh | Fetch fresh data from server | DR-004-001-01 |
+| Offline | Show cached data with "Last updated" timestamp | DR-004-001-01 |
+
+### 17.6 Mobile Full List Screen Pattern
+
+**Applies to:** Full-screen list views accessed via "View All" from home widgets.
+**Confirmed in:** MOBILE-APP Announcement List (DR-004-001-02)
+
+| Rule | Detail | Confirmed In |
+|------|--------|--------------|
+| Entry Point | "View All" link from home widget OR back navigation from detail | DR-004-001-02 |
+| Header Layout | Back arrow (ArrowLeft 18x18) + Screen title (left-aligned) | DR-004-001-02 |
+| No Display Limit | Shows all items (unlike widget which limits to 5) | DR-004-001-02 |
+| Same Card Format | Cards identical to widget cards (title, preview, date, badge, unread dot) | DR-004-001-02 |
+| Scrollable Content | Full-screen scrollable list with 20px gap between cards | DR-004-001-02 |
+| Bottom Navigation | Persistent 4-icon nav bar (76px) at bottom | DR-004-001-02 |
+| Back Navigation | ArrowLeft returns to previous screen (home or detail) | DR-004-001-02 |
+| No Search/Filter | Full list has no search or filter UI in v1.0 | DR-004-001-02 |
+| Category Badges | Dynamic badges from data (Holiday, Announcement, Reminder, Meeting, etc.) | DR-004-001-02 |
+
+**Layout Dimensions (from Figma):**
+
+| Component | Height | Details |
+|-----------|--------|---------|
+| Header | 70px | Back arrow + title, padding 12px horizontal |
+| Content Area | Flexible | Scrollable list |
+| Bottom Nav | 76px | Fixed at bottom |
+
+### 17.7 Mobile Announcement Detail Pattern
+
+**Applies to:** Full-screen detail view for a single announcement.
+**Confirmed in:** MOBILE-APP Announcement Detail (DR-004-001-03)
+
+| Rule | Detail | Confirmed In |
+|------|--------|--------------|
+| Entry Point | Tap announcement card from widget (DR-004-001-01) or list (DR-004-001-02) | DR-004-001-03 |
+| Header Layout | Back arrow (ArrowLeft 18x18) + truncated title (14px medium) | DR-004-001-03 |
+| Title Section | Full title (24px semibold) + date badge + category badge | DR-004-001-03 |
+| Date Badge | White background, calendar icon, "DDth MMM YYYY" format | DR-004-001-03 |
+| Category Badge | Dark background (#171717), white text, pill shape | DR-004-001-03 |
+| Content Card | White background, 10px radius, 20px padding, rich text content | DR-004-001-03 |
+| Rich Text Support | Bold, paragraphs (12px spacing), bulleted lists, 16px line height | DR-004-001-03 |
+| Mark as Read | Triggered when detail screen is viewed (not on list view) | DR-004-001-03 |
+| No Edit Actions | Read-only view; announcements immutable after send | DR-004-001-03 |
+| Bottom Navigation | Persistent 4-icon nav bar (76px), Home icon active | DR-004-001-03 |
+
+**Layout Dimensions (from Figma):**
+
+| Component | Dimensions | Details |
+|-----------|------------|---------|
+| Header | 70px height | Back arrow + truncated title, 12px horizontal padding |
+| Content Area | Flexible | Title + badges + content card, scrollable |
+| Content Card | Auto height | White bg, 10px radius, 20px internal padding |
+| Bottom Nav | 76px height | Fixed at bottom |
+
+---
+
+## 18. Open/Pending Decisions
 
 These items are NOT yet confirmed and should still be asked during DR creation:
 
@@ -1053,3 +1221,9 @@ These items are NOT yet confirmed and should still be asked during DR creation:
 | 2026-04-17 | Added Mobile Create Form Pattern (Section 14) from MOBILE-APP Create Leave Request (DR-002-001-02) | Mobile form layout (single card, header Done button, back arrow navigation), native pickers, field row structure with icons, mobile-specific validation and success path |
 | 2026-04-18 | Added Mobile Check-In/Out Pattern (Section 15) from MOBILE-APP Check-In/Out (DR-003-001-01) | Dashboard widget layout, GPS location verification (50m radius, Haversine formula), location status indicators, check-in/out rules (late threshold, auto check-out at 11 PM, multiple sessions), attendance streak calculation (excludes weekends/holidays), UX behaviors (56x56 button, haptic feedback, real-time location updates) |
 | 2026-04-21 | Added Calendar Matrix View Pattern (Section 16) from WEB-APP Attendance List (DR-004-001-01) | New pattern for calendar-style matrix views: rows=entities, columns=dates, fixed first column, cell status icons with color coding, hover tooltips (no click action), status filter logic (≥1 day matching), weekend display (shown but muted), cross-module data integration (attendance + leave), bulk + individual Excel export |
+| 2026-04-23 | Added Late Arrival Threshold Configuration (DR-004-001-02) notes | Extends Leave Quota Management Pattern (§11) — single-field org settings page with time picker, full-width save button, stay-on-page behavior, dirty form check; late threshold affects attendance calculation in DR-004-001-01 |
+| 2026-04-25 | Added Announcement List (DR-009-001-01) patterns | New EP-009 Organization Settings module: 2-status lifecycle (Draft/Sent), immutable-after-send rule, status-based gear actions (Draft: Edit/Send/Delete; Sent: Delete only), permission-controlled access; added §9.4 Announcement Status; updated §1 List View Pattern confirmed list |
+| 2026-04-25 | Added Create Announcement (DR-010-001-02) patterns | New §2.9 Dual-Action Save Pattern (Save As Draft vs Save & Send with different statuses, dual button placement header+bottom); New §2.10 Mutually Exclusive Toggle Pattern (radio-button behavior for toggles, conditional field enabling at 50% opacity); Announcement receiver selection (Everyone vs Specific one) |
+| 2026-04-25 | Added Mobile Announcement Widget Pattern (§17) from MOBILE-APP Top 5 Latest Announcements (DR-004-001-01) | New pattern for mobile read-only widgets: widget layout (header + View All + cards), unread/read indicator (dot, mark on tap, server-side tracking, cross-device sync), cross-platform data consumer (WEB-APP creates, MOBILE-APP consumes, status/targeting filters), widget display states (loading/empty/populated/error/refreshing), widget interactions (tap card, View All, pull-to-refresh, offline caching) |
+| 2026-04-25 | Added Mobile Full List Screen Pattern (§17.6) from MOBILE-APP Announcement List (DR-004-001-02) | Full-screen list accessed via "View All": back arrow header, no display limit, same card format as widget, scrollable content with 20px gap, persistent bottom nav, no search/filter in v1.0, dynamic category badges |
+| 2026-04-25 | Added Mobile Announcement Detail Pattern (§17.7) from MOBILE-APP Announcement Detail (DR-004-001-03) | Detail view layout: header with truncated title, full title + date/category badges, white content card with rich text (bold, lists, paragraphs), mark as read on view, read-only (no edit actions) |
